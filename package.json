@@ -1,0 +1,13 @@
+{
+  "name": "ennoea",
+  "version": "0.0.1",
+  "description": "",
+  "private": true,
+  "dependencies": {
+    "sass": "^1.59.2",
+    "three": "^0.150.1",
+    "uglify-js": "^3.17.4",
+    "webpack": "^5.76.1",
+    "webpack-cli": "^5.0.1"
+  }
+}

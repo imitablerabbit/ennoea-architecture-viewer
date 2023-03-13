@@ -1,0 +1,132 @@
+/* Variables */
+$toggleWidth: 40px;
+$toggleHeight: 50px;
+
+$sidebarWidth: 200px;
+$sidebarHeight: 100%;
+
+$navHeight: 60px;
+
+$navBGColor: #161616;
+$navFGColor: #ffffff;
+
+$borderRadius: 8px;
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400&display=swap');
+
+body {
+    margin: 0px;
+    font-family: 'Noto Sans', sans-serif;
+}
+
+.wrapper {
+    display: block;
+    margin: 0px;
+    padding: 0px;
+}
+
+#navbar {
+    height: $navHeight;
+    background-color: $navBGColor;
+    color: $navFGColor;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0px 50px;
+}
+
+#branding {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+#navbar h1 {
+    font-weight: 300;
+}
+
+#hamburger-toggle {
+    position: absolute;
+    width: $toggleWidth;
+    height: $toggleHeight;
+    top: calc(50% - $toggleHeight - $navHeight);
+    right: -$toggleWidth;
+    font-size: 18pt;
+    line-height: 0px;
+
+    z-index: 4;
+    background-color: $navBGColor;
+    color: $navFGColor;
+    border: none;
+    border-radius: 0px $borderRadius $borderRadius 0px;
+}
+
+#sidebar {
+    position: fixed;
+    min-width: $sidebarWidth;
+    max-width: $sidebarWidth;
+    height: $sidebarHeight;
+
+    top: $navHeight;
+    left: -$sidebarWidth;
+    transition: all 0.3s ease-in-out;
+
+    z-index: 3;
+    background-color: $navBGColor;
+    color: $navFGColor;
+
+    padding: 10px;
+}
+
+#sidebar.active {
+    left: 0;
+}
+
+.sidebar-header {
+    text-align: center;
+}
+
+#container {
+    width: 100%;
+    height: calc(100% - $navHeight);
+}
+
+
+
+
+
+.alert {
+    position: absolute;
+    width: 50%;
+    inset: auto 20px 20px auto;
+    background-color: $navBGColor;
+    color: $navFGColor;
+    padding: 20px;
+    font-size: 1.3rem;
+    align-items: center;
+    border-radius: $borderRadius;
+}
+
+.alert button.close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 25px;
+    height: 25px;
+    border-radius: 4px;
+    background-color: rgb(129, 0, 0);
+    color: white;
+    border: none;
+}
+
+.alert .title {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 400;
+}
+
+.alert .content {
+    font-size: 1.0rem;
+}

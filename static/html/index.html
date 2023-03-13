@@ -1,0 +1,58 @@
+<html>
+    <head>
+        <title>Ennoea Viewer</title>
+        <link href="static/css/bootstrap/bootstrap.css" rel="stylesheet">
+        <link href="static/css/style.css" rel="stylesheet">
+        <link href="static/css/sidebar.css" rel="stylesheet">
+    </head>
+
+    <body>        
+        <div class="wrapper">
+
+            <nav id="navbar">
+                <span id="branding">
+                    <img src="static/images/icon.png" width="30px" height="30px" alt="Ennoea Viewer Icon - A small blue ball sphere">
+                    <h1 id="title">Ennoea Viewer</h1>
+                </span>                
+            </nav>
+
+            <!-- Collapsable navbar on the left side spanning the height of the page -->
+            <nav id="sidebar">
+                <button id="hamburger-toggle" class="inactive" type="button">></button>
+        
+                <div class="sidebar-header">
+                    <h3>Customise!</h3>
+                </div>
+        
+                <form>
+                    <div class="form-group">
+                        <label for="segment-names">Segment Names</label>
+                        <input type="text" class="form-control" name="segment-names" id="segment-names" value="Mark,Sam,Tom,Carl,Jason,Ed,Bo">
+                    </div>
+                    <div class="form-group">
+                        <label for="ignore-names">Ignore Names</label>
+                        <input type="text" class="form-control" name="ignore-names" id="ignore-names" value="Mark">
+                    </div>
+                    <div class="form-group">
+                        <label for="segment-colors">Segment Colors</label>
+                        <input type="text" class="form-control" name="segment-colors" id="segment-colors" value="red,blue">
+                    </div>
+                    <input type="submit" class="btn btn-primary" name="submit" id="submit" value="Submit">
+                </form>
+            </nav>
+
+            <div id="container"></div>
+
+            <div class="alert">
+                <button class="close">x</button>
+                
+                <h1 class="title">Success</h1>  
+                <p class="content">You have successfully done something</p>  
+            </div>
+
+        </div>
+
+        <script src="static/scripts/jquery-3.6.0.min.js"></script>
+        <script src="static/scripts/index.min.js" defer></script>
+    </body>
+</html>
