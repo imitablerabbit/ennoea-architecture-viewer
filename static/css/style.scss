@@ -18,7 +18,11 @@ $errorFGColor: #df0000;
 
 $borderRadius: 8px;
 
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400&display=swap');
+
+@font-face {
+    font-family: "Noto Sans";
+    src: url('fonts/Noto_Sans/NotoSans-Regular.ttf') format('truetype');
+  }
 
 body {
     margin: 0px;

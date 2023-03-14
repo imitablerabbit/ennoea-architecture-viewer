@@ -20,9 +20,9 @@ GO_FILES=$(call rwildcard,$(BUILD_NAME),*.go) $(call rwildcard,cmd/$(BUILD_NAME)
 build-server: build $(BUILD_DIR)/$(BUILD_NAME)
 
 $(BUILD_DIR)/$(BUILD_NAME): $(GO_FILES)
-	echo ${USER} && \
-	which go && \
-	go version && \
+	echo ${USER}; \
+	which go; \
+	go version; \
 	go build -o $(BUILD_DIR)/$(BUILD_NAME) $(GO_FILES)
 
 # Build static files
@@ -58,7 +58,8 @@ build/static/scripts:
 	mkdir -p ./build/static/scripts
 
 move-deps: build/static/css build/static/scripts
-	cp -r $(DEPS_FOLDER)/scripts/* ./build/static/scripts
+	cp -r $(DEPS_FOLDER)/scripts/* ./build/static/scripts; \
+	cp -r $(DEPS_FOLDER)/css/* ./build/static/css
 
 build/static/scripts/%.js: $(JS_FILES)
 	./node_modules/.bin/webpack --config webpack.config.js

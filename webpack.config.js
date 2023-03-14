@@ -6,8 +6,8 @@ export default {
         filename: 'index.min.js',
         path: path.resolve('', 'build/static/scripts/')
     },
-    mode: "production"
-    // optimization: {
-    //     minimize: false
-    // }
+    mode: "production",
+    optimization: {
+        minimize: false
+    }
 };
