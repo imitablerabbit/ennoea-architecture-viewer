@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import './sidebar.js'
+import * as alert from './alert.js'
 
 // import Stats from 'three/addons/libs/stats.module.js';
 // import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
@@ -102,6 +103,12 @@ function init() {
         renderer.setSize( container.clientWidth, container.clientHeight );
         composer.setSize( container.clientWidth, container.clientHeight );
     };
+
+    var alertContainer = document.getElementById('alert-container');
+    alert.init(alertContainer);
+    alert.alert("This is a normal alert");
+    alert.error("This is an error alert it should be red.");
+    alert.success("This is a success alert it should be green.");
 }
 
 function animate() {

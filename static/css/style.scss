@@ -10,6 +10,11 @@ $navBGColor: #161616;
 $navFGColor: #ffffff;
 
 $bgColor: #2a2b2b;
+$fgColor: #ffffff;
+$successBGColor: #79ff79;
+$successFGColor: #00a400;
+$errorBGColor: #ff8080;
+$errorFGColor: #df0000;
 
 $borderRadius: 8px;
 
@@ -121,6 +126,29 @@ body {
     padding: 5px 20px;
     align-items: center;
     position: relative;
+    min-height: 30px;
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+    gap: 5px;
+
+    &.success {
+        background-color: $successBGColor;
+        color: $successFGColor;
+
+        &::before {
+            content: 'Success: ';
+        }
+    }
+
+    &.error {
+        background-color: $errorBGColor;
+        color: $errorFGColor;
+        
+        &::before {
+            content: 'Error: ';
+        }
+    }
 
     button.close {
         position: absolute;
@@ -132,17 +160,9 @@ body {
         background-color: rgb(129, 0, 0);
         color: white;
         border: none;
-    }
 
-    .title {
-        display: block;
-        font-size: 1.0rem;
-        font-weight: 400;
-        margin: 3px 0px;
-    }
-
-    .content {
-        font-size: 0.8rem;
-        margin: 3px 0px;
+        &:hover {
+            cursor: pointer;
+        }
     }
 }

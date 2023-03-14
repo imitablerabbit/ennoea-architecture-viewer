@@ -1,12 +1,13 @@
-const path = require('path');
+import path from "path"
 
-module.exports = {
+export default {
     entry: './static/scripts/index.js',
     output: {
         filename: 'index.min.js',
-        path: path.resolve(__dirname, 'build/static/scripts/')
+        path: path.resolve('', 'build/static/scripts/')
     },
-    optimization: {
-        minimize: false
-    }
+    mode: "production"
+    // optimization: {
+    //     minimize: false
+    // }
 };

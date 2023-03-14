@@ -20,7 +20,10 @@ GO_FILES=$(call rwildcard,$(BUILD_NAME),*.go) $(call rwildcard,cmd/$(BUILD_NAME)
 
 build-server: build $(BUILD_DIR)/$(BUILD_NAME)
 
-$(BUILD_DIR)/$(BUILD_NAME): $(GO_FILES) 
+$(BUILD_DIR)/$(BUILD_NAME): $(GO_FILES)
+	echo ${USER} && \
+	which go && \
+	go version && \
 	go build -o $(BUILD_DIR)/$(BUILD_NAME) $(GO_FILES)
 
 # Build static files
