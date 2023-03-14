@@ -31,6 +31,7 @@ $(BUILD_DIR)/$(BUILD_NAME): $(GO_FILES)
 HTML_FILES=$(wildcard $(SRC_STATIC)/html/*)
 IMAGE_FILES=$(wildcard $(SRC_STATIC)/images/*)
 SCSS_FILES=$(wildcard $(SRC_STATIC)/css/*.scss)
+JS_FILES=$(wildcard $(SRC_STATIC)/scripts/*.js)
 DEPS_FOLDER=$(wildcard $(SRC_STATIC)/deps)
 
 BUILD_JS_FILES=$(BUILD_STATIC)/scripts/index.min.js # Built using webpack
@@ -60,16 +61,16 @@ build/static/scripts:
 move-deps: build/static/css build/static/scripts
 	cp -r $(DEPS_FOLDER)/scripts/* ./build/static/scripts
 
-build/static/scripts/%.js:
+build/static/scripts/%.js: $(JS_FILES)
 	./node_modules/.bin/webpack --config webpack.config.js
 
-build/static/css/%.css: static/css/%.scss
+build/static/css/%.css: $(SCSS_FILES)
 	./node_modules/.bin/sass --style=compressed --no-source-map $< $@
 
-build/static/html/%: static/html/%
+build/static/html/%: $(HTML_FILES)
 	cp $< $@
 
-build/static/images/%: static/images/%
+build/static/images/%: $(IMAGE_FILES)
 	cp $< $@
 
 # Other tools
