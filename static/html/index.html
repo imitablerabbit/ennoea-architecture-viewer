@@ -1,9 +1,7 @@
 <html>
     <head>
         <title>Ennoea Viewer</title>
-        <link href="static/css/bootstrap/bootstrap.css" rel="stylesheet">
         <link href="static/css/style.css" rel="stylesheet">
-        <link href="static/css/sidebar.css" rel="stylesheet">
     </head>
 
     <body>        
@@ -18,9 +16,9 @@
 
             <!-- Collapsable navbar on the left side spanning the height of the page -->
             <nav id="sidebar">
-                <button id="hamburger-toggle" class="inactive" type="button">></button>
+                <button class="activate-toggle inactive" type="button">></button>
         
-                <div class="sidebar-header">
+                <div class="title">
                     <h3>Customise!</h3>
                 </div>
         
@@ -43,12 +41,21 @@
 
             <div id="container"></div>
 
-            <div class="alert">
-                <button class="close">x</button>
-                
-                <h1 class="title">Success</h1>  
-                <p class="content">You have successfully done something</p>  
+            <div id="alert-container">
+                <div class="alert">
+                    <button class="close">x</button>
+                    
+                    <h1 class="title">Success</h1>  
+                    <p class="content">You have successfully done something</p>  
+                </div>
+                <div class="alert">
+                    <button class="close">x</button>
+                    
+                    <h1 class="title">Success</h1>  
+                    <p class="content">You have successfully done something</p>  
+                </div>
             </div>
+            
 
         </div>
 

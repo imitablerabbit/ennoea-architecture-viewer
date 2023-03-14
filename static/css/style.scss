@@ -6,9 +6,10 @@ $sidebarWidth: 200px;
 $sidebarHeight: 100%;
 
 $navHeight: 60px;
-
 $navBGColor: #161616;
 $navFGColor: #ffffff;
+
+$bgColor: #2a2b2b;
 
 $borderRadius: 8px;
 
@@ -17,6 +18,7 @@ $borderRadius: 8px;
 body {
     margin: 0px;
     font-family: 'Noto Sans', sans-serif;
+    background-color: $bgColor;
 }
 
 .wrapper {
@@ -47,21 +49,7 @@ body {
     font-weight: 300;
 }
 
-#hamburger-toggle {
-    position: absolute;
-    width: $toggleWidth;
-    height: $toggleHeight;
-    top: calc(50% - $toggleHeight - $navHeight);
-    right: -$toggleWidth;
-    font-size: 18pt;
-    line-height: 0px;
 
-    z-index: 4;
-    background-color: $navBGColor;
-    color: $navFGColor;
-    border: none;
-    border-radius: 0px $borderRadius $borderRadius 0px;
-}
 
 #sidebar {
     position: fixed;
@@ -78,55 +66,83 @@ body {
     color: $navFGColor;
 
     padding: 10px;
+
+    &.active {
+        left: 0;
+    }
+    
+    .title {
+        text-align: center;
+    }
+
+    button.activate-toggle {
+        position: absolute;
+        width: $toggleWidth;
+        height: $toggleHeight;
+        top: calc(50% - $toggleHeight - $navHeight);
+        right: -$toggleWidth;
+        font-size: 18pt;
+        line-height: 0px;
+    
+        z-index: 4;
+        background-color: $navBGColor;
+        color: $navFGColor;
+        border: none;
+        border-radius: 0px $borderRadius $borderRadius 0px;
+    
+        &:hover {
+            cursor: pointer;
+        }
+    }
 }
 
-#sidebar.active {
-    left: 0;
-}
 
-.sidebar-header {
-    text-align: center;
-}
 
 #container {
     width: 100%;
-    height: calc(100% - $navHeight);
+    height: calc(100% - $navHeight - 1px);
 }
 
 
 
-
+#alert-container {
+    position: absolute;
+    width: 40%;
+    inset: auto 20px 20px auto;
+    display: flex;
+    flex-direction: column;    
+    gap: 10px;
+}
 
 .alert {
-    position: absolute;
-    width: 50%;
-    inset: auto 20px 20px auto;
+    border-radius: $borderRadius;
     background-color: $navBGColor;
     color: $navFGColor;
-    padding: 20px;
-    font-size: 1.3rem;
+    padding: 5px 20px;
     align-items: center;
-    border-radius: $borderRadius;
-}
+    position: relative;
 
-.alert button.close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 25px;
-    height: 25px;
-    border-radius: 4px;
-    background-color: rgb(129, 0, 0);
-    color: white;
-    border: none;
-}
+    button.close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        background-color: rgb(129, 0, 0);
+        color: white;
+        border: none;
+    }
 
-.alert .title {
-    display: block;
-    font-size: 1.3rem;
-    font-weight: 400;
-}
+    .title {
+        display: block;
+        font-size: 1.0rem;
+        font-weight: 400;
+        margin: 3px 0px;
+    }
 
-.alert .content {
-    font-size: 1.0rem;
+    .content {
+        font-size: 0.8rem;
+        margin: 3px 0px;
+    }
 }

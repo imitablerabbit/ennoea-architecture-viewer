@@ -1,15 +1,12 @@
 $(document).ready(function () {
-    var sidebarToggle = $('#hamburger-toggle');
+    var sidebarToggle = $('#sidebar > button.activate-toggle');
     var sidebar = $('#sidebar');
-    var overlay = $('#overlay');
 
     sidebarToggle.click(toggleSidebar);
-    overlay.click(toggleSidebar);
 
     function toggleSidebar() {
         // Toggle the class of the sidebar elements.
         sidebar.toggleClass('active');
-        overlay.toggleClass('active');
         sidebarToggle.toggleClass('active');
     
         if (sidebarToggle.hasClass('active')) {
