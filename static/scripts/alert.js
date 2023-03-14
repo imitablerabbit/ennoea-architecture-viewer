@@ -16,11 +16,11 @@ export function alert(content) {
 }
 
 export function success(content) {
-    createAlert(content, successClass);
+    createAlert("Success: " + content, successClass);
 }
 
 export function error(content) {
-    createAlert(content, errorClass);
+    createAlert("Error: " + content, errorClass);
 }
 
 function createAlert(content, ...alertClasses) {
