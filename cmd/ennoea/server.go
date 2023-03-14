@@ -16,18 +16,11 @@ func main() {
 
 	listenAddress := fmt.Sprintf(":%d", *portFlag)
 
-	http.Handle("/static/css/",
-		http.StripPrefix("/static/css/",
+	http.Handle("/static/",
+		http.StripPrefix("/static/",
 			http.FileServer(
-				http.Dir(*staticFilesFlag+"/css"))))
-	http.Handle("/static/images/",
-		http.StripPrefix("/static/images/",
-			http.FileServer(
-				http.Dir(*staticFilesFlag+"/images"))))
-	http.Handle("/static/scripts/",
-		http.StripPrefix("/static/scripts/",
-			http.FileServer(
-				http.Dir(*staticFilesFlag+"/scripts"))))
+				http.Dir(*staticFilesFlag+"/"))))
+
 	http.Handle("/",
 		http.FileServer(
 			http.Dir(*staticFilesFlag+"/html")))
