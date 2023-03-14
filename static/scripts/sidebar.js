@@ -1,4 +1,9 @@
+import * as alert from "./alert.js";
+
 $(document).ready(function () {
+    var alertContainer = document.getElementById('alert-container');
+    alert.init(alertContainer);
+
     var sidebarToggle = $('#sidebar > button.activate-toggle');
     var sidebar = $('#sidebar');
 
@@ -17,6 +22,7 @@ $(document).ready(function () {
             // Replace it with the hamburger emoji.
             // sidebarToggle.html("&#127828;");
             sidebarToggle.html(">");
+            alert.success("sidebar has been closed");
         }
     }
 });

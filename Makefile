@@ -6,7 +6,6 @@ SRC_STATIC=static
 BUILD_DIR=build
 BUILD_STATIC=$(BUILD_DIR)/static
 
-
 .PHONY: test
 
 # Build entrypoint
@@ -81,7 +80,7 @@ start: build
 deps: node_modules
 
 node_modules:
-	npm install --only=production uglify-js sass webpack webpack-cli three
+	npm install
 
 clean-all: clean clean-deps
 

@@ -1,3 +1,5 @@
+import gsap from "gsap";
+
 var alertContainer;
 
 const alertClass = 'alert'
@@ -24,10 +26,23 @@ export function error(content) {
 }
 
 function createAlert(content, ...alertClasses) {
-    var ae = generateAlertElement('div', content, alertClasses);
+    var alertElement = generateAlertElement('div', content, alertClasses);
     if (alertContainer != null) {
-        alertContainer.appendChild(ae);
+        alertContainer.appendChild(alertElement);
     }
+
+    alertElement.style.opacity = "0%";
+    alertElement.style.right = "-100%";
+    var tl = gsap.timeline({delay: 0});
+    tl.to(alertElement, {
+            opacity: "100%",
+            right: "0%",
+            duration: 0.5
+        })
+       .to(alertElement, {bottom: "10px", duration: 0.2})
+       .to(alertElement, {bottom: "0px", duration: 0.2});
+
+    setTimeout(() => closeAlert(alertElement), 5 * 1000);
 }
 
 function generateAlertElement(tag, content, ...alertClasses) {
@@ -40,11 +55,19 @@ function generateAlertElement(tag, content, ...alertClasses) {
     var alertCloseButton = document.createElement('button');
     alertCloseButton.className = "close";
     alertCloseButton.innerText = 'x';
-    alertCloseButton.addEventListener('click', function(event) {
-        alertElement.remove();        
-    }.bind(alertElement));
+    alertCloseButton.addEventListener('click', event => closeAlert(alertElement));
 
     alertElement.appendChild(alertTextElement);
     alertElement.appendChild(alertCloseButton);
     return alertElement;
+}
+
+function closeAlert(alertElement) {
+    var tl3 = gsap.timeline({delay: 0});
+    tl3.to(alertElement, {
+        right: "-100%",
+        opacity: "0",
+        duration: 0.5,
+        onComplete: () => alertElement.remove()
+    });
 }

@@ -4,6 +4,7 @@
   "description": "",
   "private": true,
   "dependencies": {
+    "gsap": "^3.11.4",
     "sass": "^1.59.3",
     "three": "^0.150.1",
     "uglify-js": "^3.17.4",

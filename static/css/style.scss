@@ -24,6 +24,8 @@ body {
     margin: 0px;
     font-family: 'Noto Sans', sans-serif;
     background-color: $bgColor;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 .wrapper {

@@ -20,10 +20,15 @@ let mesh;
 let light, pointLight;
 
 
+let alertContainer;
+
 init();
 animate();
 
 function init() {
+    alertContainer = document.getElementById('alert-container');
+    alert.init(alertContainer);
+
     container = document.getElementById('container');
 
     // stats = new Stats();
@@ -104,11 +109,7 @@ function init() {
         composer.setSize( container.clientWidth, container.clientHeight );
     };
 
-    var alertContainer = document.getElementById('alert-container');
-    alert.init(alertContainer);
-    alert.alert("This is a normal alert");
-    alert.error("This is an error alert it should be red.");
-    alert.success("This is a success alert it should be green.");
+    
 }
 
 function animate() {
