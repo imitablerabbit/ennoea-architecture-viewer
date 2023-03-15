@@ -27,7 +27,7 @@ let alertContainer;
 var applicationData = {
     applications: [
         {
-            name: "app1",
+            name: "application name",
             color: 0x0287fc,
             servers: [],
             position: [0, 0, 0]
@@ -36,7 +36,7 @@ var applicationData = {
             name: "app2",
             color: 0x06f7fc,
             servers: [],
-            position: [5, 0, 0]
+            position: [10, 0, 0]
         }
     ]
 }
@@ -80,24 +80,6 @@ function init(font) {
 
     generateApplicationMeshes(applicationData, scene, font);
 
-    // Mesh
-    // const geometry = new THREE.SphereGeometry( 1, 32, 16 );
-    // // const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    // const material = new THREE.MeshStandardMaterial( {
-    //     color: 0x0287fc,
-    // } );
-    // mesh = new THREE.Mesh( geometry, material );
-    // scene.add( mesh );
-
-    // Add wireframe for the mesh
-    // var geoW = new THREE.EdgesGeometry(mesh.geometry);
-    // var matW = new THREE.LineBasicMaterial({
-    //     color: 0x000000,
-    //     linewidth: 3
-    // });
-    // var wireframe = new THREE.LineSegments(geoW, matW);
-    // mesh.add(wireframe);
-
     
     composer = new EffectComposer( renderer );
 
@@ -106,10 +88,6 @@ function init(font) {
     
     outlinePass = new OutlinePass( new THREE.Vector2( container.clientWidth, container.clientHeight ), scene, camera);
     outlinePass.edgeStrength = 10;
-    // outlinePass.edgeThickness = 10;
-    // outlinePass.edgeGlow = 0.5;
-    // outlinePass.visibleEdgeColor = 0xffffff;
-    // outlinePass.hiddenEdgeColor = 0x000000;
     outlinePass.selectedObjects = selectedObjects;
     composer.addPass( outlinePass );
 
@@ -124,9 +102,7 @@ function init(font) {
     light = new THREE.AmbientLight(0x2a2b2b);
     scene.add( light );
 
-    pointLight = new THREE.PointLight(0xffffff);
-    pointLight.position.set(20,20,20);
-    scene.add( pointLight );
+
 
     
     window.onresize = function () {
@@ -147,18 +123,22 @@ function generateApplicationMeshes(applicationData, scene, font) {
         var color = application.color;
         var position = application.position;
         var servers = application.servers;
+        var x = position[0];
+        var y = position[1];
+        var z = position[2];
 
         const geometry = new THREE.SphereGeometry( 1, 32, 16 );
         const material = new THREE.MeshStandardMaterial( {
             color: color,
         } );
         var mesh = new THREE.Mesh( geometry, material );
-        mesh.position.x = position[0];
-        mesh.position.y = position[1];
-        mesh.position.z = position[2];
+        mesh.position.set(x, y, z);
         scene.add(mesh);
         selectedObjects.push(mesh);
 
+        pointLight = new THREE.PointLight(0xffffff);
+        pointLight.position.set(x, y + 5, z);
+        scene.add(pointLight);
 
         var textGeo = new TextGeometry(name, {
             font: font,
@@ -168,10 +148,9 @@ function generateApplicationMeshes(applicationData, scene, font) {
         } );
         var textMaterial = new THREE.MeshBasicMaterial( {color: color} );
         var textMesh = new THREE.Mesh( textGeo, textMaterial );
-        textMesh.position.x = position[0] - 1.5;
-        textMesh.position.y = position[1] + 2;
-        textMesh.position.z = position[2];
-        scene.add( textMesh );
+        var xOffset = (name.length) / 2 / 1.5; // todo: base this off the size of the geometry
+        textMesh.position.set(x - xOffset, y + 2, z);
+        scene.add(textMesh);
     }
 }
 
