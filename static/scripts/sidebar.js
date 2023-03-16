@@ -1,28 +1,30 @@
 import * as alert from "./alert.js";
 
-$(document).ready(function () {
-    var alertContainer = document.getElementById('alert-container');
+var sidebar;
+var sidebarToggle;
+
+var alertContainer;
+
+export function init() {
+    sidebar = document.getElementById('sidebar');
+    sidebarToggle = document.getElementById('sidebar-toggle');
+    alertContainer = document.getElementById('alert-container');
+
     alert.init(alertContainer);
 
-    var sidebarToggle = $('#sidebar > button.activate-toggle');
-    var sidebar = $('#sidebar');
+    sidebarToggle.addEventListener('click', () => toggleSidebar());
+}
 
-    sidebarToggle.click(toggleSidebar);
+function toggleSidebar() {
+    sidebar.classList.toggle('active');
+    sidebarToggle.classList.toggle('active');
 
-    function toggleSidebar() {
-        // Toggle the class of the sidebar elements.
-        sidebar.toggleClass('active');
-        sidebarToggle.toggleClass('active');
-    
-        if (sidebarToggle.hasClass('active')) {
-            // Replace it with the red cross emoji
-            // sidebarToggle.html('&#x274C;');
-            sidebarToggle.html('x');
-        } else {
-            // Replace it with the hamburger emoji.
-            // sidebarToggle.html("&#127828;");
-            sidebarToggle.html(">");
-            alert.success("sidebar has been closed");
-        }
+    if (sidebarToggle.classList.contains('active')) {
+        // sidebarToggle.html('&#x274C;'); // Red cross emoji
+        sidebarToggle.innerHTML = "x";
+    } else {
+        // sidebarToggle.html("&#127828;"); // Hamburger emoji
+        sidebarToggle.innerHTML = ">";
+        alert.success("sidebar has been closed");
     }
-});
+}

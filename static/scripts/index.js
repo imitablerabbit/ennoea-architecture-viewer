@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import './sidebar.js'
 import * as alert from './alert.js'
+import * as sidebar from './sidebar.js'
 
 // import Stats from 'three/addons/libs/stats.module.js';
 // import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
@@ -53,6 +54,8 @@ loader.load( 'static/css/fonts/Noto_Sans/NotoSans_Regular.json', function ( font
 function init(font) {
     alertContainer = document.getElementById('alert-container');
     alert.init(alertContainer);
+
+    sidebar.init();
 
     container = document.getElementById('container');
 
