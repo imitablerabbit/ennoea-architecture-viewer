@@ -3,14 +3,9 @@ import * as alert from "./alert.js";
 var sidebar;
 var sidebarToggle;
 
-var alertContainer;
-
 export function init() {
     sidebar = document.getElementById('sidebar');
     sidebarToggle = document.getElementById('sidebar-toggle');
-    alertContainer = document.getElementById('alert-container');
-
-    alert.init(alertContainer);
 
     sidebarToggle.addEventListener('click', () => toggleSidebar());
 }
