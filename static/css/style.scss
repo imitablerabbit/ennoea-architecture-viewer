@@ -2,7 +2,7 @@
 $toggleWidth: 40px;
 $toggleHeight: 50px;
 
-$sidebarWidth: 200px;
+$sidebarWidth: 300px;
 $sidebarHeight: 100%;
 
 $navHeight: 60px;
@@ -67,23 +67,38 @@ body {
     min-width: $sidebarWidth;
     max-width: $sidebarWidth;
     height: $sidebarHeight;
-
     top: $navHeight;
     left: -$sidebarWidth;
     transition: all 0.3s ease-in-out;
-
     z-index: 3;
     background-color: $navBGColor;
     color: $navFGColor;
-
-    padding: 20px;
+    padding: 30px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 
     &.active {
         left: 0;
     }
+
+    // Add the dashed lines between the articles within the sidebar.
+    > :nth-child(n + 1) {
+        border-bottom: dashed thin white;
+    }
+    > :nth-last-child(1) {
+        border-bottom: none;
+    }
     
-    .title {
-        text-align: center;
+    & > article {
+        padding: 10px 0px;
+
+        & > .title {
+            font-size: 1.4rem;
+            margin: 0px;
+            margin-bottom: 10px;
+        }
     }
 
     #sidebar-toggle {
@@ -103,6 +118,44 @@ body {
     
         &:hover {
             cursor: pointer;
+        }
+    }
+}
+
+#sidebar-application-info {
+    display: flex;
+    gap: 20px;
+    flex-direction: column;
+
+    .application-info {
+        border: solid thin $fgColor;
+        border-radius: $borderRadius;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+
+        >:nth-child(2n) {
+            background-color: $bgColor;
+        }
+        >:nth-child(2n+1) {
+            background-color: $navBGColor;
+        }
+
+        > * {
+            padding: 5px 10px;
+        }
+
+        .app-name {
+            font-size: 1.1rem;
+            background-color: $fgColor;
+            color: $bgColor;
+            margin: 0px;
+        }
+
+        .app-data-kv {
+            font-size: 1rem;
+            display: flex;
+            gap: 5px;
         }
     }
 }

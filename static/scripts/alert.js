@@ -6,11 +6,8 @@ const alertClass = 'alert'
 const successClass = 'success';
 const errorClass = 'error'
 
-export function init(alertContainerElement) {
-    if (alertContainer === null) {
-        return;
-    }
-    alertContainer = alertContainerElement;
+export function init() {
+    alertContainer = document.getElementById('alert-container');
 }
 
 export function alert(content) {

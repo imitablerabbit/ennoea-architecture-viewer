@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import './sidebar.js'
 import * as alert from './alert.js'
 import * as sidebar from './sidebar.js'
+import * as sidebarApplicationInfo from './sidebarApplicationInfo.js';
 
 // import Stats from 'three/addons/libs/stats.module.js';
 // import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
@@ -28,15 +29,29 @@ let alertContainer;
 var applicationData = {
     applications: [
         {
-            name: "application name",
+            name: "app1",
             color: 0x0287fc,
-            servers: [],
+            servers: [
+                {
+                    name: "app1hostname2"
+                },
+                {
+                    name: "app1hostname2"
+                }
+            ],
             position: [0, 0, 0]
         },
         {
             name: "app2",
             color: 0x06f7fc,
-            servers: [],
+            servers: [
+                {
+                    name: "app2hostname1"
+                },
+                {
+                    name: "app2hostname2"
+                }
+            ],
             position: [10, 0, 0]
         }
     ]
@@ -52,10 +67,10 @@ loader.load( 'static/css/fonts/Noto_Sans/NotoSans_Regular.json', function ( font
 } );
 
 function init(font) {
-    alertContainer = document.getElementById('alert-container');
-    alert.init(alertContainer);
-
+    alert.init();
     sidebar.init();
+    sidebarApplicationInfo.init();
+    sidebarApplicationInfo.displayApplicationData(applicationData);
 
     container = document.getElementById('container');
 
