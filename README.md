@@ -47,4 +47,4 @@ make start
 After the application has been started, go to http://localhost:8080 in your browser.
 
 ## Screenshots
-<img src="images/screenshot-main-1.png"></img>
+<img src="images/screenshot-1.png"></img>
