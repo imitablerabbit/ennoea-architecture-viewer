@@ -10,6 +10,8 @@
 
 A web based tool for viewing application and infrastucture architectures in a 3d space.
 
+**Warning: this application is still pre-release alpha. It is not in a state that it should be used by people.**
+
 ## Contents
 - [ennoea-architecture-viewer](#ennoea-architecture-viewer)
   - [Contents](#contents)
