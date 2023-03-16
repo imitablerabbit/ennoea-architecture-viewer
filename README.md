@@ -1,5 +1,5 @@
 # ennoea-architecture-viewer
-<img src="static/images/icon.png" width="100" height="100"></img>
+<img src="images/icon.png" width="100" height="100"></img>
 
 ![ennoea version 0.0.0-alpha](https://img.shields.io/badge/ennoea-0.0.0--alpha-purple)
 ![go version 1.20.2](https://img.shields.io/badge/go-1.20.2-green)
@@ -45,3 +45,6 @@ make start
 ```
 
 After the application has been started, go to http://localhost:8080 in your browser.
+
+## Screenshots
+<img src="images/screenshot-main-1.png"></img>
