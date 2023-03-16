@@ -21,16 +21,16 @@ let renderer, scene, camera;
 let composer, renderPass, outlinePass;
 let controls;
 
-let mesh;
-let light, pointLight;
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
 
-let alertContainer;
+let light, pointLight;
 
 var applicationData = {
     applications: [
         {
             name: "app1",
-            color: 0x0287fc,
+            color: "#0287fc",
             servers: [
                 {
                     name: "app1hostname2"
@@ -43,7 +43,7 @@ var applicationData = {
         },
         {
             name: "app2",
-            color: 0x06f7fc,
+            color: "#06f7fc",
             servers: [
                 {
                     name: "app2hostname1"
@@ -80,7 +80,7 @@ function init(font) {
     console.log(container.clientWidth, container.clientHeight);
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
-    // renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize( container.clientWidth, container.clientHeight );
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.autoClear = false;
@@ -88,11 +88,12 @@ function init(font) {
 
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0x2a2b2b );
-    scene.fog = new THREE.Fog( 0x2a2b2b, 5, 50);
+    scene.background = new THREE.Color(0x2a2b2b);
+    scene.fog = new THREE.Fog(0x2a2b2b, 5, 50);
 
 
-    camera = new THREE.PerspectiveCamera( 75, container.clientWidth / container.clientHeight, 0.1, 1000 );
+    camera = new THREE.PerspectiveCamera( 45, container.clientWidth / container.clientHeight, 0.1, 1000 );
+    camera.aspect = container.clientWidth / container.clientHeight;
     camera.position.z = 5;
 
 
@@ -104,33 +105,38 @@ function init(font) {
     renderPass = new RenderPass( scene, camera );
     composer.addPass( renderPass );
     
-    outlinePass = new OutlinePass( new THREE.Vector2( container.clientWidth, container.clientHeight ), scene, camera);
+    outlinePass = new OutlinePass(new THREE.Vector2( container.clientWidth, container.clientHeight ), scene, camera);
     outlinePass.edgeStrength = 10;
     outlinePass.selectedObjects = selectedObjects;
-    composer.addPass( outlinePass );
+    composer.addPass(outlinePass);
 
 
     
-    controls = new ArcballControls( camera, renderer.domElement, scene );
-    controls.addEventListener( 'change', render );
-    controls.setCamera( camera );
+    controls = new ArcballControls(camera, renderer.domElement, scene);
+    controls.addEventListener('change', render);
+    controls.setCamera(camera);
     controls.setGizmosVisible(false);
 
 
-    light = new THREE.AmbientLight(0x2a2b2b);
-    scene.add( light );
+    light = new THREE.AmbientLight(0xffffff);
+    scene.add(light);
 
 
+    renderer.domElement.style.touchAction = 'none';
+    renderer.domElement.addEventListener( 'pointermove', onPointerMove );
 
-    
+    function onPointerMove( event ) {
+        if (event.isPrimary === false) return;
+        mouse.x = (event.clientX / container.clientWidth) * 2 - 1;
+        mouse.y = - ((event.clientY - (window.innerHeight - container.clientHeight)) / container.clientHeight) * 2 + 1;
+    }
+
     window.onresize = function () {
         camera.aspect = container.clientWidth / container.clientHeight;
         camera.updateProjectionMatrix();
-        renderer.setSize( container.clientWidth, container.clientHeight );
-        composer.setSize( container.clientWidth, container.clientHeight );
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        composer.setSize(container.clientWidth, container.clientHeight);
     };
-
-    
 }
 
 function generateApplicationMeshes(applicationData, scene, font) {
@@ -145,14 +151,14 @@ function generateApplicationMeshes(applicationData, scene, font) {
         var y = position[1];
         var z = position[2];
 
-        const geometry = new THREE.SphereGeometry( 1, 32, 16 );
-        const material = new THREE.MeshStandardMaterial( {
+        const geometry = new THREE.SphereGeometry(1, 32, 16);
+        const material = new THREE.MeshStandardMaterial({
             color: color,
-        } );
-        var mesh = new THREE.Mesh( geometry, material );
+        });
+        var mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(x, y, z);
         scene.add(mesh);
-        selectedObjects.push(mesh);
+        // selectedObjects.push(mesh);
 
         pointLight = new THREE.PointLight(0xffffff);
         pointLight.position.set(x, y + 5, z);
@@ -164,8 +170,8 @@ function generateApplicationMeshes(applicationData, scene, font) {
             height: 0.2,
             curveSegments: 2,
         } );
-        var textMaterial = new THREE.MeshBasicMaterial( {color: color} );
-        var textMesh = new THREE.Mesh( textGeo, textMaterial );
+        var textMaterial = new THREE.MeshBasicMaterial({color: color});
+        var textMesh = new THREE.Mesh(textGeo, textMaterial);
         var xOffset = (name.length) / 2 / 1.5; // todo: base this off the size of the geometry
         textMesh.position.set(x - xOffset, y + 2, z);
         scene.add(textMesh);
@@ -180,5 +186,14 @@ function animate() {
 }
 
 function render() {
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(scene.children);
+    selectedObjects = [];
+    for (let i = 0; i < intersects.length; i++) {
+        selectedObjects.push(intersects[i].object);
+    }
+    outlinePass.selectedObjects = selectedObjects;
+
     composer.render();
 }
+
