@@ -9,37 +9,39 @@
         <div class="wrapper">
 
             <nav id="navbar">
-                <span id="branding">
+                <article class="branding">
                     <img src="static/images/icon.png" width="30px" height="30px" alt="Ennoea Viewer Icon - A small blue ball sphere">
                     <h1 id="title">Ennoea Viewer</h1>
-                </span>                
+                </article>                
             </nav>
 
             <!-- Collapsable navbar on the left side spanning the height of the page -->
             <nav id="sidebar">
                 <button id="sidebar-toggle" class="activate-toggle inactive" type="button">></button>
         
-                <article>
-                    <h1 class="title">Settings</h1>
-                    <form id="settings">
+                <article id="settings">
+                    <h1 class="title">Settings:</h1>
+                    <form id="settings-form">
                         <button id="edit-layout">Edit Layout</button>
                         <button id="save-layout">Save Layout</button>
                         <button id="load-layout">Load Layout</button>
                     </form>
                 </article>
         
-                <article>
-                    <h1 class="title">Applications</h1>
-                    <div id="sidebar-application-info">
+                <article id="applications">
+                    <h1 class="title">Applications:</h1>
 
-                    </div>
+                    <!-- Application info boxes will be added to this via sidebarApplicationInfo.js -->
+                    <section id="application-info-list"></section>
                 </article>
                 
             </nav>
 
+            <!-- Populated via three.js for the rendering of the 3d space -->
             <div id="container"></div>
 
-            <div id="alert-container"></div>
+            <!-- Alerts will be added to this via alert.js -->
+            <article id="alert-container"></article>
         </div>
 
         <script src="static/scripts/jquery-3.6.0.min.js"></script>

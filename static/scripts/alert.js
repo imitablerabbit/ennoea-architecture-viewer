@@ -23,7 +23,7 @@ export function error(content) {
 }
 
 function createAlert(content, ...alertClasses) {
-    var alertElement = generateAlertElement('div', content, alertClasses);
+    var alertElement = generateAlertElement('section', content, alertClasses);
     if (alertContainer != null) {
         alertContainer.appendChild(alertElement);
     }

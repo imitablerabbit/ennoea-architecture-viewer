@@ -5,7 +5,7 @@
 var applicationInfoSidebarElement;
 
 export function init() {
-    applicationInfoSidebarElement = document.getElementById('sidebar-application-info');
+    applicationInfoSidebarElement = document.getElementById('application-info-list');
 }
 
 export function displayApplicationData(applicationData) {
