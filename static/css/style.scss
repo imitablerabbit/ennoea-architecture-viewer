@@ -101,8 +101,6 @@ body {
     max-width: $sidebarWidth;
     height: $sidebarHeight;
     top: $navHeight;
-    left: -$sidebarWidth;
-    transition: all 0.3s ease-in-out;
     z-index: 3;
     background-color: $navBGColor;
     color: $navFGColor;
@@ -111,10 +109,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
-
-    &.active {
-        left: 0;
-    }
 
     // Add the dashed lines between the articles within the sidebar.
     > :nth-child(n + 1) {
@@ -148,7 +142,8 @@ body {
         color: $navFGColor;
         border: none;
         border-radius: 0px $borderRadius $borderRadius 0px;
-    
+        padding: 0px;
+        
         &:hover {
             cursor: pointer;
         }

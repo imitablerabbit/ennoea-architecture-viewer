@@ -14,8 +14,6 @@ import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
-
-
 // Canvas dimensions and positions
 var width, height;
 var xPos, yPos;
@@ -211,6 +209,7 @@ function windowResize() {
     camera.updateProjectionMatrix();
     renderer.setSize(container.clientWidth, container.clientHeight);
     composer.setSize(container.clientWidth, container.clientHeight);
+    controls.update();
 }
 
 function animate() {
