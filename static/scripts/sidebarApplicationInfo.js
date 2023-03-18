@@ -2,6 +2,8 @@
 // provide buttons to jump the camera to the location of the application
 // in the world.
 
+import {setCameraLookAt, setCameraPosition} from './index.js';
+
 var applicationInfoSidebarElement;
 
 export function init() {
@@ -11,56 +13,92 @@ export function init() {
 export function displayApplicationData(applicationData) {
     applicationInfoSidebarElement.innerHTML = '';
 
-    for (var i = 0; i < applicationData.applications.length; i++) {
-        var app = applicationData.applications[i];
+    for (let i = 0; i < applicationData.applications.length; i++) {
+        let app = applicationData.applications[i];
 
-        var appSectionElement = document.createElement('section');
-        appSectionElement.classList.add('application-info');
+        let sectionElement = document.createElement('section');
+        sectionElement.classList.add('application-info');
 
-        var appNameElement = document.createElement('h2');
-        appNameElement.classList.add('app-name');
-        appNameElement.innerText = app.name;
+        let nameElement = document.createElement('h2');
+        nameElement.classList.add('app-name');
+        nameElement.innerText = app.name;
         
-        var appColorElement = document.createElement('p');
-        appColorElement.classList.add('app-color');
-        appColorElement.innerText = app.color;
-        appColorElement.style.backgroundColor = app.color;
-        var appColorDataElement = generateAppKVDataElement('Color: ', appColorElement);
+        let colorElement = document.createElement('p');
+        colorElement.classList.add('app-color');
+        colorElement.innerText = app.color;
+        colorElement.style.backgroundColor = app.color;
+        let colorDataElement = generateAppKVElementDataElement('Color: ', colorElement);
 
-        var appServerDataElement = document.createElement('div');
-        appServerDataElement.classList.add('app-data-list');
-        var appServerListTitleElement = document.createElement('p');
-        appServerListTitleElement.classList.add('title');
-        appServerListTitleElement.innerText = 'Servers:'
-        var appServerListElement = document.createElement('ul');
-        appServerListElement.classList.add('server-list');
-        for (var j = 0; j < app.servers.length; j++) {
-            var server = app.servers[j];
-            var serverListElement = document.createElement('li');
-            serverListElement.classList.add('server');
-            serverListElement.innerText = server.name;
-            appServerListElement.appendChild(serverListElement);
-        }
-        appServerDataElement.appendChild(appServerListTitleElement);
-        appServerDataElement.appendChild(appServerListElement);
+        let serverNames = app.servers.map((server) => server.name);
+        let serverDataElement = generatAppKListDataElement('Servers: ', serverNames);
 
-        appSectionElement.appendChild(appNameElement);
-        appSectionElement.appendChild(appColorDataElement);
-        appSectionElement.appendChild(appServerDataElement);
+        let positionString = app.position.join(", ");
+        let positionDataElement = generateAppKVDataElement('Position: ', positionString);
 
-        applicationInfoSidebarElement.appendChild(appSectionElement);
+        let jumpToButtonContainer = document.createElement('div');
+        let jumpToButton = document.createElement('button');
+        jumpToButton.addEventListener('click', () => {
+            let cameraPosition = [...app.position];
+            cameraPosition[2] += 10;
+            setCameraPosition(cameraPosition);
+            setCameraLookAt(app.position);
+        });
+        jumpToButton.innerText = 'Jump To';
+        jumpToButtonContainer.appendChild(jumpToButton);
+
+        sectionElement.appendChild(nameElement);
+        sectionElement.appendChild(colorDataElement);
+        sectionElement.appendChild(serverDataElement);
+        sectionElement.appendChild(positionDataElement);
+        sectionElement.appendChild(jumpToButtonContainer);
+
+        applicationInfoSidebarElement.appendChild(sectionElement);
     }
 }
 
-function generateAppKVDataElement(k, vElement) {
-    var dataElement = document.createElement('div');
+function generateAppKVElementDataElement(k, vElement) {
+    let dataElement = document.createElement('div');
     dataElement.classList.add('app-data-kv');
 
-    var titleElement = document.createElement('p');
+    let titleElement = document.createElement('p');
     titleElement.classList.add('title');
     titleElement.innerText = k;
 
     dataElement.appendChild(titleElement);
     dataElement.appendChild(vElement);
     return dataElement;
+}
+
+function generateAppKVDataElement(k, v) {
+    let dataElement = document.createElement('div');
+    dataElement.classList.add('app-data-kv');
+
+    let titleElement = document.createElement('p');
+    titleElement.classList.add('title');
+    titleElement.innerText = k;
+
+    let vElement = document.createElement('p');
+    vElement.innerText = v;
+
+    dataElement.appendChild(titleElement);
+    dataElement.appendChild(vElement);
+    return dataElement;
+}
+
+function generatAppKListDataElement(k, list) {
+    let dataElement = document.createElement('div');
+    dataElement.classList.add('app-data-list');
+    let appListTitleElement = document.createElement('p');
+    appListTitleElement.classList.add('title');
+    appListTitleElement.innerText = k
+    let ulElement = document.createElement('ul');
+    for (let j = 0; j < list.length; j++) {
+        let li = list[j];
+        let liElement = document.createElement('li');
+        liElement.innerText = li;
+        ulElement.appendChild(liElement);
+    }
+    dataElement.appendChild(appListTitleElement);
+    dataElement.appendChild(ulElement);
+    return dataElement
 }

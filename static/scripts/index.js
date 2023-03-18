@@ -3,8 +3,9 @@ import './sidebar.js'
 import * as alert from './alert.js'
 import * as sidebar from './sidebar.js'
 import * as sidebarApplicationInfo from './sidebarApplicationInfo.js';
+import gsap from 'gsap';
 
-import { ArcballControls } from 'three/addons/controls/ArcballControls.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -13,14 +14,18 @@ import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
-var container;
-var renderer, scene, camera;
-var composer, renderPass;
-var controls;
+
 
 // Canvas dimensions and positions
 var width, height;
 var xPos, yPos;
+var container;
+
+// three.js scene and higher level controls.
+var renderer, scene, camera;
+var composer, renderPass;
+var controls;
+var cameraLookAtPosition = new THREE.Vector3(0, 0, 0);
 
 // General Scene elements.
 var ambientLight;
@@ -82,11 +87,6 @@ loader.load( 'static/css/fonts/Noto_Sans/NotoSans_Regular.json', function ( font
 } );
 
 function init(font) {
-    alert.init();
-    sidebar.init();
-    sidebarApplicationInfo.init();
-    sidebarApplicationInfo.displayApplicationData(applicationData);
-
     container = document.getElementById('container');
     width = container.clientWidth;
     height = container.clientHeight;
@@ -106,7 +106,7 @@ function init(font) {
 
     camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     camera.aspect = container.clientWidth / container.clientHeight;
-    camera.position.z = 5;
+    camera.position.z = 10;
 
     generateApplicationMeshes(applicationData, scene, font);
 
@@ -126,10 +126,8 @@ function init(font) {
     outlinePassSelected.visibleEdgeColor = new THREE.Color(1, 0, 0);
     composer.addPass(outlinePassSelected);
 
-    controls = new ArcballControls(camera, renderer.domElement, scene);
+    controls = new OrbitControls(camera, renderer.domElement, scene);
     controls.addEventListener('change', render);
-    controls.setCamera(camera);
-    controls.setGizmosVisible(false);
 
     ambientLight = new THREE.AmbientLight(0xffffff);
     scene.add(ambientLight);
@@ -139,6 +137,11 @@ function init(font) {
     renderer.domElement.addEventListener('click', onClick);
 
     window.onresize = windowResize;
+
+    alert.init();
+    sidebar.init();
+    sidebarApplicationInfo.init();
+    sidebarApplicationInfo.displayApplicationData(applicationData);
 }
 
 function generateApplicationMeshes(applicationData, scene, font) {
@@ -177,6 +180,8 @@ function generateApplicationMeshes(applicationData, scene, font) {
         let xOffset = (name.length) / 2 / 1.5; // todo: base this off the size of the geometry
         textMesh.position.set(x - xOffset, y + 2, z);
         scene.add(textMesh);
+
+        console.log(mesh.position);
     }
 }
 
@@ -210,7 +215,6 @@ function windowResize() {
 
 function animate() {
     requestAnimationFrame( animate );
-    controls.update();
     render();
 }
 
@@ -229,3 +233,49 @@ function render() {
     composer.render();
 }
 
+export function setCameraPosition(position) {
+    if (position === null) {
+        console.error("position is null: ", position);
+        return;
+    }
+    if (Object.prototype.toString.call(position) != '[object Array]') {
+        console.error("position is not an Array: ", position);
+        return;
+    }
+    if (position.length != 3) {
+        console.error("position is not a 3 element Array: ", position);
+        return;
+    }
+
+    gsap.to(camera.position, {
+        x: position[0],
+        y: position[1],
+        z: position[2],
+        duration: 1,
+        onUpdate: () => controls.update()
+    });
+}
+
+export function setCameraLookAt(position) {
+    if (position === null) {
+        console.error("position is null: ", position);
+        return;
+    }
+    if (Object.prototype.toString.call(position) != '[object Array]') {
+        console.error("position is not an Array: ", position);
+        return;
+    }
+    if (position.length != 3) {
+        console.error("position is not a 3 element Array: ", position);
+        return;
+    }
+
+    gsap.to(cameraLookAtPosition, {
+        x: position[0],
+        y: position[1],
+        z: position[2],
+        duration: 1,
+        onUpdate: () => controls.update()
+    });
+    controls.target = cameraLookAtPosition;
+}
