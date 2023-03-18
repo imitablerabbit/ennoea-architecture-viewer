@@ -1,5 +1,14 @@
+import * as alert from './alert.js'
+
 var saveLayoutButton;
 var loadLayoutButton;
+
+var dialog;
+var dialogCloseButton;
+var dialogSubmitFileButton;
+var dialogSubmitTextButton;
+var jsonFileInput;
+var jsonTextBox;
 
 // Default application data that will be used to generate the scene.
 export var applicationData = {
@@ -37,11 +46,44 @@ export function init() {
     saveLayoutButton = document.getElementById('save-layout');
     loadLayoutButton = document.getElementById('load-layout');
 
+    dialog = document.getElementById("load-dialog");
+    dialogCloseButton = document.getElementById("load-layout-close");
+    dialogSubmitFileButton = document.getElementById("load-layout-submit-file");
+    dialogSubmitTextButton = document.getElementById("load-layout-submit-text");
+    jsonFileInput = document.getElementById("load-layout-file-input");
+    jsonTextBox = document.getElementById("load-layout-text-box");
+
     saveLayoutButton.addEventListener('click', () => save("layout.json", applicationData));
-    loadLayoutButton.addEventListener('click', load);
+
+    dialogCloseButton.addEventListener('click', () => {
+        dialog.close();
+    })
+    dialogSubmitFileButton.addEventListener('click', async function() {
+        if (jsonFileInput.files.length == 0) {
+            alert.error("File missing from application data load.");
+            return;
+        }
+        let file = jsonFileInput.files[0];
+        let newAppData = await Promise.resolve(file.text());
+        applicationData = JSON.parse(newAppData);
+        console.log(applicationData);
+        alert.success("New application data loaded from file" + file.name +".");
+        dialog.close();
+    })
+    dialogSubmitTextButton.addEventListener('click', () => {
+        let newAppData = jsonTextBox.innerText;
+        applicationData = JSON.parse(newAppData);
+        console.log(applicationData);
+        alert.success("New application data loaded from text.")
+        dialog.close();
+    })
+    loadLayoutButton.addEventListener('click', () => {
+        jsonTextBox.innerText = JSON.stringify(applicationData, null, 4);
+        dialog.showModal();
+    });
 }
 
-async function save(filename, data) {
+function save(filename, data) {
     let blob = new Blob([JSON.stringify(data)], {
         type: "text/json",
         name: filename
@@ -52,8 +94,4 @@ async function save(filename, data) {
     document.body.appendChild(saveLink);
     saveLink.click();
     saveLink.remove();
-}
-
-async function load() {
-
 }

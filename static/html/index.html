@@ -39,6 +39,28 @@
                 
             </nav>
 
+            <dialog id="load-dialog">
+                <div id="load-dialog-content">
+                    <button id="load-layout-close" class="close">x</button>
+
+                    <form id="load-layout-file-form" method="dialog">
+                        <h2>Load From File:</h2>
+                        <p>Update the application data by loading in a JSON file.</p>
+                        <input type="file" name="load-file" id="load-layout-file-input">
+                        <button id="load-layout-submit-file">Submit File</button>
+                    </form>
+    
+                    <form id="load-layout-text-form" method="dialog">
+                        <h2>Load From Text:</h2>
+                        <p>Specify JSON data directly in the browser to update the application data.</p>
+                        <div id="load-layout-text-box" contenteditable="true">
+                            enter your JSON here.
+                        </div>
+                        <button id="load-layout-submit-text">Submit Text</button>
+                    </form>
+                </div>                
+            </dialog>
+
             <!-- Populated via three.js for the rendering of the 3d space -->
             <div id="container"></div>
 
