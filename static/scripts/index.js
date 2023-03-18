@@ -3,6 +3,7 @@ import './sidebar.js'
 import * as alert from './alert.js'
 import * as sidebar from './sidebar.js'
 import * as sidebarApplicationInfo from './sidebarApplicationInfo.js';
+import * as layoutLoading from './layoutLoading.js';
 import gsap from 'gsap';
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -43,40 +44,6 @@ var selectedObjects = [];
 var hoverOutlinedObjects = [];
 var selectedOutlinedObjects = [];
 
-// Default application data that will be used to generate the scene.
-var applicationData = {
-    applications: [
-        {
-            name: "app1",
-            color: "#0287fc",
-            servers: [
-                {
-                    name: "app1hostname2"
-                },
-                {
-                    name: "app1hostname2"
-                }
-            ],
-            position: [0, 0, 0]
-        },
-        {
-            name: "app2",
-            color: "#06f7fc",
-            servers: [
-                {
-                    name: "app2hostname1"
-                },
-                {
-                    name: "app2hostname2"
-                }
-            ],
-            position: [10, 0, 0]
-        }
-    ]
-}
-
-
-
 
 const loader = new FontLoader();
 loader.load( 'static/css/fonts/Noto_Sans/NotoSans_Regular.json', function ( font ) {
@@ -106,7 +73,7 @@ function init(font) {
     camera.aspect = container.clientWidth / container.clientHeight;
     camera.position.z = 10;
 
-    generateApplicationMeshes(applicationData, scene, font);
+    generateApplicationMeshes(layoutLoading.applicationData, scene, font);
 
     composer = new EffectComposer(renderer);
 
@@ -139,7 +106,8 @@ function init(font) {
     alert.init();
     sidebar.init();
     sidebarApplicationInfo.init();
-    sidebarApplicationInfo.displayApplicationData(applicationData);
+    sidebarApplicationInfo.displayApplicationData(layoutLoading.applicationData);
+    layoutLoading.init();
 }
 
 function generateApplicationMeshes(applicationData, scene, font) {
