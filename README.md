@@ -47,4 +47,8 @@ make start
 After the application has been started, go to http://localhost:8080 in your browser.
 
 ## Screenshots
-<img src="images/screenshot-1.png"></img>
+Jump from one application to another with the application info tab on the side.
+![](images/jump-to-example.gif)
+
+Easily load new application data from a file.
+![](images/load-from-file-example.gif)
