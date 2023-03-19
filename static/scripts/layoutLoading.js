@@ -68,8 +68,7 @@ export function init() {
         editorView = new EditorView({
             doc: jsonText,
             parent: jsonTextBox,
-            extensions: [basicSetup, json(), oneDark],
-            darkTheme: false
+            extensions: [basicSetup, json(), oneDark]
         })
         dialog.showModal();
     });
