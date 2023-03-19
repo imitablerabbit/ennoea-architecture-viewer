@@ -23,10 +23,16 @@ export function displayApplicationData(applicationData) {
         nameElement.classList.add('app-name');
         nameElement.innerText = app.name;
         
-        let colorElement = document.createElement('p');
-        colorElement.classList.add('app-color');
-        colorElement.innerText = app.color;
-        colorElement.style.backgroundColor = app.color;
+        let colorElement = document.createElement('span');
+        colorElement.classList.add('color-display');
+        let colorText = document.createElement('p');
+        colorText.classList.add('app-color');
+        colorText.innerText = app.color;
+        let colorInput = document.createElement('input');
+        colorInput.setAttribute('type', 'color');
+        colorInput.defaultValue = app.color;
+        colorElement.appendChild(colorText);
+        colorElement.appendChild(colorInput);
         let colorDataElement = generateAppKVElementDataElement('Color: ', colorElement);
 
         let serverNames = app.servers.map((server) => server.name);
