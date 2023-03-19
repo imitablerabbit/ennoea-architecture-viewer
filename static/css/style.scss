@@ -56,7 +56,6 @@ $borderRadius: 8px;
     font-style: italic;
 }
 
-
 body {
     margin: 0px;
     font-family: 'NotoSans', sans-serif;
@@ -346,4 +345,18 @@ button {
         box-sizing: border-box;
         padding: 0px;
     }
+}
+
+
+::-webkit-scrollbar {
+    width: 12px;
+}
+  
+::-webkit-scrollbar-track {
+    background-color: $navBGColor;
+}
+
+::-webkit-scrollbar-thumb {
+    background: $bgColor;
+    border: solid 3px $navBGColor;
 }
