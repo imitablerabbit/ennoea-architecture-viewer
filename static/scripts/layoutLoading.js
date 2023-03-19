@@ -1,5 +1,9 @@
 import * as alert from './alert.js'
 
+import {json} from "@codemirror/lang-json"
+import { basicSetup, EditorView } from 'codemirror'
+import { oneDark } from '@codemirror/theme-one-dark';
+
 var saveLayoutButton;
 var loadLayoutButton;
 
@@ -9,6 +13,9 @@ var dialogSubmitFileButton;
 var dialogSubmitTextButton;
 var jsonFileInput;
 var jsonTextBox;
+
+// CodeMirror variables
+var editorView;
 
 // Default application data that will be used to generate the scene.
 export var applicationData = {
@@ -55,9 +62,20 @@ export function init() {
 
     saveLayoutButton.addEventListener('click', () => save("layout.json", applicationData));
 
+    loadLayoutButton.addEventListener('click', () => {
+        let jsonText = JSON.stringify(applicationData, null, 4);
+
+        editorView = new EditorView({
+            doc: jsonText,
+            parent: jsonTextBox,
+            extensions: [basicSetup, json(), oneDark]
+        })
+        dialog.showModal();
+    });
+
     dialogCloseButton.addEventListener('click', () => {
         dialog.close();
-    })
+    });
     dialogSubmitFileButton.addEventListener('click', async function() {
         if (jsonFileInput.files.length == 0) {
             alert.error("File missing from application data load.");
@@ -69,17 +87,13 @@ export function init() {
         console.log(applicationData);
         alert.success("New application data loaded from file" + file.name +".");
         dialog.close();
-    })
+    });
     dialogSubmitTextButton.addEventListener('click', () => {
-        let newAppData = jsonTextBox.innerText;
+        let newAppData = editorView.state.doc.toString();
         applicationData = JSON.parse(newAppData);
         console.log(applicationData);
         alert.success("New application data loaded from text.")
         dialog.close();
-    })
-    loadLayoutButton.addEventListener('click', () => {
-        jsonTextBox.innerText = JSON.stringify(applicationData, null, 4);
-        dialog.showModal();
     });
 }
 
