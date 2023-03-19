@@ -31,6 +31,10 @@ export function displayApplicationData(applicationData) {
         let colorInput = document.createElement('input');
         colorInput.setAttribute('type', 'color');
         colorInput.defaultValue = app.color;
+        colorInput.addEventListener('change', () => {
+            app.color = colorInput.value;
+            displayApplicationData(applicationData);
+        });
         colorElement.appendChild(colorText);
         colorElement.appendChild(colorInput);
         let colorDataElement = generateAppKVElementDataElement('Color: ', colorElement);
