@@ -207,6 +207,14 @@ body {
                 font-size: 1rem;
                 display: flex;
                 gap: 5px;
+                align-items: center;
+            }
+
+            .color-display {
+                display: flex;
+                width: 100%;
+                justify-content: space-between;
+                align-items: center;
             }
 
             button {
