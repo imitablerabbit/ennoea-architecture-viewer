@@ -18,40 +18,41 @@ $errorFGColor: #df0000;
 
 $borderRadius: 8px;
 
+@import "/static/deps/regex-highlighter/src/syntax.css";
 
 @font-face {
     font-family: "NotoSans";
-    src: url('fonts/Noto_Sans/NotoSans-Regular.ttf') format('truetype');
+    src: url('../deps/fonts/Noto_Sans/NotoSans-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 @font-face {
     font-family: "NotoSans";
-    src: url('fonts/Noto_Sans/NotoSans-Italic.ttf') format('truetype');
+    src: url('../deps/fonts/Noto_Sans/NotoSans-Italic.ttf') format('truetype');
     font-weight: normal;
     font-style: italic;
 }
 @font-face {
     font-family: "NotoSans";
-    src: url('fonts/Noto_Sans/NotoSans-Light.ttf') format('truetype');
+    src: url('../deps/fonts/Noto_Sans/NotoSans-Light.ttf') format('truetype');
     font-weight: thin;
     font-style: normal;
 }
 @font-face {
     font-family: "NotoSans";
-    src: url('fonts/Noto_Sans/NotoSans-LightItalic.ttf') format('truetype');
+    src: url('../deps/fonts/Noto_Sans/NotoSans-LightItalic.ttf') format('truetype');
     font-weight: thin;
     font-style: italic;
 }
 @font-face {
     font-family: "NotoSans";
-    src: url('fonts/Noto_Sans/NotoSans-Bold.ttf') format('truetype');
+    src: url('../deps/fonts/Noto_Sans/NotoSans-Bold.ttf') format('truetype');
     font-weight: bold;
     font-style: normal;
 }
 @font-face {
     font-family: "NotoSans";
-    src: url('fonts/Noto_Sans/NotoSans-BoldItalic.ttf') format('truetype');
+    src: url('../deps/fonts/Noto_Sans/NotoSans-BoldItalic.ttf') format('truetype');
     font-weight: bold;
     font-style: italic;
 }

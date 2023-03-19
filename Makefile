@@ -57,9 +57,11 @@ build/static/images:
 build/static/scripts:
 	mkdir -p ./build/static/scripts
 
-move-deps: build/static/css build/static/scripts
-	cp -r $(DEPS_FOLDER)/scripts/* ./build/static/scripts; \
-	cp -r $(DEPS_FOLDER)/css/* ./build/static/css
+build/static/deps:
+	mkdir -p ./build/static/deps
+
+move-deps: build/static/deps
+	cp -r $(DEPS_FOLDER)/* ./build/static/deps/
 
 build/static/scripts/%.js: $(JS_FILES)
 	./node_modules/.bin/webpack --config webpack.config.js

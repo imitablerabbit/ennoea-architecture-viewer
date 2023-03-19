@@ -46,7 +46,7 @@ var selectedOutlinedObjects = [];
 
 
 const loader = new FontLoader();
-loader.load( 'static/css/fonts/Noto_Sans/NotoSans_Regular.json', function ( font ) {
+loader.load( 'static/deps/fonts/Noto_Sans/NotoSans_Regular.json', function ( font ) {
     init(font);
     animate();
 } );

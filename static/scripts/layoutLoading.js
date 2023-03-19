@@ -1,4 +1,5 @@
 import * as alert from './alert.js'
+import * as rh from '../deps/regex-highlighter/src/highlight.js' 
 
 var saveLayoutButton;
 var loadLayoutButton;
@@ -9,6 +10,9 @@ var dialogSubmitFileButton;
 var dialogSubmitTextButton;
 var jsonFileInput;
 var jsonTextBox;
+
+var highlighter;
+var jsonSyntaxRules;
 
 // Default application data that will be used to generate the scene.
 export var applicationData = {
@@ -53,11 +57,26 @@ export function init() {
     jsonFileInput = document.getElementById("load-layout-file-input");
     jsonTextBox = document.getElementById("load-layout-text-box");
 
+    highlighter = new rh.RegexHighlighter();
+    highlighter.loadSyntaxHighlightingByClass("syntax-highlight", );
+    highlighter.ajaxGET("/static/deps/regex-highlighter/src/languages/json.json", function (response) {
+        jsonSyntaxRules = JSON.parse(response);
+    });
+
     saveLayoutButton.addEventListener('click', () => save("layout.json", applicationData));
 
+    loadLayoutButton.addEventListener('click', () => {
+        jsonTextBox.innerText = JSON.stringify(applicationData, null, 4);
+        syntaxHighlight(highlighter, jsonSyntaxRules, jsonTextBox);
+        dialog.showModal();
+    });
+
+    jsonTextBox.addEventListener('input', () => {
+        syntaxHighlight(highlighter, jsonSyntaxRules, jsonTextBox);
+    });
     dialogCloseButton.addEventListener('click', () => {
         dialog.close();
-    })
+    });
     dialogSubmitFileButton.addEventListener('click', async function() {
         if (jsonFileInput.files.length == 0) {
             alert.error("File missing from application data load.");
@@ -69,17 +88,13 @@ export function init() {
         console.log(applicationData);
         alert.success("New application data loaded from file" + file.name +".");
         dialog.close();
-    })
+    });
     dialogSubmitTextButton.addEventListener('click', () => {
         let newAppData = jsonTextBox.innerText;
         applicationData = JSON.parse(newAppData);
         console.log(applicationData);
         alert.success("New application data loaded from text.")
         dialog.close();
-    })
-    loadLayoutButton.addEventListener('click', () => {
-        jsonTextBox.innerText = JSON.stringify(applicationData, null, 4);
-        dialog.showModal();
     });
 }
 
@@ -94,4 +109,14 @@ function save(filename, data) {
     document.body.appendChild(saveLink);
     saveLink.click();
     saveLink.remove();
+}
+
+function syntaxHighlight(highlighter, syntaxRules, element) {
+    var result = highlighter.insertSyntaxHighlighting(syntaxRules, element.innerHTML);
+    if (result) {
+        // This is breaking the position of the cursor as it gets moved to the
+        // top of the data. We should find a way of insering the elements directly
+        // in the dom instead.
+        // element.innerHTML = result;
+    }
 }
