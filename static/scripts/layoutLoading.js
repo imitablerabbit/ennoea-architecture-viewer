@@ -1,4 +1,5 @@
 import * as alert from './alert.js'
+import * as sidebarApplicationInfo from './sidebarApplicationInfo.js'
 
 import {json} from "@codemirror/lang-json"
 import { basicSetup, EditorView } from 'codemirror'
@@ -64,6 +65,7 @@ export function init() {
 
     loadLayoutButton.addEventListener('click', () => {
         let jsonText = JSON.stringify(applicationData, null, 4);
+        jsonTextBox.innerHTML = ""; // Clear any editors from previous loading.
 
         editorView = new EditorView({
             doc: jsonText,
@@ -84,6 +86,7 @@ export function init() {
         let file = jsonFileInput.files[0];
         let newAppData = await Promise.resolve(file.text());
         applicationData = JSON.parse(newAppData);
+        reloadData(applicationData);
         console.log(applicationData);
         alert.success("New application data loaded from file" + file.name +".");
         dialog.close();
@@ -91,6 +94,7 @@ export function init() {
     dialogSubmitTextButton.addEventListener('click', () => {
         let newAppData = editorView.state.doc.toString();
         applicationData = JSON.parse(newAppData);
+        reloadData(applicationData);
         console.log(applicationData);
         alert.success("New application data loaded from text.")
         dialog.close();
@@ -108,4 +112,8 @@ function save(filename, data) {
     document.body.appendChild(saveLink);
     saveLink.click();
     saveLink.remove();
+}
+
+function reloadData(newAppData) {
+    sidebarApplicationInfo.displayApplicationData(newAppData);
 }

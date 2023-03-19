@@ -2,8 +2,8 @@
 $toggleWidth: 40px;
 $toggleHeight: 50px;
 
-$sidebarWidth: 300px;
-$sidebarHeight: 100%;
+$sidebarWidth: 350px;
+$sidebarHeight: calc(100% - 60px);
 
 $navHeight: 60px;
 $navBGColor: #161616;
@@ -104,13 +104,13 @@ body {
     z-index: 3;
     background-color: $navBGColor;
     color: $navFGColor;
-    padding: 10px 30px;
+    padding: 0px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
 
     // Add the dashed lines between the articles within the sidebar.
-    > :nth-child(n + 1) {
+    > :nth-child(n) {
         border-bottom: dashed thin white;
     }
     > :nth-last-child(1) {
@@ -118,7 +118,7 @@ body {
     }
     
     & > article {
-        padding: 30px 0px;
+        padding: 30px 30px;
 
         & > .title {
             font-size: 1.4rem;
@@ -131,7 +131,7 @@ body {
         position: absolute;
         width: $toggleWidth;
         height: $toggleHeight;
-        top: calc(50% - $toggleHeight - $navHeight);
+        top: calc(($sidebarHeight - $toggleHeight) / 2);
         right: -$toggleWidth;
         font-size: 18pt;
         line-height: 0px;
@@ -163,8 +163,9 @@ body {
 
 #applications {
     display: flex;
-    gap:10px;
+    gap: 10px;
     flex-direction: column;
+    overflow-y: auto;
 
     #application-info-list {
         display: flex;
