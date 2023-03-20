@@ -24,7 +24,7 @@ A web based tool for viewing application and infrastucture architectures in a 3d
 
 ## Building
 ### Prerequisites
-This tool has 2 main prerequisite dependencies that will need to be installed before building the application. These are `go` for the backend server and `npm` for the frontent.
+This tool has 2 main prerequisite dependencies that will need to be installed before building the application. These are `go` for the backend server and `npm` for the frontend.
 
 ### Go
 Install the appropriate `go` version for your operating system from the golang website here - https://go.dev/doc/install
