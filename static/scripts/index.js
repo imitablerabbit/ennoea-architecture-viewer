@@ -73,7 +73,7 @@ function init() {
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x2a2b2b);
-    scene.fog = new THREE.Fog(0x2a2b2b, 5, 50);
+    scene.fog = new THREE.Fog(0x2a2b2b, 5, 200);
 
     camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
     camera.aspect = container.clientWidth / container.clientHeight;
