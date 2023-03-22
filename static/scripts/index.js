@@ -59,10 +59,12 @@ loader.load('static/css/fonts/Noto_Sans/NotoSans_Regular.json', function (f) {
 
 function init() {
     container = document.getElementById('container');
-    width = container.clientWidth;
-    height = container.clientHeight;
+    width = window.innerWidth;
+    height = window.innerHeight;
     xPos = window.innerWidth - width;
     yPos = window.innerHeight - height;
+
+    console.log("Width: " + width + " Height: " + height);
 
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -76,7 +78,6 @@ function init() {
     scene.fog = new THREE.Fog(0x2a2b2b, 5, 200);
 
     camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.aspect = container.clientWidth / container.clientHeight;
     camera.position.z = 10;
 
     generateApplicationMeshes(layoutLoading.applicationData);
@@ -86,12 +87,12 @@ function init() {
     renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
     
-    outlinePassHover = new OutlinePass(new THREE.Vector2(container.clientWidth,container.clientHeight), scene, camera);
+    outlinePassHover = new OutlinePass(new THREE.Vector2(width, height), scene, camera);
     outlinePassHover.edgeStrength = 10;
     outlinePassHover.selectedObjects = hoverOutlinedObjects;
     composer.addPass(outlinePassHover);
 
-    outlinePassSelected = new OutlinePass(new THREE.Vector2(container.clientWidth,container.clientHeight), scene, camera);
+    outlinePassSelected = new OutlinePass(new THREE.Vector2(width, height), scene, camera);
     outlinePassSelected.edgeStrength = 10;
     outlinePassSelected.selectedObjects = selectedOutlinedObjects;
     outlinePassSelected.visibleEdgeColor = new THREE.Color(1, 0, 0);
@@ -178,8 +179,8 @@ function onPointerMove(event) {
     if (event.isPrimary === false) return;
     let canvasX = event.clientX - xPos;
     let canvasY = event.clientY - yPos;
-    mouse.x = (canvasX / container.clientWidth) * 2 - 1;
-    mouse.y = - (canvasY / container.clientHeight) * 2 + 1;
+    mouse.x = (canvasX / width) * 2 - 1;
+    mouse.y = - (canvasY / height) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
     let intersects = raycaster.intersectObjects(selectableObjects);
@@ -196,10 +197,10 @@ function onClick(event) {
 }
 
 function windowResize() {
-    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.aspect = width / height;
     camera.updateProjectionMatrix();
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    composer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setSize(width, height);
+    composer.setSize(width, height);
     controls.update();
 }
 
