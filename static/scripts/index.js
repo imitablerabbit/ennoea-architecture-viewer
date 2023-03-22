@@ -25,9 +25,13 @@ var renderer, scene, camera;
 var composer, renderPass;
 var controls;
 var cameraLookAtPosition = new THREE.Vector3(0, 0, 0);
+var sceneObjects = [];
 
 // General Scene elements.
 var ambientLight;
+
+// Font used for the application names.
+var font;
 
 // Object selections and outline postprocessing shaders. Hover pass will
 // always take precedent over the selected pass. We must have strict
@@ -45,13 +49,15 @@ var hoverOutlinedObjects = [];
 var selectedOutlinedObjects = [];
 
 
+
 const loader = new FontLoader();
-loader.load( 'static/css/fonts/Noto_Sans/NotoSans_Regular.json', function ( font ) {
-    init(font);
+loader.load('static/css/fonts/Noto_Sans/NotoSans_Regular.json', function (f) {
+    font = f;
+    init();
     animate();
 } );
 
-function init(font) {
+function init() {
     container = document.getElementById('container');
     width = container.clientWidth;
     height = container.clientHeight;
@@ -73,7 +79,7 @@ function init(font) {
     camera.aspect = container.clientWidth / container.clientHeight;
     camera.position.z = 10;
 
-    generateApplicationMeshes(layoutLoading.applicationData, scene, font);
+    generateApplicationMeshes(layoutLoading.applicationData);
 
     composer = new EffectComposer(renderer);
 
@@ -110,7 +116,21 @@ function init(font) {
     layoutLoading.init();
 }
 
-function generateApplicationMeshes(applicationData, scene, font) {
+// Destroy the scene and reinitialize it.
+export function resetScene() {
+    sceneObjects.forEach(function(object) {
+        scene.remove(object);
+    });
+    selectableObjects = [];
+    hoveredObjects = [];
+    selectedObjects = [];
+    hoverOutlinedObjects = [];
+    selectedOutlinedObjects = [];
+    sceneObjects = [];
+    generateApplicationMeshes(layoutLoading.applicationData);
+}
+
+function generateApplicationMeshes(applicationData) {
     for (let i=0; i < applicationData.applications.length; i++) {
         let application = applicationData.applications[i];
 
@@ -130,10 +150,12 @@ function generateApplicationMeshes(applicationData, scene, font) {
         mesh.position.set(x, y, z);
         scene.add(mesh);
         selectableObjects.push(mesh);
+        sceneObjects.push(mesh);
 
         let pointLight = new THREE.PointLight(0xffffff);
         pointLight.position.set(x, y + 20, z);
         scene.add(pointLight);
+        sceneObjects.push(pointLight);
 
         let textGeo = new TextGeometry(name, {
             font: font,
@@ -146,6 +168,7 @@ function generateApplicationMeshes(applicationData, scene, font) {
         let xOffset = (name.length) / 2 / 1.5; // todo: base this off the size of the geometry
         textMesh.position.set(x - xOffset, y + 2, z);
         scene.add(textMesh);
+        sceneObjects.push(textMesh);
 
         console.log(mesh.position);
     }
