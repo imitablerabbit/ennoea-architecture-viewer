@@ -64,10 +64,14 @@ body {
     overflow-x: hidden;
 }
 
-.wrapper {
+#ui-wrapper {
+    // All UI elements are a z-index of 1 or greater. This is to ensure that
+    // the scene is always at the back.
+    position: relative;
     display: block;
     margin: 0px;
     padding: 0px;
+    z-index: 1;
 }
 
 #navbar {
@@ -261,8 +265,11 @@ body {
 
 
 #container {
+    position: absolute;
+    top: 0px;
+    left: 0px;
     width: 100%;
-    height: calc(100% - $navHeight - 1px);
+    height: 100%;
 }
 
 
