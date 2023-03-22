@@ -4,6 +4,7 @@ import * as alert from './alert.js'
 import * as sidebar from './sidebar.js'
 import * as sidebarApplicationInfo from './sidebarApplicationInfo.js';
 import * as layoutLoading from './layoutLoading.js';
+import * as debug from './debug.js';
 import gsap from 'gsap';
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -115,6 +116,7 @@ function init() {
     sidebarApplicationInfo.init();
     sidebarApplicationInfo.displayApplicationData(layoutLoading.applicationData);
     layoutLoading.init();
+    debug.init();
 }
 
 // Destroy the scene and reinitialize it.
