@@ -8,6 +8,7 @@
 ![webpack version 5.76.1](https://img.shields.io/badge/webpack-5.76.1-yellow)
 ![threejs version 0.150.1](https://img.shields.io/badge/threejs-0.150.1-cyan)
 ![gsap version 3.11.4](https://img.shields.io/badge/gsap-3.11.4-green)
+![mirrorcode version 6.0.1](https://img.shields.io/badge/mirrorcode-6.0.1-white)
 
 A web based tool for viewing application and infrastucture architectures in a 3d space.
 
