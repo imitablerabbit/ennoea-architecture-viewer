@@ -2,7 +2,7 @@
 // provide buttons to jump the camera to the location of the application
 // in the world.
 
-import {setCameraLookAt, setCameraPosition} from './index.js';
+import {resetScene, setCameraLookAt, setCameraPosition} from './index.js';
 
 var applicationInfoSidebarElement;
 
@@ -34,6 +34,7 @@ export function displayApplicationData(applicationData) {
         colorInput.addEventListener('change', () => {
             app.color = colorInput.value;
             displayApplicationData(applicationData);
+            resetScene();
         });
         colorElement.appendChild(colorText);
         colorElement.appendChild(colorInput);

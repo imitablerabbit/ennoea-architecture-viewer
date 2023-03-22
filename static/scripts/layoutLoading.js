@@ -4,6 +4,7 @@ import * as sidebarApplicationInfo from './sidebarApplicationInfo.js'
 import {json} from "@codemirror/lang-json"
 import { basicSetup, EditorView } from 'codemirror'
 import { oneDark } from '@codemirror/theme-one-dark';
+import { resetScene } from './index.js';
 
 var saveLayoutButton;
 var loadLayoutButton;
@@ -116,4 +117,5 @@ function save(filename, data) {
 
 function reloadData(newAppData) {
     sidebarApplicationInfo.displayApplicationData(newAppData);
+    resetScene();
 }
