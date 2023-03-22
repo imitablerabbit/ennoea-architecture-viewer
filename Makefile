@@ -57,8 +57,7 @@ build/static/images:
 build/static/scripts:
 	mkdir -p ./build/static/scripts
 
-move-deps: build/static/css build/static/scripts
-	cp -r $(DEPS_FOLDER)/scripts/* ./build/static/scripts; \
+move-deps: build/static/css
 	cp -r $(DEPS_FOLDER)/css/* ./build/static/css
 
 build/static/scripts/%.js: $(JS_FILES)

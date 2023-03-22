@@ -12,9 +12,9 @@ $navFGColor: #ffffff;
 $bgColor: #2a2b2b;
 $fgColor: #ffffff;
 $successBGColor: #79ff79;
-$successFGColor: #00a400;
-$errorBGColor: #ff8080;
-$errorFGColor: #df0000;
+$successFGColor: #059b05;
+$errorBGColor: #ec7272;
+$errorFGColor: #b40202;
 
 $borderRadius: 8px;
 
@@ -339,11 +339,15 @@ button {
         width: 23px;
         height: 23px;
         border-radius: 4px;
-        background-color: rgb(129, 0, 0);
+        background-color: $errorFGColor;
         color: inherit;
         border: solid 2px;
         box-sizing: border-box;
         padding: 0px;
+
+        &:hover {
+            background-color: lighten($errorFGColor, 10%);
+        }
     }
 }
 
@@ -359,4 +363,13 @@ button {
 ::-webkit-scrollbar-thumb {
     background: $bgColor;
     border: solid 3px $navBGColor;
+
+    &:hover {
+        background: lighten($bgColor, 10%);
+    }
+
+    &:active {
+        background: lighten($bgColor, 20%);
+    }
 }
+
