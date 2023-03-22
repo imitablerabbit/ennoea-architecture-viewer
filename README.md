@@ -1,4 +1,5 @@
 # ennoea-architecture-viewer
+
 <img src="images/icon.png" width="100" height="100"></img>
 
 ![ennoea version 0.0.0-alpha](https://img.shields.io/badge/ennoea-0.0.0--alpha-purple)
@@ -13,6 +14,7 @@ A web based tool for viewing application and infrastucture architectures in a 3d
 **Warning: this application is still pre-release alpha. It is not in a state that it should be used by people.**
 
 ## Contents
+
 - [ennoea-architecture-viewer](#ennoea-architecture-viewer)
   - [Contents](#contents)
   - [Building](#building)
@@ -23,30 +25,37 @@ A web based tool for viewing application and infrastucture architectures in a 3d
   - [Running](#running)
 
 ## Building
+
 ### Prerequisites
+
 This tool has 2 main prerequisite dependencies that will need to be installed before building the application. These are `go` for the backend server and `npm` for the frontent.
 
 ### Go
-Install the appropriate `go` version for your operating system from the golang website here - https://go.dev/doc/install
+
+Install the appropriate `go` version for your operating system from the golang website here - <https://go.dev/doc/install>
 
 ### NPM
-Install the appropriate `npm` version for your operating system from the npm website here - https://nodejs.org/en/download/
+
+Install the appropriate `npm` version for your operating system from the npm website here - <https://nodejs.org/en/download/>
 
 ## Compiling
+
 There is a `Makefile` in the repo that contains build commands for compiling the Go server and to run the webpack build commands. Run the following to build everything at once.
 
-```
+```bash
 make
 ```
 
 ## Running
-```
+
+```bash
 make start
 ```
 
-After the application has been started, go to http://localhost:8080 in your browser.
+After the application has been started, go to <http://localhost:8080> in your browser.
 
 ## Screenshots
+
 Jump from one application to another with the application info tab on the side.
 ![](images/jump-to-example.gif)
 

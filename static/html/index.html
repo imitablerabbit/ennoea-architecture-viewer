@@ -5,22 +5,22 @@
         <link rel="icon" type="image/x-icon" href="/static/images/icon.png">
     </head>
 
-    <body>        
+    <body>
         <div class="wrapper">
 
             <nav id="navbar">
                 <article class="branding">
                     <img src="static/images/icon.png" width="30px" height="30px" alt="Ennoea Viewer Icon - A small blue ball sphere">
                     <h1 id="title">Ennoea Viewer</h1>
-                </article>                
+                </article>
             </nav>
 
             <!-- Collapsable navbar on the left side spanning the height of the page -->
             <nav id="sidebar">
                 <button id="sidebar-toggle" class="activate-toggle active">
-                    <p id="sidebar-toggle-text">&lt;</p>
+                    <p id="sidebar-toggle-text">&lt;</p> 
                 </button>
-        
+
                 <article id="settings">
                     <h1 class="title">Settings:</h1>
                     <div id="settings-form">
@@ -29,7 +29,7 @@
                         <button id="load-layout">Load Layout</button>
                     </div>
                 </article>
-        
+
                 <article id="applications">
                     <h1 class="title">Applications:</h1>
 
@@ -49,14 +49,14 @@
                         <input type="file" name="load-file" id="load-layout-file-input">
                         <button id="load-layout-submit-file">Submit File</button>
                     </form>
-    
+
                     <form id="load-layout-text-form" method="dialog">
                         <h2>Load From Text:</h2>
                         <p>Specify JSON data directly in the browser to update the application data.</p>
                         <div id="load-layout-text-box"></div>
                         <button id="load-layout-submit-text">Submit Text</button>
                     </form>
-                </div>                
+                </div>
             </dialog>
 
             <!-- Populated via three.js for the rendering of the 3d space -->
