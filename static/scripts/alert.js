@@ -6,8 +6,13 @@ const alertClass = 'alert'
 const successClass = 'success';
 const errorClass = 'error'
 
+// Initialize the alert container. Returns a promise that resolves when the
+// container has been initialized for alerts.
 export function init() {
-    alertContainer = document.getElementById('alert-container');
+    return new Promise((resolve, reject) => {
+        alertContainer = document.getElementById('alert-container');
+        resolve();
+    });
 }
 
 export function alert(content) {

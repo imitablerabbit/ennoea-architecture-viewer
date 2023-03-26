@@ -2,19 +2,27 @@
 
 import * as alert from './alert.js';
 
-var debugDialog = document.getElementById('debug');
+var debugDialog;
+var closeButton;
 
+// Initialise the debug console. Returns a promise that resolves when the
+// debug console has been initialised.
 export function init() {
-    document.addEventListener('keydown', function (event) {
-        if (event.key == '~') {
-            debugDialog.showModal();
-        }
+    return new Promise((resolve, reject) => {
+        debugDialog = document.getElementById('debug');
+        document.addEventListener('keydown', function (event) {
+            if (event.key == '~') {
+                debugDialog.showModal();
+            }
+        });
+
+        closeButton = document.getElementById('debug-dialog-close');
+        closeButton.addEventListener('click', () => debugDialog.close());
+
+        initAlertButtons();
+
+        resolve();
     });
-
-    let closeButton = document.getElementById('debug-dialog-close');
-    closeButton.addEventListener('click', () => debugDialog.close());
-
-    initAlertButtons();
 }
 
 // Initialise the alert buttons in the debug console. Each button should open up

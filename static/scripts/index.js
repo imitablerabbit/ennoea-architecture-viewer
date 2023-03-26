@@ -1,274 +1,38 @@
-import * as THREE from 'three';
-import './sidebar.js'
-import * as alert from './alert.js'
+import * as scene from './scene.js'
 import * as sidebar from './sidebar.js'
-import * as sidebarApplicationInfo from './sidebarApplicationInfo.js';
+import * as alert from './alert.js'
 import * as layoutLoading from './layoutLoading.js';
+import * as sidebarApplicationInfo from './sidebarApplicationInfo.js';
+import { applicationData } from './applicationDataExample.js';
 import * as debug from './debug.js';
-import gsap from 'gsap';
 
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+load();
 
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
-
-import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-
-// Canvas dimensions and positions
-var width, height;
-var xPos, yPos;
-var container;
-
-// three.js scene and higher level controls.
-var renderer, scene, camera;
-var composer, renderPass;
-var controls;
-var cameraLookAtPosition = new THREE.Vector3(0, 0, 0);
-var sceneObjects = [];
-
-// General Scene elements.
-var ambientLight;
-
-// Font used for the application names.
-var font;
-
-// Object selections and outline postprocessing shaders. Hover pass will
-// always take precedent over the selected pass. We must have strict
-// accounting for the selected objects otherwise the outline pass
-// post-processor doesnt like it. If this ends up being expensive then we
-// can always remove some of the functionality of the current OutlinePass
-// shader with a slimlined version of it.
-var outlinePassHover, outlinePassSelected;
-var raycaster = new THREE.Raycaster();
-var mouse = new THREE.Vector2();
-var selectableObjects = [];
-var hoveredObjects = [];
-var selectedObjects = [];
-var hoverOutlinedObjects = [];
-var selectedOutlinedObjects = [];
-
-
-
-const loader = new FontLoader();
-loader.load('static/css/fonts/Noto_Sans/NotoSans_Regular.json', function (f) {
-    font = f;
-    init();
-    animate();
-} );
+function load() {
+    scene.load().then(() => {init();});
+}
 
 function init() {
-    container = document.getElementById('container');
-    width = window.innerWidth;
-    height = window.innerHeight;
-    xPos = window.innerWidth - width;
-    yPos = window.innerHeight - height;
-
-    console.log("Width: " + width + " Height: " + height);
-
-    renderer = new THREE.WebGLRenderer({antialias: true});
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(width, height);
-    renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.autoClear = false;
-    container.appendChild(renderer.domElement);
-
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x2a2b2b);
-    scene.fog = new THREE.Fog(0x2a2b2b, 5, 200);
-
-    camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 10;
-
-    generateApplicationMeshes(layoutLoading.applicationData);
-
-    composer = new EffectComposer(renderer);
-
-    renderPass = new RenderPass(scene, camera);
-    composer.addPass(renderPass);
-    
-    outlinePassHover = new OutlinePass(new THREE.Vector2(width, height), scene, camera);
-    outlinePassHover.edgeStrength = 10;
-    outlinePassHover.selectedObjects = hoverOutlinedObjects;
-    composer.addPass(outlinePassHover);
-
-    outlinePassSelected = new OutlinePass(new THREE.Vector2(width, height), scene, camera);
-    outlinePassSelected.edgeStrength = 10;
-    outlinePassSelected.selectedObjects = selectedOutlinedObjects;
-    outlinePassSelected.visibleEdgeColor = new THREE.Color(1, 0, 0);
-    composer.addPass(outlinePassSelected);
-
-    controls = new OrbitControls(camera, renderer.domElement, scene);
-    controls.addEventListener('change', render);
-
-    ambientLight = new THREE.AmbientLight(0xffffff);
-    scene.add(ambientLight);
-
-    renderer.domElement.style.touchAction = 'none';
-    renderer.domElement.addEventListener('pointermove', onPointerMove);
-    renderer.domElement.addEventListener('click', onClick);
-
-    window.onresize = windowResize;
-
-    alert.init();
-    sidebar.init();
-    sidebarApplicationInfo.init();
-    sidebarApplicationInfo.displayApplicationData(layoutLoading.applicationData);
-    layoutLoading.init();
-    debug.init();
-}
-
-// Destroy the scene and reinitialize it.
-export function resetScene() {
-    sceneObjects.forEach(function(object) {
-        scene.remove(object);
-    });
-    selectableObjects = [];
-    hoveredObjects = [];
-    selectedObjects = [];
-    hoverOutlinedObjects = [];
-    selectedOutlinedObjects = [];
-    sceneObjects = [];
-    generateApplicationMeshes(layoutLoading.applicationData);
-}
-
-function generateApplicationMeshes(applicationData) {
-    for (let i=0; i < applicationData.applications.length; i++) {
-        let application = applicationData.applications[i];
-
-        let name = application.name;
-        let color = application.color;
-        let position = application.position;
-        let servers = application.servers;
-        let x = position[0];
-        let y = position[1];
-        let z = position[2];
-
-        let geometry = new THREE.SphereGeometry(1, 32, 16);
-        let material = new THREE.MeshStandardMaterial({
-            color: color,
-        });
-        let mesh = new THREE.Mesh(geometry, material);
-        mesh.position.set(x, y, z);
-        scene.add(mesh);
-        selectableObjects.push(mesh);
-        sceneObjects.push(mesh);
-
-        let pointLight = new THREE.PointLight(0xffffff);
-        pointLight.position.set(x, y + 20, z);
-        scene.add(pointLight);
-        sceneObjects.push(pointLight);
-
-        let textGeo = new TextGeometry(name, {
-            font: font,
-            size: 1,
-            height: 0.2,
-            curveSegments: 2,
-        } );
-        let textMaterial = new THREE.MeshBasicMaterial({color: color});
-        let textMesh = new THREE.Mesh(textGeo, textMaterial);
-        let xOffset = (name.length) / 2 / 1.5; // todo: base this off the size of the geometry
-        textMesh.position.set(x - xOffset, y + 2, z);
-        scene.add(textMesh);
-        sceneObjects.push(textMesh);
-
-        console.log(mesh.position);
-    }
-}
-
-function onPointerMove(event) {
-    if (event.isPrimary === false) return;
-    let canvasX = event.clientX - xPos;
-    let canvasY = event.clientY - yPos;
-    mouse.x = (canvasX / width) * 2 - 1;
-    mouse.y = - (canvasY / height) * 2 + 1;
-
-    raycaster.setFromCamera(mouse, camera);
-    let intersects = raycaster.intersectObjects(selectableObjects);
-
-    hoveredObjects = [];
-    for (let i = 0; i < intersects.length; i++) {
-        let object = intersects[i].object;
-        hoveredObjects[i] = object;
-    }
-}
-
-function onClick(event) {
-    selectedObjects = [...hoveredObjects];
-}
-
-function windowResize() {
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
-    composer.setSize(width, height);
-    controls.update();
-}
-
-function animate() {
-    requestAnimationFrame( animate );
-    render();
-}
-
-function render() {
-    hoverOutlinedObjects = [...hoveredObjects];
-    selectedOutlinedObjects = [];
-    for (let i = 0; i < selectedObjects.length; i++) {
-        let object = selectedObjects[i];
-        if (!hoverOutlinedObjects.includes(object)) {
-            selectedOutlinedObjects.push(object);
-        }
-    }
-    outlinePassHover.selectedObjects = hoverOutlinedObjects;
-    outlinePassSelected.selectedObjects = selectedOutlinedObjects;
-
-    composer.render();
-}
-
-export function setCameraPosition(position) {
-    if (position === null) {
-        console.error("position is null: ", position);
-        return;
-    }
-    if (Object.prototype.toString.call(position) != '[object Array]') {
-        console.error("position is not an Array: ", position);
-        return;
-    }
-    if (position.length != 3) {
-        console.error("position is not a 3 element Array: ", position);
-        return;
-    }
-
-    gsap.to(camera.position, {
-        x: position[0],
-        y: position[1],
-        z: position[2],
-        duration: 1,
-        onUpdate: () => controls.update()
+    // Initialize all modules. We need to wait for all of them to finish
+    // before we can start the application.
+    let alertPromise = alert.init();
+    let scenePromise = scene.init();
+    let sidebarPromise = sidebar.init();
+    let sidebarApplicationInfoPromise = sidebarApplicationInfo.init();
+    let layoutLoadingPromise = layoutLoading.init();
+    let debugPromise = debug.init();
+    let promises = [
+        alertPromise, scenePromise, sidebarPromise,
+        sidebarApplicationInfoPromise, layoutLoadingPromise,
+        debugPromise
+    ];
+    Promise.allSettled(promises).then(() => {
+        start();
     });
 }
 
-export function setCameraLookAt(position) {
-    if (position === null) {
-        console.error("position is null: ", position);
-        return;
-    }
-    if (Object.prototype.toString.call(position) != '[object Array]') {
-        console.error("position is not an Array: ", position);
-        return;
-    }
-    if (position.length != 3) {
-        console.error("position is not a 3 element Array: ", position);
-        return;
-    }
-
-    gsap.to(cameraLookAtPosition, {
-        x: position[0],
-        y: position[1],
-        z: position[2],
-        duration: 1,
-        onUpdate: () => controls.update()
-    });
-    controls.target = cameraLookAtPosition;
+function start() {
+    scene.reset(applicationData);
+    scene.start();
+    sidebarApplicationInfo.displayApplicationData(applicationData);
 }
