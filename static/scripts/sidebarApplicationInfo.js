@@ -2,12 +2,17 @@
 // provide buttons to jump the camera to the location of the application
 // in the world.
 
-import {resetScene, setCameraLookAt, setCameraPosition} from './index.js';
+import * as scene from './scene.js';
 
 var applicationInfoSidebarElement;
 
+// Initialize the application info sidebar. Returns a promise that resolves
+// when the sidebar has been initialized.
 export function init() {
-    applicationInfoSidebarElement = document.getElementById('application-info-list');
+    return new Promise((resolve, reject) => {
+        applicationInfoSidebarElement = document.getElementById('application-info-list');
+        resolve();
+    });
 }
 
 export function displayApplicationData(applicationData) {
@@ -34,7 +39,7 @@ export function displayApplicationData(applicationData) {
         colorInput.addEventListener('change', () => {
             app.color = colorInput.value;
             displayApplicationData(applicationData);
-            resetScene();
+            scene.reset(applicationData);
         });
         colorElement.appendChild(colorText);
         colorElement.appendChild(colorInput);
@@ -45,14 +50,18 @@ export function displayApplicationData(applicationData) {
 
         let positionString = app.position.join(", ");
         let positionDataElement = generateAppKVDataElement('Position: ', positionString);
+        let rotationString = app.rotation.join(", ");
+        let rotationDataElement = generateAppKVDataElement('Rotation: ', rotationString);
+        let scaleString = app.scale.join(", ");
+        let scaleDataElement = generateAppKVDataElement('Scale: ', scaleString);
 
         let jumpToButtonContainer = document.createElement('div');
         let jumpToButton = document.createElement('button');
         jumpToButton.addEventListener('click', () => {
             let cameraPosition = [...app.position];
             cameraPosition[2] += 10;
-            setCameraPosition(cameraPosition);
-            setCameraLookAt(app.position);
+            scene.setCameraPosition(cameraPosition);
+            scene.setCameraLookAt(app.position);
         });
         jumpToButton.innerText = 'Jump To';
         jumpToButtonContainer.appendChild(jumpToButton);
@@ -61,6 +70,8 @@ export function displayApplicationData(applicationData) {
         sectionElement.appendChild(colorDataElement);
         sectionElement.appendChild(serverDataElement);
         sectionElement.appendChild(positionDataElement);
+        sectionElement.appendChild(rotationDataElement);
+        sectionElement.appendChild(scaleDataElement);
         sectionElement.appendChild(jumpToButtonContainer);
 
         applicationInfoSidebarElement.appendChild(sectionElement);

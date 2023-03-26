@@ -4,11 +4,16 @@ var sidebar;
 var sidebarToggle;
 var sidebarToggleText;
 
+// Initialize the sidebar module. Returns a promise that resolves when the
+// sidebar has been initialized.
 export function init() {
-    sidebar = document.getElementById('sidebar');
-    sidebarToggle = document.getElementById('sidebar-toggle');
-    sidebarToggleText = document.getElementById('sidebar-toggle-text');
-    sidebarToggle.addEventListener('click', () => toggleSidebar());
+    return new Promise((resolve, reject) => {
+        sidebar = document.getElementById('sidebar');
+        sidebarToggle = document.getElementById('sidebar-toggle');
+        sidebarToggleText = document.getElementById('sidebar-toggle-text');
+        sidebarToggle.addEventListener('click', () => toggleSidebar());
+        resolve();
+    });
 }
 
 function toggleSidebar() {

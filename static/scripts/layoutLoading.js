@@ -4,7 +4,8 @@ import * as sidebarApplicationInfo from './sidebarApplicationInfo.js'
 import {json} from "@codemirror/lang-json"
 import { basicSetup, EditorView } from 'codemirror'
 import { oneDark } from '@codemirror/theme-one-dark';
-import { resetScene } from './index.js';
+import * as scene from './scene.js';
+import { applicationData } from './applicationDataExample.js';
 
 var saveLayoutButton;
 var loadLayoutButton;
@@ -19,86 +20,61 @@ var jsonTextBox;
 // CodeMirror variables
 var editorView;
 
-// Default application data that will be used to generate the scene.
-export var applicationData = {
-    applications: [
-        {
-            name: "app1",
-            color: "#0287fc",
-            servers: [
-                {
-                    name: "app1hostname2"
-                },
-                {
-                    name: "app1hostname2"
-                }
-            ],
-            position: [0, 0, 0]
-        },
-        {
-            name: "app2",
-            color: "#06f7fc",
-            servers: [
-                {
-                    name: "app2hostname1"
-                },
-                {
-                    name: "app2hostname2"
-                }
-            ],
-            position: [10, 0, 0]
-        }
-    ]
-}
 
+// Initialize the application info sidebar. Returns a promise that resolves
+// when the sidebar has been initialized.
 export function init() {
-    saveLayoutButton = document.getElementById('save-layout');
-    loadLayoutButton = document.getElementById('load-layout');
+    return new Promise((resolve, reject) => {
+        saveLayoutButton = document.getElementById('save-layout');
+        loadLayoutButton = document.getElementById('load-layout');
 
-    dialog = document.getElementById("load-dialog");
-    dialogCloseButton = document.getElementById("load-layout-close");
-    dialogSubmitFileButton = document.getElementById("load-layout-submit-file");
-    dialogSubmitTextButton = document.getElementById("load-layout-submit-text");
-    jsonFileInput = document.getElementById("load-layout-file-input");
-    jsonTextBox = document.getElementById("load-layout-text-box");
+        dialog = document.getElementById("load-dialog");
+        dialogCloseButton = document.getElementById("load-layout-close");
+        dialogSubmitFileButton = document.getElementById("load-layout-submit-file");
+        dialogSubmitTextButton = document.getElementById("load-layout-submit-text");
+        jsonFileInput = document.getElementById("load-layout-file-input");
+        jsonTextBox = document.getElementById("load-layout-text-box");
 
-    saveLayoutButton.addEventListener('click', () => save("layout.json", applicationData));
+        saveLayoutButton.addEventListener('click', () => save("layout.json", applicationData));
 
-    loadLayoutButton.addEventListener('click', () => {
-        let jsonText = JSON.stringify(applicationData, null, 4);
-        jsonTextBox.innerHTML = ""; // Clear any editors from previous loading.
+        loadLayoutButton.addEventListener('click', () => {
+            let jsonText = JSON.stringify(applicationData, null, 4);
+            jsonTextBox.innerHTML = ""; // Clear any editors from previous loading.
 
-        editorView = new EditorView({
-            doc: jsonText,
-            parent: jsonTextBox,
-            extensions: [basicSetup, json(), oneDark]
-        })
-        dialog.showModal();
-    });
+            editorView = new EditorView({
+                doc: jsonText,
+                parent: jsonTextBox,
+                extensions: [basicSetup, json(), oneDark]
+            })
+            dialog.showModal();
+        });
 
-    dialogCloseButton.addEventListener('click', () => {
-        dialog.close();
-    });
-    dialogSubmitFileButton.addEventListener('click', async function() {
-        if (jsonFileInput.files.length == 0) {
-            alert.error("File missing from application data load.");
-            return;
-        }
-        let file = jsonFileInput.files[0];
-        let newAppData = await Promise.resolve(file.text());
-        applicationData = JSON.parse(newAppData);
-        reloadData(applicationData);
-        console.log(applicationData);
-        alert.success("New application data loaded from file" + file.name +".");
-        dialog.close();
-    });
-    dialogSubmitTextButton.addEventListener('click', () => {
-        let newAppData = editorView.state.doc.toString();
-        applicationData = JSON.parse(newAppData);
-        reloadData(applicationData);
-        console.log(applicationData);
-        alert.success("New application data loaded from text.")
-        dialog.close();
+        dialogCloseButton.addEventListener('click', () => {
+            dialog.close();
+        });
+        dialogSubmitFileButton.addEventListener('click', async function() {
+            if (jsonFileInput.files.length == 0) {
+                alert.error("File missing from application data load.");
+                return;
+            }
+            let file = jsonFileInput.files[0];
+            let newAppData = await Promise.resolve(file.text());
+            applicationData = JSON.parse(newAppData);
+            reloadData(applicationData);
+            console.log(applicationData);
+            alert.success("New application data loaded from file" + file.name +".");
+            dialog.close();
+        });
+        dialogSubmitTextButton.addEventListener('click', () => {
+            let newAppData = editorView.state.doc.toString();
+            applicationData = JSON.parse(newAppData);
+            reloadData(applicationData);
+            console.log(applicationData);
+            alert.success("New application data loaded from text.")
+            dialog.close();
+        });
+
+        resolve();
     });
 }
 
@@ -117,5 +93,5 @@ function save(filename, data) {
 
 function reloadData(newAppData) {
     sidebarApplicationInfo.displayApplicationData(newAppData);
-    resetScene();
+    scene.reset(newAppData);
 }
