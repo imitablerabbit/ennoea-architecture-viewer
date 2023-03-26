@@ -116,8 +116,21 @@ export function init() {
     });    
 }
 
-// Destroy the scene and reinitialize it.
+// Start the animation loop. This should be called after the scene has
+// been initialized.
+export function start() {
+    animate();
+}
+
+// Destroy the scene and reinitialize it. This also includes all of the scene
+// level data in the application data.
 export function reset(applicationData) {
+    updateObjects(applicationData);
+    setCameraPosition(applicationData.scene.camera.position);
+}
+
+// Regenerate the scene based on the new application data.
+export function updateObjects(applicationData) {
     sceneObjects.forEach(function(object) {
         scene.remove(object);
     });
@@ -128,12 +141,6 @@ export function reset(applicationData) {
     selectedOutlinedObjects = [];
     sceneObjects = [];
     generateApplicationMeshes(applicationData);
-}
-
-// Start the animation loop. This should be called after the scene has
-// been initialized.
-export function start() {
-    animate();
 }
 
 function generateApplicationMeshes(applicationData) {
@@ -223,6 +230,10 @@ function onClick(event) {
 }
 
 function windowResize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    xPos = window.innerWidth - width;
+    yPos = window.innerHeight - height;
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);

@@ -1,4 +1,9 @@
 export var applicationData = {
+    scene: {
+        camera: {
+            position: [0, 20, 20]
+        }
+    },
     applications: [
         {
             name: "Bingo",
@@ -242,7 +247,7 @@ export var applicationData = {
         },
         {
             name: "Galactus",
-            color: "#06f7fc",
+            color: "#d210f9",
             servers: [
                 {
                     name: "app2hostname1"

@@ -6,7 +6,9 @@ import * as sidebarApplicationInfo from './sidebarApplicationInfo.js';
 import { applicationData } from './applicationDataExample.js';
 import * as debug from './debug.js';
 
-load();
+
+// Load the scene and all of the modules after the page has loaded.
+window.addEventListener('load', load);
 
 function load() {
     scene.load().then(() => {init();});

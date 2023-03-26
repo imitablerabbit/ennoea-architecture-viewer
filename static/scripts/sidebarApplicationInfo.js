@@ -39,7 +39,7 @@ export function displayApplicationData(applicationData) {
         colorInput.addEventListener('change', () => {
             app.color = colorInput.value;
             displayApplicationData(applicationData);
-            scene.reset(applicationData);
+            scene.updateObjects(applicationData);
         });
         colorElement.appendChild(colorText);
         colorElement.appendChild(colorInput);
@@ -59,6 +59,7 @@ export function displayApplicationData(applicationData) {
         let jumpToButton = document.createElement('button');
         jumpToButton.addEventListener('click', () => {
             let cameraPosition = [...app.position];
+            cameraPosition[1] += 10;
             cameraPosition[2] += 10;
             scene.setCameraPosition(cameraPosition);
             scene.setCameraLookAt(app.position);
