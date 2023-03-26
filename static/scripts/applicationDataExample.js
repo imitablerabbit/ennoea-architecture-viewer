@@ -172,7 +172,7 @@ export var applicationData = {
         },
         {
             name: "Raccoon",
-            color: "#06f7fc",
+            color: "#666666",
             servers: [
                 {
                     name: "app2hostname1"
@@ -247,7 +247,7 @@ export var applicationData = {
         },
         {
             name: "Galactus",
-            color: "#d210f9",
+            color: "#8701a2",
             servers: [
                 {
                     name: "app2hostname1"
@@ -277,7 +277,7 @@ export var applicationData = {
         },
         {
             name: "OMEGA STAR",
-            color: "#06f7fc",
+            color: "#d0ae06",
             servers: [
                 {
                     name: "app2hostname1"

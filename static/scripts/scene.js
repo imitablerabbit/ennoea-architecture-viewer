@@ -103,7 +103,7 @@ export function init() {
         controls = new OrbitControls(camera, renderer.domElement, scene);
         controls.addEventListener('change', render);
 
-        ambientLight = new THREE.AmbientLight(0xffffff);
+        ambientLight = new THREE.AmbientLight(0xffffff, 1);
         scene.add(ambientLight);
 
         renderer.domElement.style.touchAction = 'none';
@@ -144,7 +144,7 @@ export function updateObjects(applicationData) {
 }
 
 function generateApplicationMeshes(applicationData) {
-    let pointLight = new THREE.PointLight(0xfff);
+    let pointLight = new THREE.PointLight(0xffffff, 0.5);
     pointLight.position.set(0, 100, 0);
     scene.add(pointLight);
     sceneObjects.push(pointLight);
