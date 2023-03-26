@@ -137,6 +137,11 @@ export function start() {
 }
 
 function generateApplicationMeshes(applicationData) {
+    let pointLight = new THREE.PointLight(0xfff);
+    pointLight.position.set(0, 100, 0);
+    scene.add(pointLight);
+    sceneObjects.push(pointLight);
+
     for (let i=0; i < applicationData.applications.length; i++) {
         let application = applicationData.applications[i];
 
@@ -177,10 +182,7 @@ function generateApplicationMeshes(applicationData) {
         selectableObjects.push(mesh);
         sceneObjects.push(mesh);
 
-        let pointLight = new THREE.PointLight(0xffffff);
-        pointLight.position.set(posX, posY + 20, posZ);
-        scene.add(pointLight);
-        sceneObjects.push(pointLight);
+
 
         let textGeo = new TextGeometry(name, {
             font: font,
@@ -188,7 +190,7 @@ function generateApplicationMeshes(applicationData) {
             height: 0.2,
             curveSegments: 2,
         } );
-        let textMaterial = new THREE.MeshBasicMaterial({color: color});
+        let textMaterial = new THREE.MeshStandardMaterial({color: color});
         let textMesh = new THREE.Mesh(textGeo, textMaterial);
         let xOffset = (name.length) / 2 / 1.5; // todo: base this off the size of the geometry
         textMesh.position.set(posX - xOffset, posY + 2, posZ);
