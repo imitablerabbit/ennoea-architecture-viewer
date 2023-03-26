@@ -4,6 +4,7 @@ import * as alert from './alert.js'
 import * as layoutLoading from './layoutLoading.js';
 import * as sidebarApplicationInfo from './sidebarApplicationInfo.js';
 import { applicationData } from './applicationDataExample.js';
+import * as debug from './debug.js';
 
 load();
 
@@ -19,9 +20,11 @@ function init() {
     let sidebarPromise = sidebar.init();
     let sidebarApplicationInfoPromise = sidebarApplicationInfo.init();
     let layoutLoadingPromise = layoutLoading.init();
+    let debugPromise = debug.init();
     let promises = [
         alertPromise, scenePromise, sidebarPromise,
-        sidebarApplicationInfoPromise, layoutLoadingPromise
+        sidebarApplicationInfoPromise, layoutLoadingPromise,
+        debugPromise
     ];
     Promise.allSettled(promises).then(() => {
         start();
