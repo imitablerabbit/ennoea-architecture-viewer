@@ -11,6 +11,8 @@ import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
+import { PopupWindow } from './popupWindow.js';
+
 
 // Canvas dimensions and positions
 var width, height;
@@ -184,6 +186,7 @@ function generateApplicationMeshes(applicationData) {
         mesh.rotateY(rotY);
         mesh.rotateZ(rotZ);
         mesh.scale.set(scaleX, scaleY, scaleZ);
+        mesh.userData = application;
 
         scene.add(mesh);
         selectableObjects.push(mesh);
@@ -227,6 +230,33 @@ function onPointerMove(event) {
 
 function onClick(event) {
     selectedObjects = [...hoveredObjects];
+
+    // Create a popup with the application information stored on the 
+    // object's userData.
+    if (selectedObjects.length > 0) {
+        let application = selectedObjects[0].userData;
+        let content = document.createElement("article");
+        content.classList.add("application-info");
+        content.classList.add("start-dark");
+        content.innerHTML = `
+            <section class="app-data-kv">Color: ${application.color}</section>
+            <section class="app-data-kv">Position: ${application.position}</section>
+            <section class="app-data-kv">Rotation: ${application.rotation}</section>
+            <section class="app-data-kv">Scale: ${application.scale}</section>
+        `;
+        let popup = new PopupWindow(document.body, application.name, content);
+        let popupElement = popup.getWindowElement();
+        let popupWidth = popupElement.offsetWidth;
+        console.log(popupWidth);
+
+        // Show the popup based on the mouse position.
+        let popupX = event.clientX - xPos - (popupWidth / 2);
+        let popupY = event.clientY - yPos - 20;
+        console.log(popupX, popupY);
+        popup.setPosition(popupX, popupY);
+        popup.show();
+    }
+
 }
 
 function windowResize() {
@@ -259,6 +289,28 @@ function render() {
     outlinePassSelected.selectedObjects = selectedOutlinedObjects;
 
     composer.render();
+}
+
+// Find the object with the given name.
+export function findObjectByName(name) {
+    for (let i = 0; i < selectableObjects.length; i++) {
+        let object = selectableObjects[i];
+        if (object.userData.name === name) {
+            return object;
+        }
+    }
+    return null;
+}
+
+// Find application data with the given name.
+export function findApplicationDataByName(name) {
+    for (let i = 0; i < applicationData.applications.length; i++) {
+        let application = applicationData.applications[i];
+        if (application.name === name) {
+            return application;
+        }
+    }
+    return null;
 }
 
 export function setCameraPosition(position) {

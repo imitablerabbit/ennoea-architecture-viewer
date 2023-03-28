@@ -57,8 +57,8 @@ After the application has been started, go to <http://localhost:8080> in your br
 
 ## Screenshots
 
-Jump from one application to another with the application info tab on the side.
-![](images/jump-to-example.gif)
-
 Easily load new application data by editing the json with mirrorcode.
 ![](images/load-from-text-example.gif)
+
+Select and view the details of a component by clicking on it.
+![](images/popup-info.gif)
