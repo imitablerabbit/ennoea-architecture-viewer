@@ -203,6 +203,10 @@ body {
                 font-size: 1.1rem;
                 background-color: $fgColor;
                 color: $bgColor;
+
+                &.dark {
+                    color: $fgColor;
+                }
             }
 
             .app-data-kv {

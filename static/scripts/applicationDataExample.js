@@ -22,7 +22,7 @@ export var applicationData = {
         },
         {
             name: "Clogger",
-            color: "#06f7fc",
+            color: "#ea5c46",
             servers: [
                 {
                     name: "app2hostname1"
@@ -37,7 +37,7 @@ export var applicationData = {
         },
         {
             name: "Endpoints",
-            color: "#06f7fc",
+            color: "#85ea46",
             servers: [
                 {
                     name: "app2hostname1"
@@ -52,7 +52,7 @@ export var applicationData = {
         },
         {
             name: "Gary",
-            color: "#06f7fc",
+            color: "#f380f7",
             servers: [
                 {
                     name: "app2hostname1"
@@ -67,7 +67,7 @@ export var applicationData = {
         },
         {
             name: "NPD",
-            color: "#06f7fc",
+            color: "#000080",
             servers: [
                 {
                     name: "app2hostname1"
@@ -82,7 +82,7 @@ export var applicationData = {
         },
         {
             name: "Ratman",
-            color: "#06f7fc",
+            color: "#f1f747",
             servers: [
                 {
                     name: "app2hostname1"
@@ -97,7 +97,7 @@ export var applicationData = {
         },
         {
             name: "Papaya",
-            color: "#06f7fc",
+            color: "#FF7431",
             servers: [
                 {
                     name: "app2hostname1"
@@ -112,7 +112,7 @@ export var applicationData = {
         },
         {
             name: "Bread",
-            color: "#06f7fc",
+            color: "#EFD2A8",
             servers: [
                 {
                     name: "app2hostname1"
@@ -127,7 +127,7 @@ export var applicationData = {
         },
         {
             name: "Bread Replica",
-            color: "#06f7fc",
+            color: "#EFD2A8",
             servers: [
                 {
                     name: "app2hostname1"
@@ -142,7 +142,7 @@ export var applicationData = {
         },
         {
             name: "Magic Baby (MBS)",
-            color: "#06f7fc",
+            color: "#f747f7",
             servers: [
                 {
                     name: "app2hostname1"
@@ -157,7 +157,7 @@ export var applicationData = {
         },
         {
             name: "LMNOP",
-            color: "#06f7fc",
+            color: "#f7e247",
             servers: [
                 {
                     name: "app2hostname1"
@@ -187,7 +187,7 @@ export var applicationData = {
         },
         {
             name: "WNGMAN",
-            color: "#06f7fc",
+            color: "#4770f7",
             servers: [
                 {
                     name: "app2hostname1"
@@ -202,7 +202,7 @@ export var applicationData = {
         },
         {
             name: "RGS",
-            color: "#06f7fc",
+            color: "#aaabaf",
             servers: [
                 {
                     name: "app2hostname1"
@@ -217,7 +217,7 @@ export var applicationData = {
         },
         {
             name: "BRB-DLL",
-            color: "#06f7fc",
+            color: "#f42c7f",
             servers: [
                 {
                     name: "app2hostname1"
@@ -232,7 +232,7 @@ export var applicationData = {
         },
         {
             name: "PCP (Legacy)",
-            color: "#06f7fc",
+            color: "#97f42c",
             servers: [
                 {
                     name: "app2hostname1"
@@ -262,7 +262,7 @@ export var applicationData = {
         },
         {
             name: "EKS",
-            color: "#06f7fc",
+            color: "#3befa4",
             servers: [
                 {
                     name: "app2hostname1"
@@ -307,7 +307,7 @@ export var applicationData = {
         },
         {
             name: "Luminus",
-            color: "#06f7fc",
+            color: "#d9e2de",
             servers: [
                 {
                     name: "app2hostname1"
@@ -322,7 +322,7 @@ export var applicationData = {
         },
         {
             name: "AppPlatform",
-            color: "#06f7fc",
+            color: "#822405",
             servers: [
                 {
                     name: "app2hostname1"
@@ -337,7 +337,7 @@ export var applicationData = {
         },
         {
             name: "Hadoop",
-            color: "#06f7fc",
+            color: "#e0ef3b",
             servers: [
                 {
                     name: "app2hostname1"
