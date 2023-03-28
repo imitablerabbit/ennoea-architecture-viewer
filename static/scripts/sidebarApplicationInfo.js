@@ -23,10 +23,16 @@ export function displayApplicationData(applicationData) {
 
         let sectionElement = document.createElement('section');
         sectionElement.classList.add('application-info');
+        sectionElement.style.borderColor = app.color;
 
         let nameElement = document.createElement('h2');
         nameElement.classList.add('app-name');
         nameElement.innerText = app.name;
+        nameElement.style.backgroundColor = app.color;
+        let l = luma(app.color);
+        if (l < 60) {
+            nameElement.classList.add('dark');
+        }
         
         let colorElement = document.createElement('span');
         colorElement.classList.add('color-display');
@@ -39,7 +45,7 @@ export function displayApplicationData(applicationData) {
         colorInput.addEventListener('change', () => {
             app.color = colorInput.value;
             displayApplicationData(applicationData);
-            scene.reset(applicationData);
+            scene.updateObjects(applicationData);
         });
         colorElement.appendChild(colorText);
         colorElement.appendChild(colorInput);
@@ -59,6 +65,7 @@ export function displayApplicationData(applicationData) {
         let jumpToButton = document.createElement('button');
         jumpToButton.addEventListener('click', () => {
             let cameraPosition = [...app.position];
+            cameraPosition[1] += 10;
             cameraPosition[2] += 10;
             scene.setCameraPosition(cameraPosition);
             scene.setCameraLookAt(app.position);
@@ -123,4 +130,14 @@ function generatAppKListDataElement(k, list) {
     dataElement.appendChild(appListTitleElement);
     dataElement.appendChild(ulElement);
     return dataElement
+}
+
+// Calculate the luma of a color passed in as a hex string.
+function luma(color) {
+    color = color.substring(1);
+    color = parseInt(color, 16);
+    let r = (color >> 16) & 0xff;
+    let g = (color >>  8) & 0xff;
+    let b = (color >>  0) & 0xff;
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }

@@ -103,7 +103,7 @@ export function init() {
         controls = new OrbitControls(camera, renderer.domElement, scene);
         controls.addEventListener('change', render);
 
-        ambientLight = new THREE.AmbientLight(0xffffff);
+        ambientLight = new THREE.AmbientLight(0xffffff, 1);
         scene.add(ambientLight);
 
         renderer.domElement.style.touchAction = 'none';
@@ -116,8 +116,21 @@ export function init() {
     });    
 }
 
-// Destroy the scene and reinitialize it.
+// Start the animation loop. This should be called after the scene has
+// been initialized.
+export function start() {
+    animate();
+}
+
+// Destroy the scene and reinitialize it. This also includes all of the scene
+// level data in the application data.
 export function reset(applicationData) {
+    updateObjects(applicationData);
+    setCameraPosition(applicationData.scene.camera.position);
+}
+
+// Regenerate the scene based on the new application data.
+export function updateObjects(applicationData) {
     sceneObjects.forEach(function(object) {
         scene.remove(object);
     });
@@ -130,13 +143,12 @@ export function reset(applicationData) {
     generateApplicationMeshes(applicationData);
 }
 
-// Start the animation loop. This should be called after the scene has
-// been initialized.
-export function start() {
-    animate();
-}
-
 function generateApplicationMeshes(applicationData) {
+    let pointLight = new THREE.PointLight(0xffffff, 0.5);
+    pointLight.position.set(0, 100, 0);
+    scene.add(pointLight);
+    sceneObjects.push(pointLight);
+
     for (let i=0; i < applicationData.applications.length; i++) {
         let application = applicationData.applications[i];
 
@@ -177,10 +189,7 @@ function generateApplicationMeshes(applicationData) {
         selectableObjects.push(mesh);
         sceneObjects.push(mesh);
 
-        let pointLight = new THREE.PointLight(0xffffff);
-        pointLight.position.set(posX, posY + 20, posZ);
-        scene.add(pointLight);
-        sceneObjects.push(pointLight);
+
 
         let textGeo = new TextGeometry(name, {
             font: font,
@@ -188,7 +197,7 @@ function generateApplicationMeshes(applicationData) {
             height: 0.2,
             curveSegments: 2,
         } );
-        let textMaterial = new THREE.MeshBasicMaterial({color: color});
+        let textMaterial = new THREE.MeshStandardMaterial({color: color});
         let textMesh = new THREE.Mesh(textGeo, textMaterial);
         let xOffset = (name.length) / 2 / 1.5; // todo: base this off the size of the geometry
         textMesh.position.set(posX - xOffset, posY + 2, posZ);
@@ -221,6 +230,10 @@ function onClick(event) {
 }
 
 function windowResize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    xPos = window.innerWidth - width;
+    yPos = window.innerHeight - height;
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
