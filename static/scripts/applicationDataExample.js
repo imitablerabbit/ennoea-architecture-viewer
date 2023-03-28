@@ -123,7 +123,8 @@ export var applicationData = {
             ],
             position: [-10, 0, 15],
             rotation: [0, 0, 0],
-            scale: [1, 1, 1]
+            scale: [1, 0.8, 1],
+            geometry: "cylinder"
         },
         {
             name: "Bread Replica",
@@ -136,9 +137,10 @@ export var applicationData = {
                     name: "app2hostname2"
                 }
             ],
-            position: [-10, -4, 15],
+            position: [-10, -4.5, 15],
             rotation: [0, 0, 0],
-            scale: [1, 1, 1]
+            scale: [1, 0.8, 1],
+            geometry: "cylinder"
         },
         {
             name: "Magic Baby (MBS)",
@@ -258,7 +260,8 @@ export var applicationData = {
             ],
             position: [40, 0, 0],
             rotation: [0, 0, 0],
-            scale: [3, 3, 3]
+            scale: [2, 2, 2],
+            geometry: "sphere"
         },
         {
             name: "EKS",

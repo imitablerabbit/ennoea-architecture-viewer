@@ -154,7 +154,6 @@ function generateApplicationMeshes(applicationData) {
     for (let i=0; i < applicationData.applications.length; i++) {
         let application = applicationData.applications[i];
 
-        let name = application.name;
         let color = application.color;
         let position = application.position;
         let rotation = application.rotation;
@@ -175,8 +174,38 @@ function generateApplicationMeshes(applicationData) {
         rotY = rotY * Math.PI / 180;
         rotZ = rotZ * Math.PI / 180;
 
-        // let geometry = new THREE.SphereGeometry(1, 32, 16);
+        // Set the geometry based on the geometry type in the application data.
         let geometry = new THREE.BoxGeometry(1, 1, 1);
+        if (application.geometry == "box") {
+            geometry = new THREE.BoxGeometry(1, 1, 1);
+        } else if (application.geometry == "capsule") {
+            geometry = new THREE.CapsuleGeometry(1, 1, 16, 16);
+        } else if (application.geometry == "circle") {
+            geometry = new THREE.CircleGeometry(1, 32);
+        } else if (application.geometry == "cone") {
+            geometry = new THREE.ConeGeometry(1, 2, 32);
+        } else if (application.geometry == "cylinder") {
+            geometry = new THREE.CylinderGeometry(1, 1, 2.5, 32);
+        } else if (application.geometry == "dodecahedron") {
+            geometry = new THREE.DodecahedronGeometry(1, 0);
+        } else if (application.geometry == "icosahedron") {
+            geometry = new THREE.IcosahedronGeometry(1, 0);
+        } else if (application.geometry == "octahedron") {
+            geometry = new THREE.OctahedronGeometry(1, 0);
+        } else if (application.geometry == "plane") {
+            geometry = new THREE.PlaneGeometry(1, 1);
+        } else if (application.geometry == "ring") {
+            geometry = new THREE.RingGeometry(0.5, 1, 32);
+        } else if (application.geometry == "sphere") {
+            geometry = new THREE.SphereGeometry(1, 32, 16);
+        } else if (application.geometry == "tetrahedron") {
+            geometry = new THREE.TetrahedronGeometry(1, 0);
+        } else if (application.geometry == "torus") {
+            geometry = new THREE.TorusGeometry(1, 0.4, 16, 100);
+        } else if (application.geometry == "torusKnot") {
+            geometry = new THREE.TorusKnotGeometry(1, 0.4, 100, 16);
+        }
+
         let material = new THREE.MeshStandardMaterial({
             color: color,
         });
@@ -194,7 +223,7 @@ function generateApplicationMeshes(applicationData) {
 
 
 
-        let textGeo = new TextGeometry(name, {
+        let textGeo = new TextGeometry(application.name, {
             font: font,
             size: 1,
             height: 0.2,
@@ -202,7 +231,7 @@ function generateApplicationMeshes(applicationData) {
         } );
         let textMaterial = new THREE.MeshStandardMaterial({color: color});
         let textMesh = new THREE.Mesh(textGeo, textMaterial);
-        let xOffset = (name.length) / 2 / 1.5; // todo: base this off the size of the geometry
+        let xOffset = (application.name.length) / 2 / 1.5; // todo: base this off the size of the geometry
         textMesh.position.set(posX - xOffset, posY + 2, posZ);
         scene.add(textMesh);
         sceneObjects.push(textMesh);
