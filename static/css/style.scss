@@ -439,6 +439,17 @@ button {
 }
 
 
+select {
+    background-color: $navBGColor;
+    color: $fgColor;
+    border: solid 1px $fgColor;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 4px;
+    font-size: 1rem;
+}
+
+
 ::-webkit-scrollbar {
     width: 12px;
 }

@@ -6,6 +6,23 @@ import * as scene from './scene.js';
 
 var applicationInfoSidebarElement;
 
+const geometryOptions = [
+    "box",
+    "capsule",
+    "circle",
+    "cone",
+    "cylinder",
+    "dodecahedron",
+    "icosahedron",
+    "octahedron",
+    "plane",
+    "ring",
+    "sphere",
+    "tetrahedron",
+    "torus",
+    "torusKnot"
+];
+
 // Initialize the application info sidebar. Returns a promise that resolves
 // when the sidebar has been initialized.
 export function init() {
@@ -34,47 +51,26 @@ export function displayApplicationData(applicationData) {
             nameElement.classList.add('dark');
         }
         
-        let colorElement = document.createElement('span');
-        colorElement.classList.add('color-display');
-        let colorText = document.createElement('p');
-        colorText.classList.add('app-color');
-        colorText.innerText = app.color;
-        let colorInput = document.createElement('input');
-        colorInput.setAttribute('type', 'color');
-        colorInput.defaultValue = app.color;
-        colorInput.addEventListener('change', () => {
-            app.color = colorInput.value;
-            displayApplicationData(applicationData);
-            scene.updateObjects(applicationData);
-        });
-        colorElement.appendChild(colorText);
-        colorElement.appendChild(colorInput);
-        let colorDataElement = generateAppKVElementDataElement('Color: ', colorElement);
+        let colorDataElement = generateColorPickerElement(app, applicationData);
+        let geometryDataElement = generateGeometryDropdownElement(app, applicationData);
 
         let serverNames = app.servers.map((server) => server.name);
         let serverDataElement = generatAppKListDataElement('Servers: ', serverNames);
 
         let positionString = app.position.join(", ");
         let positionDataElement = generateAppKVDataElement('Position: ', positionString);
+
         let rotationString = app.rotation.join(", ");
         let rotationDataElement = generateAppKVDataElement('Rotation: ', rotationString);
+
         let scaleString = app.scale.join(", ");
         let scaleDataElement = generateAppKVDataElement('Scale: ', scaleString);
 
-        let jumpToButtonContainer = document.createElement('div');
-        let jumpToButton = document.createElement('button');
-        jumpToButton.addEventListener('click', () => {
-            let cameraPosition = [...app.position];
-            cameraPosition[1] += 10;
-            cameraPosition[2] += 10;
-            scene.setCameraPosition(cameraPosition);
-            scene.setCameraLookAt(app.position);
-        });
-        jumpToButton.innerText = 'Jump To';
-        jumpToButtonContainer.appendChild(jumpToButton);
+        let jumpToButtonContainer = generateJumpToButtonElement(app);
 
         sectionElement.appendChild(nameElement);
         sectionElement.appendChild(colorDataElement);
+        sectionElement.appendChild(geometryDataElement);
         sectionElement.appendChild(serverDataElement);
         sectionElement.appendChild(positionDataElement);
         sectionElement.appendChild(rotationDataElement);
@@ -85,6 +81,80 @@ export function displayApplicationData(applicationData) {
     }
 }
 
+// Calculate the luma of a color passed in as a hex string.
+function luma(color) {
+    color = color.substring(1);
+    color = parseInt(color, 16);
+    let r = (color >> 16) & 0xff;
+    let g = (color >>  8) & 0xff;
+    let b = (color >>  0) & 0xff;
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+// Generate the color picker element for the application info sidebar.
+function generateColorPickerElement(app, applicationData) {
+    let colorElement = document.createElement('span');
+    colorElement.classList.add('color-display');
+    let colorText = document.createElement('p');
+    colorText.classList.add('app-color');
+    colorText.innerText = app.color;
+    let colorInput = document.createElement('input');
+    colorInput.setAttribute('type', 'color');
+    colorInput.defaultValue = app.color;
+    colorInput.addEventListener('change', () => {
+        app.color = colorInput.value;
+        displayApplicationData(applicationData);
+        scene.updateObjects(applicationData);
+    });
+    colorElement.appendChild(colorText);
+    colorElement.appendChild(colorInput);
+    let colorDataElement = generateAppKVElementDataElement('Color: ', colorElement);
+    return colorDataElement;
+}
+
+// Generate the dropdown menu for geometry selection.
+function generateGeometryDropdownElement(app, applicationData) {
+    let geometryDropdown = document.createElement('select');
+    geometryDropdown.addEventListener('change', () => {
+        app.geometry = geometryDropdown.value;
+        scene.updateObjects(applicationData);
+    });
+    for (let i = 0; i < geometryOptions.length; i++) {
+        let option = document.createElement('option');
+        option.value = geometryOptions[i];
+        option.innerText = geometryOptions[i];
+        if (app.geometry == geometryOptions[i]) {
+            option.selected = true;
+        }
+        geometryDropdown.appendChild(option);
+    }
+    let geometryDataElement = generateAppKVElementDataElement('Geometry: ', geometryDropdown);
+    return geometryDataElement;
+}
+
+// Generate the jump to button for the application info sidebar.
+function generateJumpToButtonElement(app) {
+    let jumpToButtonContainer = document.createElement('div');
+    let jumpToButton = document.createElement('button');
+    jumpToButton.addEventListener('click', () => {
+        let cameraPosition = [...app.position];
+        cameraPosition[1] += 10;
+        cameraPosition[2] += 10;
+        scene.setCameraPosition(cameraPosition);
+        scene.setCameraLookAt(app.position);
+    });
+    jumpToButton.innerText = 'Jump To';
+    jumpToButtonContainer.appendChild(jumpToButton);
+    return jumpToButtonContainer;
+}
+
+// General data element creation functions
+
+// Generate a data element with a key and a value element.
+// This function allows you to pass in a value element that
+// is already created. This is useful for things like color
+// pickers where you need to create the input element separately
+// from the rest of the data element.
 function generateAppKVElementDataElement(k, vElement) {
     let dataElement = document.createElement('div');
     dataElement.classList.add('app-data-kv');
@@ -98,6 +168,8 @@ function generateAppKVElementDataElement(k, vElement) {
     return dataElement;
 }
 
+// Generate a data element with a key and a value. k and v
+// are both strings.
 function generateAppKVDataElement(k, v) {
     let dataElement = document.createElement('div');
     dataElement.classList.add('app-data-kv');
@@ -114,6 +186,8 @@ function generateAppKVDataElement(k, v) {
     return dataElement;
 }
 
+// Generate a data element with a key and a list of values.
+// k is a string and list is an array of strings.
 function generatAppKListDataElement(k, list) {
     let dataElement = document.createElement('div');
     dataElement.classList.add('app-data-list');
@@ -132,12 +206,4 @@ function generatAppKListDataElement(k, list) {
     return dataElement
 }
 
-// Calculate the luma of a color passed in as a hex string.
-function luma(color) {
-    color = color.substring(1);
-    color = parseInt(color, 16);
-    let r = (color >> 16) & 0xff;
-    let g = (color >>  8) & 0xff;
-    let b = (color >>  0) & 0xff;
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
+
