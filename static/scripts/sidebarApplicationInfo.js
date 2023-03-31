@@ -51,6 +51,7 @@ export function displayApplicationData(applicationData) {
             nameElement.classList.add('dark');
         }
         
+        let visibilityDataElement = generateVisibilityCheckboxElement(app, applicationData);
         let colorDataElement = generateColorPickerElement(app, applicationData);
         let geometryDataElement = generateGeometryDropdownElement(app, applicationData);
 
@@ -69,6 +70,7 @@ export function displayApplicationData(applicationData) {
         let jumpToButtonContainer = generateJumpToButtonElement(app);
 
         sectionElement.appendChild(nameElement);
+        sectionElement.appendChild(visibilityDataElement);
         sectionElement.appendChild(colorDataElement);
         sectionElement.appendChild(geometryDataElement);
         sectionElement.appendChild(serverDataElement);
@@ -89,6 +91,23 @@ function luma(color) {
     let g = (color >>  8) & 0xff;
     let b = (color >>  0) & 0xff;
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+// Generate a checkbox element to control the visibility of an application.
+function generateVisibilityCheckboxElement(app, applicationData) {
+    let checkboxElement = document.createElement('input');
+    checkboxElement.setAttribute('type', 'checkbox');
+    if (app.visible != null) {
+        checkboxElement.checked = app.visible;
+    } else {
+        checkboxElement.checked = true;
+    }
+    checkboxElement.addEventListener('change', () => {
+        app.visible = checkboxElement.checked;
+        scene.updateObjects(applicationData);
+    });
+    let checkboxDataElement = generateAppKVElementDataElement('Visibile: ', checkboxElement);
+    return checkboxDataElement;
 }
 
 // Generate the color picker element for the application info sidebar.

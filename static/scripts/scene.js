@@ -154,6 +154,10 @@ function generateApplicationMeshes(applicationData) {
     for (let i=0; i < applicationData.applications.length; i++) {
         let application = applicationData.applications[i];
 
+        if (application.visible != null && !application.visible) {
+            continue;
+        }
+
         let color = application.color;
         let position = application.position;
         let rotation = application.rotation;
