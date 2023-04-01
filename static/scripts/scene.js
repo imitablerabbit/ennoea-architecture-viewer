@@ -12,6 +12,7 @@ import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
 import { PopupWindow } from './popupWindow.js';
+import * as alert from './alert.js';
 
 
 // Canvas dimensions and positions
@@ -28,9 +29,6 @@ var sceneObjects = [];
 
 // General Scene elements.
 var ambientLight;
-
-// Font used for the application names.
-var font;
 
 // Object selections and outline postprocessing shaders. Hover pass will
 // always take precedent over the selected pass. We must have strict
@@ -49,6 +47,7 @@ var selectedOutlinedObjects = [];
 
 // Text geometry used for the application names.
 const loader = new FontLoader();
+var font;
 var textObjects = [];
 
 // Load the external files for the scene. Returns a promise that resolves
@@ -110,7 +109,12 @@ export function init() {
             // always face the camera.
             for (let i = 0; i < textObjects.length; i++) {
                 let textObject = textObjects[i];
-                textObject.lookAt(camera.position);
+                
+                // Create a look at vector that is the same as the camera
+                // position but with the y value of the text object.
+                let cameraPosition = camera.position.clone();
+                cameraPosition.y = textObject.position.y;
+                textObject.lookAt(cameraPosition);
             }
             render();
         });
