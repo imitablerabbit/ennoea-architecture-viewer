@@ -47,7 +47,9 @@ var selectedObjects = [];
 var hoverOutlinedObjects = [];
 var selectedOutlinedObjects = [];
 
+// Text geometry used for the application names.
 const loader = new FontLoader();
+var textObjects = [];
 
 // Load the external files for the scene. Returns a promise that resolves
 // when all the files have been loaded.
@@ -103,7 +105,15 @@ export function init() {
         composer.addPass(outlinePassSelected);
 
         controls = new OrbitControls(camera, renderer.domElement, scene);
-        controls.addEventListener('change', render);
+        controls.addEventListener('change', () => {
+            // Loop through the text objects and update their rotation to
+            // always face the camera.
+            for (let i = 0; i < textObjects.length; i++) {
+                let textObject = textObjects[i];
+                textObject.lookAt(camera.position);
+            }
+            render();
+        });
 
         ambientLight = new THREE.AmbientLight(0xffffff, 1);
         scene.add(ambientLight);
@@ -225,25 +235,109 @@ function generateApplicationMeshes(applicationData) {
         selectableObjects.push(mesh);
         sceneObjects.push(mesh);
 
-
-
         let textGeo = new TextGeometry(application.name, {
             font: font,
             size: 1,
             height: 0.2,
             curveSegments: 2,
         } );
+        textGeo.computeBoundingBox();
+        textGeo.translate(
+            -0.5 * (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x),
+            0,
+            -0.5 * (textGeo.boundingBox.max.z - textGeo.boundingBox.min.z)
+        );
+
         let textMaterial = new THREE.MeshStandardMaterial({color: color});
         let textMesh = new THREE.Mesh(textGeo, textMaterial);
-        let xOffset = (application.name.length) / 2 / 1.5; // todo: base this off the size of the geometry
-        textMesh.position.set(posX - xOffset, posY + 2, posZ);
+        let highestY = getHighestYPoint(mesh);
+        textMesh.position.set(posX, highestY + 1, posZ);
         scene.add(textMesh);
         sceneObjects.push(textMesh);
+        textObjects.push(textMesh);
+    }
 
-        console.log(mesh.position);
+    // Add the connections between the applications.
+    for (let i=0; i < applicationData.connections.length; i++) {
+        let connection = applicationData.connections[i];
+        let source = connection.source;
+        let target = connection.target;
+        let sourceApplication = findApplicationDataByName(source, applicationData);
+        let targetApplication = findApplicationDataByName(target, applicationData);
+        let sourceMesh = findObjectByName(source, selectableObjects);
+        let targetMesh = findObjectByName(target, selectableObjects);
+        if (sourceMesh == null || targetMesh == null) {
+            alert.error("Could not find source or target for connection: " + source + " -> " + target);
+            continue;
+        }
+
+        let sourceCenter = getMeshCenter(sourceMesh);
+        let targetCenter = getMeshCenter(targetMesh);
+        let sourceLowest = getLowestYPoint(sourceMesh);
+        let targetLowest = getLowestYPoint(targetMesh);
+        sourceCenter.y = sourceLowest;
+        targetCenter.y = targetLowest;
+
+        let color = sourceApplication.color;
+        let midpoint = getMidpoint(sourceCenter, targetCenter);
+        midpoint.addVectors(new THREE.Vector3(0, -5, 0), midpoint);
+
+        let curve = new THREE.QuadraticBezierCurve3(sourceCenter, midpoint, targetCenter);
+        let points = curve.getPoints(50);
+        let geometry = new THREE.BufferGeometry().setFromPoints(points);
+        let material = new THREE.LineBasicMaterial({
+            color: color,
+
+            // Unlikely to take effect.
+            // https://threejs.org/docs/?q=LineBasicMaterial#api/en/materials/LineBasicMaterial.linewidth
+            linewidth: 10
+        });
+        let line = new THREE.Line(geometry, material);
+        scene.add(line);
+        sceneObjects.push(line);
+
+        // Add the arrow head just before the target.
+        let arrowHead = new THREE.ArrowHelper(curve.getTangent(1), targetCenter, 0, color, 0.4, 0.2);
+        scene.add(arrowHead);
+        sceneObjects.push(arrowHead);
     }
 }
 
+// Vertex helper functions.
+
+// Get the center of a mesh in world space.
+function getMeshCenter(mesh) {
+    const box = new THREE.Box3().setFromObject(mesh);
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+    console.log("BBox Center:", center);
+    return center;
+}
+
+// Find the middle point between two points in 3D space.
+function getMidpoint(point1, point2) {
+    let v = new THREE.Vector3();
+    v.addVectors(point1, point2);
+    v.divideScalar(2);
+    return v;
+}
+
+// Lowest y point in the mesh geometry.
+function getLowestYPoint(mesh) {
+    let box = new THREE.Box3().setFromObject(mesh);
+    return box.min.y;
+}
+
+// Highest y point in the mesh geometry.
+function getHighestYPoint(mesh) {
+    let box = new THREE.Box3().setFromObject(mesh);
+    return box.max.y;
+}
+
+// Event handlers
+
+// Handle mouse movement. This is used to detect when the mouse is hovering
+// over an object.
 function onPointerMove(event) {
     if (event.isPrimary === false) return;
     let canvasX = event.clientX - xPos;
@@ -261,6 +355,9 @@ function onPointerMove(event) {
     }
 }
 
+// Handle mouse clicks. This is used to detect when the mouse is clicked
+// on an object. When an object is clicked, a popup is created with the
+// application information stored on the object's userData.
 function onClick(event) {
     selectedObjects = [...hoveredObjects];
 
@@ -292,6 +389,8 @@ function onClick(event) {
 
 }
 
+// Handle window resizing. This is used to update the camera and renderer
+// when the window is resized.
 function windowResize() {
     width = window.innerWidth;
     height = window.innerHeight;
@@ -304,11 +403,18 @@ function windowResize() {
     controls.update();
 }
 
+// Scene rendering.
+
+// Render the scene. This is going to be called every frame via requestAnimationFrame.
+// This is the main loop for the rendering.
 function animate() {
     requestAnimationFrame( animate );
     render();
 }
 
+// Render the scene. We are using a composer to render the scene with
+// the outline pass. Carefully organise the objects to be outlined so that
+// we do not have the same object outlined twice.
 function render() {
     hoverOutlinedObjects = [...hoveredObjects];
     selectedOutlinedObjects = [];
@@ -324,8 +430,10 @@ function render() {
     composer.render();
 }
 
+// Helper functions for finding objects and application data.
+
 // Find the object with the given name.
-export function findObjectByName(name) {
+export function findObjectByName(name, selectableObjects) {
     for (let i = 0; i < selectableObjects.length; i++) {
         let object = selectableObjects[i];
         if (object.userData.name === name) {
@@ -336,7 +444,7 @@ export function findObjectByName(name) {
 }
 
 // Find application data with the given name.
-export function findApplicationDataByName(name) {
+export function findApplicationDataByName(name, applicationData) {
     for (let i = 0; i < applicationData.applications.length; i++) {
         let application = applicationData.applications[i];
         if (application.name === name) {
@@ -346,6 +454,9 @@ export function findApplicationDataByName(name) {
     return null;
 }
 
+// Scene manipulation functions.
+
+// Set the camera position. position is an array of 3 numbers.
 export function setCameraPosition(position) {
     if (position === null) {
         console.error("position is null: ", position);
@@ -365,10 +476,14 @@ export function setCameraPosition(position) {
         y: position[1],
         z: position[2],
         duration: 1,
-        onUpdate: () => controls.update()
+        onUpdate: () => {
+            
+            controls.update();
+        }
     });
 }
 
+// Set the camera look at position. position is an array of 3 numbers.
 export function setCameraLookAt(position) {
     if (position === null) {
         console.error("position is null: ", position);

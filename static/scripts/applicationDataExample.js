@@ -4,6 +4,92 @@ export var applicationData = {
             position: [0, 20, 20]
         }
     },
+    connections: [
+        {
+            source: "Endpoints",
+            target: "Gary",
+        },
+        {
+            source: "Gary",
+            target: "NPD",
+        },
+        {
+            source: "Gary",
+            target: "Ratman",
+        },
+        {
+            source: "Clogger",
+            target: "Squirtl",
+        },
+        {
+            source: "Squirtl",
+            target: "Luminus",
+        },
+        {
+            source: "Luminus",
+            target: "AppPlatform",
+        },
+        {
+            source: "AppPlatform",
+            target: "Hadoop",
+        },
+        {
+            source: "Bingo",
+            target: "Clogger",
+        },
+        {
+            source: "Bingo",
+            target: "Papaya",
+        },
+        {
+            source: "Papaya",
+            target: "Bread",
+        },
+        {
+            source: "Bread",
+            target: "Bread Replica",
+        },
+        {
+            source: "Papaya",
+            target: "Magic Baby (MBS)",
+        },
+        {
+            source: "Magic Baby (MBS)",
+            target: "LMNOP",
+        },
+        {
+            source: "LMNOP",
+            target: "Raccoon",
+        },
+        {
+            source: "Raccoon",
+            target: "WNGMAN",
+        },
+        {
+            source: "WNGMAN",
+            target: "RGS",
+        },
+        {
+            source: "WNGMAN",
+            target: "BRB-DLL",
+        },
+        {
+            source: "WNGMAN",
+            target: "PCP (Legacy)",
+        },
+        {
+            source: "WNGMAN",
+            target: "Galactus",
+        },
+        {
+            source: "Galactus",
+            target: "EKS",
+        },
+        {
+            source: "Galactus",
+            target: "OMEGA STAR",
+        }
+    ],
     applications: [
         {
             name: "Bingo",
