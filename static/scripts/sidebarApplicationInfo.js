@@ -23,20 +23,45 @@ const geometryOptions = [
     "torusKnot"
 ];
 
+// Filter variables
+var filterInput;
+var filterClearButton;
+var filterText = '';
+
 // Initialize the application info sidebar. Returns a promise that resolves
 // when the sidebar has been initialized.
 export function init() {
     return new Promise((resolve, reject) => {
         applicationInfoSidebarElement = document.getElementById('application-info-list');
+
+        filterInput = document.getElementById('application-filter-input');
+        filterClearButton = document.getElementById('application-filter-clear');
+
         resolve();
     });
 }
 
+// Start the application info sidebar. This should be called after the
+// scene has been initialized.
+export function start(applicationData) {
+    filterInput.addEventListener('input', () => {
+        filterText = filterInput.value;
+        displayApplicationData(applicationData);
+    });
+
+    displayApplicationData(applicationData);
+}
+
+// Render the application info sidebar.
 export function displayApplicationData(applicationData) {
     applicationInfoSidebarElement.innerHTML = '';
 
     for (let i = 0; i < applicationData.applications.length; i++) {
         let app = applicationData.applications[i];
+
+        if (filterText != '' && !app.name.toLowerCase().includes(filterText.toLowerCase())) {
+            continue;
+        }
 
         let sectionElement = document.createElement('section');
         sectionElement.classList.add('application-info');

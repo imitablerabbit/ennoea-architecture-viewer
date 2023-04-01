@@ -36,5 +36,5 @@ function init() {
 function start() {
     scene.reset(applicationData);
     scene.start();
-    sidebarApplicationInfo.displayApplicationData(applicationData);
+    sidebarApplicationInfo.start(applicationData);
 }

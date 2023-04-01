@@ -160,7 +160,7 @@ body {
         display: flex;
         flex-direction: column;
         gap: 10px;
-    }    
+    }
 }
 
 #applications {
@@ -168,6 +168,16 @@ body {
     gap: 10px;
     flex-direction: column;
     overflow-y: auto;
+
+    #application-filter {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+
+        #application-filter-input {
+            flex-grow: 2;
+        }
+    }
 
     #application-info-list {
         display: flex;
@@ -223,6 +233,25 @@ body {
     
             &.dark {
                 color: $fgColor;
+            }
+        }
+
+        input[type="color"] {
+            border: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 50px;
+            height: 30px;
+
+            &:hover {
+                cursor: pointer;
+            }
+            &::-webkit-color-swatch {
+                border: none;
+            }
+            &::-moz-color-swatch {
+                border: none;
             }
         }
     }
@@ -428,10 +457,6 @@ dialog {
 
         input[type=number] {
             width: 45px;
-            background: none;
-            color: $fgColor;
-            border: solid 1px $fgColor;
-            border-radius: 1px;
             margin-top: 2px;
             padding: 3px 0px 3px 3px;
         }
@@ -446,6 +471,7 @@ button {
     border: solid 2px $fgColor;
     padding: 10px;
     box-sizing: border-box;
+    border-radius: 2px;
 
     &:hover {
         cursor: pointer;
@@ -473,30 +499,36 @@ button {
 }
 
 
-select {
+// General input styling for consistency.
+select,
+input[type="text"],
+input[type="number"],
+input[type="checkbox"],
+input[type="color"],
+input[type="search"]
+{
     background-color: $navBGColor;
     color: $fgColor;
     border: solid 1px $fgColor;
     height: 100%;
     box-sizing: border-box;
-    padding: 4px;
-    font-size: 1rem;
+    font-size: 0.9rem;
+    border-radius: 1px;
+    min-height: 25px;
 }
-
-
 input[type="checkbox"] {
     margin-top: 2px;
 }
 
 
+// Scrollbar styling
+
 ::-webkit-scrollbar {
     width: 12px;
 }
-
 ::-webkit-scrollbar-track {
     background-color: $navBGColor;
 }
-
 ::-webkit-scrollbar-thumb {
     background: $bgColor;
     border: solid 3px $navBGColor;
