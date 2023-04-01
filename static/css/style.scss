@@ -227,6 +227,10 @@ body {
         display: flex;
         gap: 5px;
         align-items: center;
+
+        .title {
+            flex-grow: 2;
+        }
     }
 
     .color-display {
@@ -401,6 +405,31 @@ dialog {
         display: flex;
         flex-direction: column;
         gap: 10px;
+    }
+}
+
+
+
+.vector3-input-container {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+
+    .number-input-container {
+        display: flex;
+        flex-direction: row;
+        gap: 5px;
+        align-items: center;
+
+        input[type=number] {
+            width: 45px;
+            background: none;
+            color: $fgColor;
+            border: solid 1px $fgColor;
+            border-radius: 1px;
+            margin-top: 2px;
+            padding: 3px 0px 3px 3px;
+        }
     }
 }
 
