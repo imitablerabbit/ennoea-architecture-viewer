@@ -42,17 +42,9 @@ export function displayApplicationData(applicationData) {
         sectionElement.classList.add('application-info');
         sectionElement.style.borderColor = app.color;
 
-        let nameElement = document.createElement('h2');
-        nameElement.classList.add('app-name');
-        nameElement.innerText = app.name;
-        nameElement.style.backgroundColor = app.color;
-        let l = luma(app.color);
-        if (l < 60) {
-            nameElement.classList.add('dark');
-        }
+        let titleContainer = generateAppTitleElement(app, applicationData);
         
         let visibilityDataElement = generateVisibilityCheckboxElement(app, applicationData);
-        let colorDataElement = generateColorPickerElement(app, applicationData);
         let geometryDataElement = generateGeometryDropdownElement(app, applicationData);
 
         let serverNames = app.servers.map((server) => server.name);
@@ -69,9 +61,8 @@ export function displayApplicationData(applicationData) {
 
         let jumpToButtonContainer = generateJumpToButtonElement(app);
 
-        sectionElement.appendChild(nameElement);
+        sectionElement.appendChild(titleContainer);
         sectionElement.appendChild(visibilityDataElement);
-        sectionElement.appendChild(colorDataElement);
         sectionElement.appendChild(geometryDataElement);
         sectionElement.appendChild(serverDataElement);
         sectionElement.appendChild(positionDataElement);
@@ -93,6 +84,40 @@ function luma(color) {
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
+// Generate title bar element for the application info sidebar.
+function generateAppTitleElement(app, applicationData) {
+    let titleContainer = document.createElement('div');
+    titleContainer.classList.add('title-container');
+    titleContainer.style.backgroundColor = app.color;
+
+    let nameElement = document.createElement('h2');
+    nameElement.classList.add('app-name');
+    nameElement.innerText = app.name;
+    let l = luma(app.color);
+    if (l < 60) {
+        nameElement.classList.add('dark');
+    }
+
+    let colorDataElement = generateColorPickerElement(app, applicationData);
+
+    titleContainer.appendChild(nameElement);
+    titleContainer.appendChild(colorDataElement);
+    return titleContainer;
+}
+
+// Generate the color picker element for the application info sidebar.
+function generateColorPickerElement(app, applicationData) {
+    let colorInput = document.createElement('input');
+    colorInput.setAttribute('type', 'color');
+    colorInput.defaultValue = app.color;
+    colorInput.addEventListener('change', () => {
+        app.color = colorInput.value;
+        displayApplicationData(applicationData);
+        scene.updateObjects(applicationData);
+    });
+    return colorInput;
+}
+
 // Generate a checkbox element to control the visibility of an application.
 function generateVisibilityCheckboxElement(app, applicationData) {
     let checkboxElement = document.createElement('input');
@@ -108,27 +133,6 @@ function generateVisibilityCheckboxElement(app, applicationData) {
     });
     let checkboxDataElement = generateAppKVElementDataElement('Visible: ', checkboxElement);
     return checkboxDataElement;
-}
-
-// Generate the color picker element for the application info sidebar.
-function generateColorPickerElement(app, applicationData) {
-    let colorElement = document.createElement('span');
-    colorElement.classList.add('color-display');
-    let colorText = document.createElement('p');
-    colorText.classList.add('app-color');
-    colorText.innerText = app.color;
-    let colorInput = document.createElement('input');
-    colorInput.setAttribute('type', 'color');
-    colorInput.defaultValue = app.color;
-    colorInput.addEventListener('change', () => {
-        app.color = colorInput.value;
-        displayApplicationData(applicationData);
-        scene.updateObjects(applicationData);
-    });
-    colorElement.appendChild(colorText);
-    colorElement.appendChild(colorInput);
-    let colorDataElement = generateAppKVElementDataElement('Color: ', colorElement);
-    return colorDataElement;
 }
 
 // Generate the dropdown menu for geometry selection.
