@@ -50,14 +50,14 @@ export function displayApplicationData(applicationData) {
         let serverNames = app.servers.map((server) => server.name);
         let serverDataElement = generatAppKListDataElement('Servers: ', serverNames);
 
-        let positionString = app.position.join(", ");
-        let positionDataElement = generateAppKVDataElement('Position: ', positionString);
+        let positionVectorElement = generateVector3InputElements(app.position, applicationData, ["x", "y", "z"], 1);
+        let positionDataElement = generateAppKVElementDataElement('Position: ', positionVectorElement);
 
-        let rotationString = app.rotation.join(", ");
-        let rotationDataElement = generateAppKVDataElement('Rotation: ', rotationString);
+        let rotationVectorElement = generateVector3InputElements(app.rotation, applicationData, ["x", "y", "z"], 1);
+        let rotationDataElement = generateAppKVElementDataElement('Rotation: ', rotationVectorElement);
 
-        let scaleString = app.scale.join(", ");
-        let scaleDataElement = generateAppKVDataElement('Scale: ', scaleString);
+        let scaleVectorElement = generateVector3InputElements(app.scale, applicationData, ["x", "y", "z"], 1);
+        let scaleDataElement = generateAppKVElementDataElement('Scale: ', scaleVectorElement);
 
         let jumpToButtonContainer = generateJumpToButtonElement(app);
 
@@ -131,7 +131,7 @@ function generateVisibilityCheckboxElement(app, applicationData) {
         app.visible = checkboxElement.checked;
         scene.updateObjects(applicationData);
     });
-    let checkboxDataElement = generateAppKVElementDataElement('Visibile: ', checkboxElement);
+    let checkboxDataElement = generateAppKVElementDataElement('Visible: ', checkboxElement);
     return checkboxDataElement;
 }
 
@@ -229,4 +229,47 @@ function generatAppKListDataElement(k, list) {
     return dataElement
 }
 
+// Generate number inputs for a vector3.
+function generateVector3InputElements(vs, applicationData, labels, step = 1, min = null, max = null) {
+    let container = document.createElement('div');
+    container.classList.add('vector3-input-container');
 
+    for (let i = 0; i < labels.length; i++) {
+        let value = vs[i];
+        let label = labels[i];
+        let onChange = (newValue) => {
+            vs[i] = newValue;
+            scene.updateObjects(applicationData);
+        }
+        let input = generateNumberInput(value, label, onChange, step, min, max);
+        container.appendChild(input);
+    }
+    return container;
+}
+
+// Generate a single number input with a label.
+function generateNumberInput(value, label, onChange, step = 1, min = null, max = null) {
+    let container = document.createElement('div');
+    container.classList.add('number-input-container');
+
+    let labelElement = document.createElement('p');
+    labelElement.innerText = label;
+
+    let input = document.createElement('input');
+    input.value = value;
+    input.setAttribute('type', 'number');
+    input.setAttribute('step', step);
+    input.addEventListener('change', () => {
+        onChange(input.value);
+    });
+    if (min != null) {
+        input.setAttribute('min', min);
+    }
+    if (max != null) {
+        input.setAttribute('max', max);
+    }
+
+    container.appendChild(labelElement);
+    container.appendChild(input);
+    return container;
+}
