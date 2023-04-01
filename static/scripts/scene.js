@@ -256,6 +256,13 @@ function generateApplicationMeshes(applicationData) {
         let textMesh = new THREE.Mesh(textGeo, textMaterial);
         let highestY = getHighestYPoint(mesh);
         textMesh.position.set(posX, highestY + 1, posZ);
+
+        // Create a look at vector that is the same as the camera
+        // position but with the y value of the text object.
+        let cameraPosition = camera.position.clone();
+        cameraPosition.y = textMesh.position.y;
+        textMesh.lookAt(cameraPosition);
+
         scene.add(textMesh);
         sceneObjects.push(textMesh);
         textObjects.push(textMesh);
