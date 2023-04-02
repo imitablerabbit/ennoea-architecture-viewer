@@ -64,7 +64,7 @@ export function displayApplicationData(applicationData) {
         }
 
         let sectionElement = document.createElement('section');
-        sectionElement.classList.add('application-info');
+        sectionElement.classList.add('info-box');
         sectionElement.style.borderColor = app.color;
 
         let titleContainer = generateAppTitleElement(app, applicationData);
@@ -116,7 +116,7 @@ function generateAppTitleElement(app, applicationData) {
     titleContainer.style.backgroundColor = app.color;
 
     let nameElement = document.createElement('h2');
-    nameElement.classList.add('app-name');
+    nameElement.classList.add('title');
     nameElement.innerText = app.name;
     let l = luma(app.color);
     if (l < 60) {
@@ -205,7 +205,7 @@ function generateJumpToButtonElement(app) {
 // from the rest of the data element.
 function generateAppKVElementDataElement(k, vElement) {
     let dataElement = document.createElement('div');
-    dataElement.classList.add('app-data-kv');
+    dataElement.classList.add('info-box-kv');
 
     let titleElement = document.createElement('p');
     titleElement.classList.add('title');
@@ -220,7 +220,7 @@ function generateAppKVElementDataElement(k, vElement) {
 // are both strings.
 function generateAppKVDataElement(k, v) {
     let dataElement = document.createElement('div');
-    dataElement.classList.add('app-data-kv');
+    dataElement.classList.add('info-box-kv');
 
     let titleElement = document.createElement('p');
     titleElement.classList.add('title');
@@ -257,7 +257,7 @@ function generatAppKListDataElement(k, list) {
 // Generate number inputs for a vector3.
 function generateVector3InputElements(vs, applicationData, labels, step = 1, min = null, max = null) {
     let container = document.createElement('div');
-    container.classList.add('vector3-input-container');
+    container.classList.add('vector-input-container');
 
     for (let i = 0; i < labels.length; i++) {
         let value = vs[i];

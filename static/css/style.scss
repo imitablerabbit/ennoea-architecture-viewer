@@ -108,6 +108,7 @@ body {
     color: $navFGColor;
     padding: 0px;
     box-sizing: border-box;
+
     display: flex;
     flex-direction: column;
 
@@ -121,12 +122,6 @@ body {
     
     & > article {
         padding: 30px 30px;
-
-        & > .title {
-            font-size: 1.4rem;
-            margin: 0px;
-            margin-bottom: 10px;
-        }
     }
 
     #sidebar-toggle {
@@ -149,24 +144,34 @@ body {
             cursor: pointer;
         }
     }
+
+    & > article h1.title {
+        margin-bottom: 30px;
+    }
 }
 
 #settings {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    flex: none;
 
     #settings-form {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         gap: 10px;
     }
 }
 
+#scene {
+    flex: none
+}
+
 #applications {
+    flex: auto;
     display: flex;
-    gap: 10px;
     flex-direction: column;
+    gap: 10px;
     overflow-y: auto;
 
     #application-filter {
@@ -178,23 +183,51 @@ body {
             flex-grow: 2;
         }
     }
+}
 
-    #application-info-list {
-        display: flex;
-        gap: 20px;
-        flex-direction: column;
-    
-        & > * {
-            border: solid thin $fgColor;
-            border-radius: $borderRadius;
+.collapsable {
+    height: fit-content;
+    overflow: hidden;
+    max-height: 100vh;
+    position: relative;
+    margin: 0px;
+    padding: 0px;
+
+    & > .collapsable-toggle {
+        display: inline;
+        position: absolute;
+        right: 10px;
+        top: 24px;
+
+        .collapsable-toggle-text {
+            padding: 0px;
+            margin: 0px;
+            transform: rotateZ(-90deg);
+        }
+
+        &:hover {
+            cursor: pointer;
         }
     }
 }
 
-.application-info {
+.info-box-list {
+    overflow-y: auto;
+
+    & > .info-box {
+        margin-bottom: 10px;
+    }
+}
+
+.info-box {
+    width: 100%;
+    box-sizing: border-box;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+
+    border: solid thin $fgColor;
+    border-radius: $borderRadius;
 
     // Alternating colors for the info table. Default is light then dark.
     >:nth-child(2n) {
@@ -226,7 +259,7 @@ body {
         display: flex;
         align-items: center;
 
-        .app-name {
+        & > .title {
             font-size: 1.1rem;
             color: $bgColor;
             flex-grow: 2;
@@ -256,17 +289,6 @@ body {
         }
     }
 
-    .app-data-kv {
-        font-size: 1rem;
-        display: flex;
-        gap: 5px;
-        align-items: center;
-
-        .title {
-            flex-grow: 2;
-        }
-    }
-
     .color-display {
         display: flex;
         width: 100%;
@@ -276,6 +298,23 @@ body {
 
     button {
         width: 100%;
+    }
+
+    .info-box-kv {
+        font-size: 1rem;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    
+        .title {
+            flex-grow: 2;
+        }
+    }
+
+    .info-box-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
     }
 }
 
@@ -444,7 +483,7 @@ dialog {
 
 
 
-.vector3-input-container {
+.vector-input-container {
     display: flex;
     gap: 5px;
     align-items: center;
@@ -461,6 +500,22 @@ dialog {
             padding: 3px 0px 3px 3px;
         }
     }
+}
+
+
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0px;
+    margin-bottom: 10px;
+}
+h1 {
+    font-size: 1.4rem;
+}
+h2 {
+    font-size: 1.2rem;
+}
+h3 {
+    font-size: 1.1rem;
 }
 
 
@@ -510,7 +565,6 @@ input[type="search"]
     background-color: $navBGColor;
     color: $fgColor;
     border: solid 1px $fgColor;
-    height: 100%;
     box-sizing: border-box;
     font-size: 0.9rem;
     border-radius: 1px;

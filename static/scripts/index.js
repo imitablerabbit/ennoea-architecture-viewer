@@ -1,5 +1,6 @@
 import * as scene from './scene.js'
 import * as sidebar from './sidebar.js'
+import * as collapsable from './collapsable.js'
 import * as alert from './alert.js'
 import * as layoutLoading from './layoutLoading.js';
 import * as sidebarApplicationInfo from './sidebarApplicationInfo.js';
@@ -20,13 +21,14 @@ function init() {
     let alertPromise = alert.init();
     let scenePromise = scene.init();
     let sidebarPromise = sidebar.init();
+    let collapsablePromise = collapsable.init();
     let sidebarApplicationInfoPromise = sidebarApplicationInfo.init();
     let layoutLoadingPromise = layoutLoading.init();
     let debugPromise = debug.init();
     let promises = [
         alertPromise, scenePromise, sidebarPromise,
-        sidebarApplicationInfoPromise, layoutLoadingPromise,
-        debugPromise
+        collapsablePromise, sidebarApplicationInfoPromise,
+        layoutLoadingPromise, debugPromise
     ];
     Promise.allSettled(promises).then(() => {
         start();
