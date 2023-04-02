@@ -13,6 +13,7 @@ import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
 import { PopupWindow } from './popupWindow.js';
 import * as alert from './alert.js';
+import { applicationData } from './applicationDataExample.js';
 
 
 // Canvas dimensions and positions
@@ -49,6 +50,8 @@ var selectedOutlinedObjects = [];
 const loader = new FontLoader();
 var font;
 var textObjects = [];
+var textScale = 1;
+var textRotate = false;
 
 // Load the external files for the scene. Returns a promise that resolves
 // when all the files have been loaded.
@@ -82,7 +85,7 @@ export function init() {
 
         scene = new THREE.Scene();
         scene.background = new THREE.Color(0x2a2b2b);
-        scene.fog = new THREE.Fog(0x2a2b2b, 5, 200);
+        scene.fog = new THREE.Fog(0x2a2b2b, 0, 200);
 
         camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
         camera.position.z = 10;
@@ -105,16 +108,8 @@ export function init() {
 
         controls = new OrbitControls(camera, renderer.domElement, scene);
         controls.addEventListener('change', () => {
-            // Loop through the text objects and update their rotation to
-            // always face the camera.
-            for (let i = 0; i < textObjects.length; i++) {
-                let textObject = textObjects[i];
-                
-                // Create a look at vector that is the same as the camera
-                // position but with the y value of the text object.
-                let cameraPosition = camera.position.clone();
-                cameraPosition.y = textObject.position.y;
-                textObject.lookAt(cameraPosition);
+            if (textRotate) {
+                rotateText();
             }
             render();
         });
@@ -138,33 +133,56 @@ export function start() {
     animate();
 }
 
-// Destroy the scene and reinitialize it. This also includes all of the scene
-// level data in the application data.
+// Reset the scene based on the new application data.
 export function reset(applicationData) {
-    updateObjects(applicationData);
-    setCameraPosition(applicationData.scene.camera.position);
+    clearObjects();
+    createSceneFromData(applicationData);
+    createApplicationsFromData(applicationData);
 }
 
-// Regenerate the scene based on the new application data.
-export function updateObjects(applicationData) {
+// Reset only the application meshes in the scene. This will
+// not reset the scene level data. This is used when we do not
+// want to reset the camera position or the fog.
+export function resetApplications(applicationData) {
+    clearObjects();
+    createApplicationsFromData(applicationData);
+}
+
+// Set scene based on application data.
+export function createSceneFromData(applicationData) {
+    let sceneData = applicationData.scene;
+    let cameraData = sceneData.camera;
+    let fogData = sceneData.fog;
+    let textData = sceneData.text;
+    setCameraPosition(cameraData.position);
+    setFog(fogData.near, fogData.far);
+    setTextScale(textData.scale);
+    setTextRotate(textData.rotate);
+}
+
+// Remove all the application meshes from the scene.
+export function clearObjects() {
     sceneObjects.forEach(function(object) {
         scene.remove(object);
     });
+    sceneObjects = [];
     selectableObjects = [];
+    textObjects = [];
+
     hoveredObjects = [];
     selectedObjects = [];
     hoverOutlinedObjects = [];
     selectedOutlinedObjects = [];
-    sceneObjects = [];
-    generateApplicationMeshes(applicationData);
 }
 
-function generateApplicationMeshes(applicationData) {
+// Create the applications based on the application data.
+export function createApplicationsFromData(applicationData) {
     let pointLight = new THREE.PointLight(0xffffff, 0.5);
     pointLight.position.set(0, 100, 0);
     scene.add(pointLight);
     sceneObjects.push(pointLight);
 
+    // Create the application from the application data.
     for (let i=0; i < applicationData.applications.length; i++) {
         let application = applicationData.applications[i];
 
@@ -244,7 +262,7 @@ function generateApplicationMeshes(applicationData) {
             size: 1,
             height: 0.2,
             curveSegments: 2,
-        } );
+        });
         textGeo.computeBoundingBox();
         textGeo.translate(
             -0.5 * (textGeo.boundingBox.max.x - textGeo.boundingBox.min.x),
@@ -256,12 +274,15 @@ function generateApplicationMeshes(applicationData) {
         let textMesh = new THREE.Mesh(textGeo, textMaterial);
         let highestY = getHighestYPoint(mesh);
         textMesh.position.set(posX, highestY + 1, posZ);
+        textMesh.scale.set(textScale, textScale, textScale);
 
         // Create a look at vector that is the same as the camera
         // position but with the y value of the text object.
-        let cameraPosition = camera.position.clone();
-        cameraPosition.y = textMesh.position.y;
-        textMesh.lookAt(cameraPosition);
+        if (textRotate) {
+            let cameraPosition = camera.position.clone();
+            cameraPosition.y = textMesh.position.y;
+            textMesh.lookAt(cameraPosition);
+        }
 
         scene.add(textMesh);
         sceneObjects.push(textMesh);
@@ -377,13 +398,13 @@ function onClick(event) {
     if (selectedObjects.length > 0) {
         let application = selectedObjects[0].userData;
         let content = document.createElement("article");
-        content.classList.add("application-info");
+        content.classList.add("info-box");
         content.classList.add("start-dark");
         content.innerHTML = `
-            <section class="app-data-kv">Color: ${application.color}</section>
-            <section class="app-data-kv">Position: ${application.position}</section>
-            <section class="app-data-kv">Rotation: ${application.rotation}</section>
-            <section class="app-data-kv">Scale: ${application.scale}</section>
+            <section class="info-data-kv">Color: ${application.color}</section>
+            <section class="info-data-kv">Position: ${application.position}</section>
+            <section class="info-data-kv">Rotation: ${application.rotation}</section>
+            <section class="info-data-kv">Scale: ${application.scale}</section>
         `;
         let popup = new PopupWindow(document.body, application.name, content);
         let popupElement = popup.getWindowElement();
@@ -488,10 +509,14 @@ export function setCameraPosition(position) {
         z: position[2],
         duration: 1,
         onUpdate: () => {
-            
             controls.update();
         }
     });
+}
+
+// Get the camera position.
+export function getCameraPosition() {
+    return [camera.position.x, camera.position.y, camera.position.z];
 }
 
 // Set the camera look at position. position is an array of 3 numbers.
@@ -517,4 +542,62 @@ export function setCameraLookAt(position) {
         onUpdate: () => controls.update()
     });
     controls.target = cameraLookAtPosition;
+}
+
+// Set the fog planes in the scene.
+export function setFog(near, far) {
+    scene.fog.near = near;
+    scene.fog.far = far;
+
+}
+
+// Get the fog planes in the scene.
+export function getFogNear() {
+    return scene.fog.near;
+}
+export function getFogFar() {
+    return scene.fog.far;
+}
+
+// Set the text scale in the scene. Text us scaled uniformly in all
+// directions.
+export function setTextScale(scale) {
+    textScale = scale;
+    
+}
+export function getTextScale() {
+    return textScale;
+}
+
+// Set the text rotation in the scene. This determines
+// whether the text should be rotated to face the camera.
+export function setTextRotate(rotation) {
+    textRotate = rotation;
+
+    // Reset the text rotation if the text is not to be rotated.
+    if (!textRotate) {
+        for (let i = 0; i < textObjects.length; i++) {
+            let object = textObjects[i];
+            object.rotation.set(0, 0, 0);
+        }
+        return;
+    }
+
+    rotateText();
+}
+export function getTextRotate() {
+    return textRotate;
+}
+
+// Rotate the text to face the camera.
+function rotateText() {
+    for (let i = 0; i < textObjects.length; i++) {
+        let textObject = textObjects[i];
+        
+        // Create a look at vector that is the same as the camera
+        // position but with the y value of the text object.
+        let cameraPosition = camera.position.clone();
+        cameraPosition.y = textObject.position.y;
+        textObject.lookAt(cameraPosition);
+    }
 }

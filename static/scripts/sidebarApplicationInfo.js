@@ -65,9 +65,9 @@ export function displayApplicationData(applicationData) {
 
         let sectionElement = document.createElement('section');
         sectionElement.classList.add('info-box');
-        sectionElement.style.borderColor = app.color;
+        sectionElement.style.setProperty('--box-color', app.color);
 
-        let titleContainer = generateAppTitleElement(app, applicationData);
+        let titleContainer = generateAppTitleElement(sectionElement, app, applicationData);
         
         let visibilityDataElement = generateVisibilityCheckboxElement(app, applicationData);
         let geometryDataElement = generateGeometryDropdownElement(app, applicationData);
@@ -110,10 +110,9 @@ function luma(color) {
 }
 
 // Generate title bar element for the application info sidebar.
-function generateAppTitleElement(app, applicationData) {
+function generateAppTitleElement(infoBox, app, applicationData) {
     let titleContainer = document.createElement('div');
     titleContainer.classList.add('title-container');
-    titleContainer.style.backgroundColor = app.color;
 
     let nameElement = document.createElement('h2');
     nameElement.classList.add('title');
@@ -123,7 +122,7 @@ function generateAppTitleElement(app, applicationData) {
         nameElement.classList.add('dark');
     }
 
-    let colorDataElement = generateColorPickerElement(app, applicationData);
+    let colorDataElement = generateColorPickerElement(infoBox, app, applicationData);
 
     titleContainer.appendChild(nameElement);
     titleContainer.appendChild(colorDataElement);
@@ -131,14 +130,14 @@ function generateAppTitleElement(app, applicationData) {
 }
 
 // Generate the color picker element for the application info sidebar.
-function generateColorPickerElement(app, applicationData) {
+function generateColorPickerElement(infoBox, app, applicationData) {
     let colorInput = document.createElement('input');
     colorInput.setAttribute('type', 'color');
     colorInput.defaultValue = app.color;
     colorInput.addEventListener('change', () => {
         app.color = colorInput.value;
-        displayApplicationData(applicationData);
-        scene.updateObjects(applicationData);
+        scene.resetApplications(applicationData);
+        infoBox.style.setProperty('--box-color', app.color);
     });
     return colorInput;
 }
@@ -154,7 +153,7 @@ function generateVisibilityCheckboxElement(app, applicationData) {
     }
     checkboxElement.addEventListener('change', () => {
         app.visible = checkboxElement.checked;
-        scene.updateObjects(applicationData);
+        scene.resetApplications(applicationData);
     });
     let checkboxDataElement = generateAppKVElementDataElement('Visible: ', checkboxElement);
     return checkboxDataElement;
@@ -165,7 +164,7 @@ function generateGeometryDropdownElement(app, applicationData) {
     let geometryDropdown = document.createElement('select');
     geometryDropdown.addEventListener('change', () => {
         app.geometry = geometryDropdown.value;
-        scene.updateObjects(applicationData);
+        scene.resetApplications(applicationData);
     });
     for (let i = 0; i < geometryOptions.length; i++) {
         let option = document.createElement('option');
@@ -208,7 +207,7 @@ function generateAppKVElementDataElement(k, vElement) {
     dataElement.classList.add('info-box-kv');
 
     let titleElement = document.createElement('p');
-    titleElement.classList.add('title');
+    titleElement.classList.add('key');
     titleElement.innerText = k;
 
     dataElement.appendChild(titleElement);
@@ -223,10 +222,11 @@ function generateAppKVDataElement(k, v) {
     dataElement.classList.add('info-box-kv');
 
     let titleElement = document.createElement('p');
-    titleElement.classList.add('title');
+    titleElement.classList.add('key');
     titleElement.innerText = k;
 
     let vElement = document.createElement('p');
+    vElement.classList.add('value');
     vElement.innerText = v;
 
     dataElement.appendChild(titleElement);
@@ -238,11 +238,12 @@ function generateAppKVDataElement(k, v) {
 // k is a string and list is an array of strings.
 function generatAppKListDataElement(k, list) {
     let dataElement = document.createElement('div');
-    dataElement.classList.add('app-data-list');
+    dataElement.classList.add('info-box-ul');
     let appListTitleElement = document.createElement('p');
-    appListTitleElement.classList.add('title');
+    appListTitleElement.classList.add('key');
     appListTitleElement.innerText = k
     let ulElement = document.createElement('ul');
+    ulElement.classList.add('value');
     for (let j = 0; j < list.length; j++) {
         let li = list[j];
         let liElement = document.createElement('li');
@@ -264,7 +265,7 @@ function generateVector3InputElements(vs, applicationData, labels, step = 1, min
         let label = labels[i];
         let onChange = (newValue) => {
             vs[i] = newValue;
-            scene.updateObjects(applicationData);
+            scene.resetApplications(applicationData);
         }
         let input = generateNumberInput(value, label, onChange, step, min, max);
         container.appendChild(input);

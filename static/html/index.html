@@ -24,11 +24,11 @@
                 </button>
 
                 <article id="settings" class="collapsable">
-                    <button class="collapsable-toggle">
+                    <button id="settings-collapse-button" class="collapsable-toggle">
                         <p class="collapsable-toggle-text">&lt;</p>
                     </button>
                     <div class="collapsable-container">
-                        <h1 class="title">Settings:</h1>
+                        <label for="settings-collapse-button" class="title">Settings:</label>
                         <div id="settings-form">
                             <button id="save-layout">Save Layout</button>
                             <button id="load-layout">Load Layout</button>
@@ -37,19 +37,18 @@
                 </article>
 
                 <article id="scene" class="collapsable">
-                    <button class="collapsable-toggle">
+                    <button id="scene-collapse-button" class="collapsable-toggle">
                         <p class="collapsable-toggle-text">&lt;</p>
                     </button>
                     <div class="collapsable-container">
-
-                        <h1 class="title">Scene Controls:</h1>
+                        <label class="title" for="scene-collapse-button">Scene Controls:</label>
                         <div id="scene-controls-info-list" class="info-box-list">
 
                             <div class="info-box">
-                                <h2 class="title">Camera:</h2>
+                                <h2 class="title-container">Camera:</h2>
                                 <div class="info-box-kv">
-                                    <p class="title">Position:</p>
-                                    <div class="vector-input-container">
+                                    <p class="key">Position:</p>
+                                    <div class="value vector-input-container">
                                         <div class="number-input-container">
                                             <label for="scene-camera-x">x</label>
                                             <input type="number" id="scene-camera-x" value="0">
@@ -66,37 +65,36 @@
                                 </div>
 
                                 <div class="info-box-row">
-                                    <button id="reset-camera">Reset Camera</button>
-                                    <button id="reset-scene">Reset Scene</button>
+                                    <button id="scene-camera-save">Set to Scene Position</button>
                                 </div>
                             </div>
 
                             <div class="info-box">
-                                <h2 class="title">Background:</h2>
+                                <h2 class="title-container">Background:</h2>
                                 <div class="info-box-kv">
-                                    <p class="title">Fog:</p>
-                                    <div class="vector-input-container">
+                                    <p class="key">Fog:</p>
+                                    <div class="value vector-input-container">
                                         <div class="number-input-container">
-                                            <label for="scene-fog-min">min</label>
-                                            <input type="number" id="fog-min" value="">
+                                            <label for="scene-fog-near">near</label>
+                                            <input type="number" id="scene-fog-near" value="" min="0">
                                         </div>
                                         <div class="number-input-container">
-                                            <label for="scene-fog-max">max</label>
-                                            <input type="number" id="fog-max" value="">
+                                            <label for="scene-fog-far">far</label>
+                                            <input type="number" id="scene-fog-far" value="" min="20">
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="info-box">
-                                <h2>App Names:</h2>
+                                <h2 class="title-container">App Names:</h2>
                                 <div class="info-box-kv">
-                                    <label class="title" for="scene-text-scale">Scale:</label>
-                                    <input type="number" id="scene-text-scale" value="1">
+                                    <label class="key" for="scene-text-scale">Scale:</label>
+                                    <input class="value" type="number" id="scene-text-scale" value="1" min="0" step="0.1">
                                 </div>
                                 <div class="info-box-kv">
-                                    <label for="scene-text-rotate">Rotate:</label>
-                                    <input type="checkbox" id="scene-text-rotate" checked>
+                                    <label class="key" for="scene-text-rotate">Rotate:</label>
+                                    <input class="value" type="checkbox" id="scene-text-rotate" checked>
                                 </div>
                             </div>
                             

@@ -2,6 +2,14 @@ export var applicationData = {
     scene: {
         camera: {
             position: [0, 20, 20]
+        },
+        fog: {
+            near: 0,
+            far: 100
+        },
+        text: {
+            scale: 1,
+            rotate: true
         }
     },
     connections: [

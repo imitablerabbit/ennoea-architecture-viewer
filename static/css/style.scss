@@ -211,22 +211,31 @@ body {
     }
 }
 
+.title {
+    display: block;
+    margin-bottom: 30px;
+    font-weight: bold;
+    font-size: 1.4rem;
+}
+
 .info-box-list {
     overflow-y: auto;
-
-    & > .info-box {
-        margin-bottom: 10px;
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 .info-box {
+    --box-color: #{$fgColor};
+
+    flex: none;
     width: 100%;
     box-sizing: border-box;
     overflow: hidden;
     display: flex;
     flex-direction: column;
 
-    border: solid thin $fgColor;
+    border: solid thin var(--box-color);
     border-radius: $borderRadius;
 
     // Alternating colors for the info table. Default is light then dark.
@@ -258,15 +267,18 @@ body {
     .title-container {
         display: flex;
         align-items: center;
-
-        & > .title {
-            font-size: 1.1rem;
-            color: $bgColor;
+        background-color: var(--box-color);
+        color: $bgColor;
+        & .dark {
+            color: $fgColor;
+        }
+        
+        // Expand the title text to fill the space.
+        & .title {
             flex-grow: 2;
-    
-            &.dark {
-                color: $fgColor;
-            }
+            padding: 10px;
+            margin: 0px;
+            font-size: 1.2rem;
         }
 
         input[type="color"] {
@@ -306,8 +318,9 @@ body {
         gap: 10px;
         align-items: center;
     
-        .title {
+        .key {
             flex-grow: 2;
+            font-size: 1rem;
         }
     }
 
@@ -315,6 +328,11 @@ body {
         display: flex;
         gap: 10px;
         align-items: center;
+
+        .key {
+            flex-grow: 2;
+            font-size: 1rem;
+        }
     }
 }
 
@@ -572,6 +590,14 @@ input[type="search"]
 }
 input[type="checkbox"] {
     margin-top: 2px;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+label:hover {
+    cursor: pointer;
 }
 
 
