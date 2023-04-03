@@ -62,3 +62,6 @@ Easily load new application data by editing the json with mirrorcode.
 
 Select and view the details of a component by clicking on it.
 ![](images/popup-info.gif)
+
+Move components around in the 3d space via the sidebar.
+![](images/move-components.gif)
