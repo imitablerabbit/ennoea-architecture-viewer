@@ -310,26 +310,136 @@ export function createApplicationsFromData(applicationData) {
         sourceCenter.y = sourceLowest;
         targetCenter.y = targetLowest;
 
-        let color = sourceApplication.color;
+        let sourceColor = sourceApplication.color;
+        let targetColor = targetApplication.color;
         let midpoint = getMidpoint(sourceCenter, targetCenter);
         midpoint.addVectors(new THREE.Vector3(0, -5, 0), midpoint);
 
         let curve = new THREE.QuadraticBezierCurve3(sourceCenter, midpoint, targetCenter);
         let points = curve.getPoints(50);
         let geometry = new THREE.BufferGeometry().setFromPoints(points);
-        let material = new THREE.LineBasicMaterial({
-            color: color,
+        // let material = new THREE.LineBasicMaterial({
+        //     color: color,
 
-            // Unlikely to take effect.
-            // https://threejs.org/docs/?q=LineBasicMaterial#api/en/materials/LineBasicMaterial.linewidth
-            linewidth: 10
-        });
+        //     // Unlikely to take effect.
+        //     // https://threejs.org/docs/?q=LineBasicMaterial#api/en/materials/LineBasicMaterial.linewidth
+        //     linewidth: 10
+        // });
+
+        let vertexShader = `
+            #include <fog_pars_vertex>
+
+            // Pass the vertex position to the fragment shader.
+            varying vec3 vPosition;
+
+            void main() {
+                vPosition = position;
+
+                #include <begin_vertex>
+                // This is also required for the fog.
+                // See https://github.com/mrdoob/three.js/blob/master/src/renderers/shaders/ShaderChunk/project_vertex.glsl.js#LL10
+                #include <project_vertex> 
+                #include <fog_vertex>
+            }
+        `;
+
+        let fragmentShader = `
+            #include <fog_pars_fragment>
+            uniform float time;
+
+            uniform vec3 sourcePosition;
+            uniform vec3 targetPosition;
+
+            uniform vec3 sourceColor;
+            uniform vec3 targetColor;
+
+            uniform float colorPercent;
+
+            varying vec3 vPosition;
+
+            void main() {
+                vec3 color = sourceColor;
+
+                // Change time to a value between 0 and 1. This will be used to
+                // calculate the position of the pulse.
+                float t = mod(time, 1.0);
+
+                // Work out the distance between the source and target.
+                float dist = distance(sourcePosition, targetPosition);
+
+                // Work out the distance from the source and target.
+                float distanceFromSource = distance(sourcePosition, vPosition);
+                float distanceFromTarget = distance(targetPosition, vPosition);
+
+                // How far along the line should the color change.
+                float distanceColorPercent = dist * colorPercent;
+
+                // Calculate the pulse color start and end points.
+                float pulsePoint = dist * t;
+
+                if (distanceFromSource < pulsePoint - distanceColorPercent) {
+                    color = sourceColor;
+                } else if (distanceFromSource > pulsePoint + distanceColorPercent) {
+                    color = sourceColor;
+                } else {
+                    color = targetColor;
+                }
+
+                gl_FragColor = vec4(color, 1.0);
+
+                #include <fog_fragment>
+            }
+        `;
+
+        let colorPercentStart = 0.05;
+        let material = new THREE.ShaderMaterial( {
+            uniforms: THREE.UniformsUtils.merge( [
+				THREE.UniformsLib[ 'fog' ],
+                {
+                    time: { value: 1.0 },
+                    sourcePosition: { value: sourceCenter },
+                    targetPosition: { value: targetCenter },
+                    sourceColor: { value: new THREE.Color(sourceColor) },
+                    targetColor: { value: new THREE.Color(targetColor) },
+                    colorPercent: { value: colorPercentStart }
+                }
+            ] ),
+            // lights: true,
+            fog: true,
+            vertexShader: vertexShader,
+            fragmentShader: fragmentShader
+        } );
+
+        // Set interval to update the time uniform.
+        let colorPercentIncrement = 0.001;
+        let colorPercentFluctuation = colorPercentStart / 3;
+        let colorPercentMin = colorPercentStart - colorPercentFluctuation;
+        let colorPercentMax = colorPercentStart + colorPercentFluctuation;
+        console.log("colorPercentStart: " + colorPercentStart);
+        console.log("colorPercentFluctuation: " + colorPercentFluctuation);
+        console.log("colorPercentMin: " + colorPercentMin);
+        console.log("colorPercentMax: " + colorPercentMax);
+        setInterval(() => {
+            material.uniforms.time.value += 0.005;
+
+            // // Pulse the size of the color change up and down.
+            // let colorPercent = material.uniforms.colorPercent.value;
+            // colorPercent += colorPercentIncrement;
+            // if (colorPercent > colorPercentMax) {
+            //     colorPercentIncrement = -colorPercentIncrement;
+            // } else if (colorPercent < colorPercentMin) {
+            //     colorPercentIncrement = -colorPercentIncrement;
+            // }
+
+            // material.uniforms.colorPercent.value = colorPercent;
+        }, 10);
+
         let line = new THREE.Line(geometry, material);
         scene.add(line);
         sceneObjects.push(line);
 
         // Add the arrow head just before the target.
-        let arrowHead = new THREE.ArrowHelper(curve.getTangent(1), targetCenter, 0, color, 0.4, 0.2);
+        let arrowHead = new THREE.ArrowHelper(curve.getTangent(1), targetCenter, 0, sourceColor, 0.4, 0.2);
         scene.add(arrowHead);
         sceneObjects.push(arrowHead);
     }
