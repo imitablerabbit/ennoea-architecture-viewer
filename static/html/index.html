@@ -1,5 +1,7 @@
-<html>
+<html lang="en">
     <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Ennoea Viewer</title>
         <link href="static/css/style.css" rel="stylesheet">
         <link rel="icon" type="image/x-icon" href="/static/images/icon.png">
@@ -125,14 +127,14 @@
                         <h2>Load From File:</h2>
                         <p>Update the application data by loading in a JSON file.</p>
                         <input type="file" name="load-file" id="load-layout-file-input">
-                        <button id="load-layout-submit-file">Submit File</button>
+                        <button type="button" id="load-layout-submit-file">Submit File</button>
                     </form>
 
                     <form id="load-layout-text-form" method="dialog">
                         <h2>Load From Text:</h2>
                         <p>Specify JSON data directly in the browser to update the application data.</p>
                         <div id="load-layout-text-box"></div>
-                        <button id="load-layout-submit-text">Submit Text</button>
+                        <button type="button" id="load-layout-submit-text">Submit Text</button>
                     </form>
                 </div>
             </dialog>
