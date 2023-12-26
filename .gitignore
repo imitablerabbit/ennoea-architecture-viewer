@@ -18,3 +18,7 @@ node_modules
 build
 
 .vscode
+
+# Ignore the openai secret file
+openai-secret.*
+
