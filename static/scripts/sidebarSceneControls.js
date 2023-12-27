@@ -18,7 +18,7 @@ var appNamesRotateCheckbox;
 
 // Initialize the application info sidebar. Returns a promise that resolves
 // when the sidebar has been initialized.
-export function init() {
+export function init(archController) {
     return new Promise((resolve, reject) => {
         sceneCameraXInput = document.getElementById('scene-camera-x');
         sceneCameraYInput = document.getElementById('scene-camera-y');
@@ -32,14 +32,13 @@ export function init() {
         appNamesScaleInput = document.getElementById('scene-text-scale');
         appNamesRotateCheckbox = document.getElementById('scene-text-rotate');
 
+        // Subscribe to the archController for notifications
+        archController.subscribe((applicationData) => {
+            displayApplicationData(applicationData);
+        });
+
         resolve();
     });
-}
-
-// Start the sidebar scene controls. This should be called after the application
-// data has been loaded.
-export function start(applicationData) {
-    displayApplicationData(applicationData);
 }
 
 // Render the application info sidebar.

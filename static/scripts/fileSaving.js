@@ -1,35 +1,25 @@
 import * as alert from './alert.js'
-import * as sidebarApplicationInfo from './sidebarApplicationInfo.js'
 
-import * as scene from './scene.js';
-import { applicationData } from './applicationDataExample.js';
-
-var saveLayoutButton;
-
-var saveNameInput;
-var saveDescriptionInput;
 var saveFileButton;
 var saveServerButton;
 
-var dialog;
-var dialogCloseButton;
-
 // Initialize the application info sidebar. Returns a promise that resolves
 // when the sidebar has been initialized.
-export function init() {
+export function init(archController) {
     return new Promise((resolve, reject) => {
         // Save to server
         saveServerButton = document.getElementById('save-layout-server');
-        saveServerButton.addEventListener('click', () =>
-            saveToServer(applicationData)
-        );
+        saveServerButton.addEventListener('click', () => {
+            let applicationData = archController.getArchitectureState();
+            saveToServer(applicationData);
+        });
 
         // Save to file
         saveFileButton = document.getElementById('save-layout-file');
-        saveFileButton.addEventListener('click', () =>
+        saveFileButton.addEventListener('click', () => {
+            let applicationData = archController.getArchitectureState();
             saveToFile("layout.json", applicationData)
-        );
-        
+        });
 
         resolve();
     });

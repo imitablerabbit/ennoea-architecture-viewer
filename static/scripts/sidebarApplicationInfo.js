@@ -25,31 +25,28 @@ const geometryOptions = [
 
 // Filter variables
 var filterInput;
-var filterClearButton;
 var filterText = '';
 
 // Initialize the application info sidebar. Returns a promise that resolves
 // when the sidebar has been initialized.
-export function init() {
+export function init(archController) {
     return new Promise((resolve, reject) => {
         applicationInfoSidebarElement = document.getElementById('application-info-list');
 
         filterInput = document.getElementById('application-filter-input');
-        filterClearButton = document.getElementById('application-filter-clear');
+        filterInput.addEventListener('input', () => {
+            filterText = filterInput.value;
+            let applicationData = archController.getArchitectureState();
+            displayApplicationData(applicationData);
+        });
+
+        // Subscribe to the archController for notifications
+        archController.subscribe((applicationData) => {
+            displayApplicationData(applicationData);
+        });
 
         resolve();
     });
-}
-
-// Start the application info sidebar. This should be called after the
-// scene has been initialized.
-export function start(applicationData) {
-    filterInput.addEventListener('input', () => {
-        filterText = filterInput.value;
-        displayApplicationData(applicationData);
-    });
-
-    displayApplicationData(applicationData);
 }
 
 // Render the application info sidebar.

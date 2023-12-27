@@ -13,7 +13,6 @@ import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
 import { PopupWindow } from './popupWindow.js';
 import * as alert from './alert.js';
-import { applicationData } from './applicationDataExample.js';
 
 
 // Canvas dimensions and positions
@@ -66,7 +65,7 @@ export function load() {
 
 // Initialize the scene and all the objects within it. Returns a promise
 // that resolves when the scene has been initialized.
-export function init() {
+export function init(archController) {
     return new Promise((resolve, reject) => {
         container = document.getElementById('container');
         width = window.innerWidth;
@@ -122,6 +121,10 @@ export function init() {
         renderer.domElement.addEventListener('click', onClick);
 
         window.onresize = windowResize;
+
+        archController.subscribe((applicationData) => {
+            reset(applicationData);
+        });
 
         resolve();
     });    
