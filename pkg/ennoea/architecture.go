@@ -10,6 +10,35 @@ type Architecture struct {
 	Connections  []Connection  `json:"connections"`
 }
 
+// isValid returns an error if the architecture is invalid.
+func (a Architecture) isValid() error {
+	// Check that the info is valid
+	if err := a.Info.isValid(); err != nil {
+		return err
+	}
+
+	// Check that the scene is valid
+	if err := a.Scene.isValid(); err != nil {
+		return err
+	}
+
+	// Check that the applications are valid
+	for _, application := range a.Applications {
+		if err := application.isValid(); err != nil {
+			return err
+		}
+	}
+
+	// Check that the connections are valid
+	for _, connection := range a.Connections {
+		if err := connection.isValid(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Info represents higher level information about the architecture.
 type Info struct {
 	// ID is the unique identifier of the architecture. The ID is
@@ -26,6 +55,25 @@ type Info struct {
 	Description string `json:"description"`
 }
 
+// isValid returns an error if the info is invalid. It does this by
+// checking that the name and description are not empty.
+func (i Info) isValid() error {
+	// There is no need to check the ID because it is generated
+	// automatically if it is not provided.
+
+	// Check that the name is not empty
+	if i.Name == "" {
+		return fmt.Errorf("invalid info: name is empty")
+	}
+
+	// Check that the description is not empty
+	if i.Description == "" {
+		return fmt.Errorf("invalid info: description is empty")
+	}
+
+	return nil
+}
+
 // Scene represents the scene configuration.
 type Scene struct {
 	Camera Camera `json:"camera"`
@@ -33,9 +81,39 @@ type Scene struct {
 	Text   Text   `json:"text"`
 }
 
+// isValid returns an error if the scene is invalid.
+func (s Scene) isValid() error {
+	// Check that the camera is valid
+	if err := s.Camera.isValid(); err != nil {
+		return fmt.Errorf("invalid scene: %w", err)
+	}
+
+	// Check that the fog is valid
+	if err := s.Fog.isValid(); err != nil {
+		return fmt.Errorf("invalid scene: %w", err)
+	}
+
+	// Check that the text is valid
+	if err := s.Text.isValid(); err != nil {
+		return fmt.Errorf("invalid scene: %w", err)
+	}
+
+	return nil
+}
+
 // Camera represents the camera configuration.
 type Camera struct {
 	Position [3]float64 `json:"position"`
+}
+
+// isValid returns an error if the camera is invalid.
+func (c Camera) isValid() error {
+	// Check that the position is valid
+	if err := isValidPosition(c.Position); err != nil {
+		return fmt.Errorf("invalid camera: %w", err)
+	}
+
+	return nil
 }
 
 // Fog represents the fog configuration.
@@ -44,28 +122,100 @@ type Fog struct {
 	Far  float64 `json:"far"`
 }
 
+// Fog represents the fog configuration.
+func (f Fog) isValid() error {
+	// Check that the near value is valid
+	if f.Near < 0 {
+		return fmt.Errorf("invalid fog: near is negative")
+	}
+
+	// Check that the far value is valid. The far value must be
+	// greater than 10.
+	if f.Far < 10.0 {
+		return fmt.Errorf("invalid fog: far is less than 10")
+	}
+
+	return nil
+}
+
 // Text represents the text configuration.
 type Text struct {
 	Scale  float64 `json:"scale"`
 	Rotate bool    `json:"rotate"`
 }
 
+// isValid returns an error if the text settings is invalid.
+func (t Text) isValid() error {
+	// Check that the scale is valid
+	if t.Scale < 0 {
+		return fmt.Errorf("invalid text: scale is negative")
+	}
+
+	return nil
+}
+
 // Application represents the application configuration.
 type Application struct {
-	Name  string `json:"name"`
-	Color string `json:"color"`
+	Name    string   `json:"name"`
+	Servers []Server `json:"servers"`
 	Object3D
 }
 
+// isValid returns an error if the application is invalid.
+func (a Application) isValid() error {
+	// Check that the name is not empty
+	if a.Name == "" {
+		return fmt.Errorf("invalid application: name is empty")
+	}
+
+	// Check that the object is valid
+	if err := a.Object3D.isValid(); err != nil {
+		return fmt.Errorf("invalid application: %w", err)
+	}
+
+	return nil
+}
+
+// Server represents the server configuration.
 type Server struct {
 	Name string `json:"name"`
 	Object3D
+}
+
+// isValid returns an error if the server is invalid.
+func (s Server) isValid() error {
+	// Check that the name is not empty
+	if s.Name == "" {
+		return fmt.Errorf("invalid server: name is empty")
+	}
+
+	// Check that the object is valid
+	if err := s.Object3D.isValid(); err != nil {
+		return fmt.Errorf("invalid server: %w", err)
+	}
+
+	return nil
 }
 
 // Connection represents the connection configuration.
 type Connection struct {
 	Source string `json:"source"`
 	Target string `json:"target"`
+}
+
+// isValid returns an error if the connection is invalid.
+func (c Connection) isValid() error {
+	// Check that the source is not empty
+	if c.Source == "" {
+		return fmt.Errorf("invalid connection: source is empty")
+	}
+
+	// Check that the target is not empty
+	if c.Target == "" {
+		return fmt.Errorf("invalid connection: target is empty")
+	}
+
+	return nil
 }
 
 type Object3D struct {
@@ -94,29 +244,29 @@ type Object3D struct {
 // isValid3DObject returns an error if the object is invalid.
 // Objects are how the applications and servers will be represented
 // in the 3D world.
-func isValid3DObject(object Object3D) error {
+func (o Object3D) isValid() error {
 	// Check that the position is valid
-	if err := isValidPosition(object.Position); err != nil {
+	if err := isValidPosition(o.Position); err != nil {
 		return fmt.Errorf("invalid object: %w", err)
 	}
 
 	// Check that the rotation is valid
-	if err := isValidRotation(object.Rotation); err != nil {
+	if err := isValidRotation(o.Rotation); err != nil {
 		return fmt.Errorf("invalid object: %w", err)
 	}
 
 	// Check that the scale is valid
-	if err := isValidScale(object.Scale); err != nil {
+	if err := isValidScale(o.Scale); err != nil {
 		return fmt.Errorf("invalid object: %w", err)
 	}
 
 	// Check that the geometry is valid
-	if err := isValidGeometry(object.Geometry); err != nil {
+	if err := isValidGeometry(o.Geometry); err != nil {
 		return fmt.Errorf("invalid object: %w", err)
 	}
 
 	// Check that the color is valid
-	if err := isValidColor(object.Color); err != nil {
+	if err := isValidColor(o.Color); err != nil {
 		return fmt.Errorf("invalid object: %w", err)
 	}
 
@@ -190,7 +340,7 @@ func isValidGeometry(geometry string) error {
 	case "torusKnot":
 		return nil
 	default:
-		return fmt.Errorf("invalid geometry")
+		return fmt.Errorf("invalid geometry: %s", geometry)
 	}
 }
 
@@ -210,25 +360,20 @@ func isValidColor(color string) error {
 // corresponding RGB values. The color string must be in the format
 // "#RRGGBB" where RR, GG, and BB are hexadecimal values for the red,
 // green, and blue channels respectively.
-func parseHexColor(color string) ([3]float64, error) {
+func parseHexColor(color string) ([3]int, error) {
 	// Check that the color is a valid hexadecimal string
 	if len(color) != 7 {
-		return [3]float64{}, fmt.Errorf("invalid color: %s", color)
+		return [3]int{}, fmt.Errorf("invalid color: invalid len: %s", color)
 	}
 	if color[0] != '#' {
-		return [3]float64{}, fmt.Errorf("invalid color: %s", color)
+		return [3]int{}, fmt.Errorf("invalid color: missing '#': %s", color)
 	}
 
 	// Parse the hexadecimal values
-	var rgb [3]float64
+	var rgb [3]int
 	_, err := fmt.Sscanf(color, "#%02x%02x%02x", &rgb[0], &rgb[1], &rgb[2])
 	if err != nil {
-		return [3]float64{}, fmt.Errorf("invalid color: %s", color)
-	}
-
-	// Convert the hexadecimal values to the range [0, 1]
-	for i := 0; i < 3; i++ {
-		rgb[i] /= 255
+		return [3]int{}, fmt.Errorf("invalid color: %w: %s", err, color)
 	}
 
 	return rgb, nil

@@ -510,6 +510,7 @@ function onClick(event) {
         let content = document.createElement("article");
         content.classList.add("info-box");
         content.classList.add("start-dark");
+        content.classList.add("no-border");
         content.innerHTML = `
             <section class="info-data-kv">Color: ${application.color}</section>
             <section class="info-data-kv">Position: ${application.position}</section>

@@ -14,7 +14,7 @@ export function init() {
 
             collapsableToggle.addEventListener('click', () => {
                 toggleCollapsable(collapsable, collapsableToggleText, collapsableContainer)
-                });
+            });
         }
         resolve();
     });

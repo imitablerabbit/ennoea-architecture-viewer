@@ -150,13 +150,13 @@ body {
     }
 }
 
-#save-load {
+#file {
     display: flex;
     flex-direction: column;
     gap: 10px;
     flex: none;
 
-    #save-load-form {
+    #file-form {
         display: flex;
         flex-direction: row;
         gap: 10px;
@@ -335,6 +335,9 @@ body {
     }
 }
 
+.no-border {
+    border: none;
+}
 
 
 #load-dialog {
@@ -489,6 +492,12 @@ dialog {
         color: $fgColor;
         font-size: 1.1rem;
         font-weight: bold;
+    }
+
+    .draggable {
+        &:hover {
+            cursor: move;
+        }
     }
 
     .content {

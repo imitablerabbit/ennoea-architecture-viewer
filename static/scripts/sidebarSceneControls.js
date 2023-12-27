@@ -39,6 +39,11 @@ export function init() {
 // Start the sidebar scene controls. This should be called after the application
 // data has been loaded.
 export function start(applicationData) {
+    displayApplicationData(applicationData);
+}
+
+// Render the application info sidebar.
+export function displayApplicationData(applicationData) {
     // Set up the camera position controls.
     let cameraPosition = applicationData.scene.camera.position;
     updateCameraPositionInput(cameraPosition);
@@ -65,11 +70,11 @@ export function start(applicationData) {
     fogNearInput.value = fog.near;
     fogFarInput.value = fog.far;
     fogNearInput.addEventListener('change', (event) => {
-        fog.near = event.target.value;
+        fog.near = parseFloat(event.target.value);
         scene.setFog(fog.near, fog.far);
     });
     fogFarInput.addEventListener('change', (event) => {
-        fog.far = event.target.value;
+        fog.far = parseFloat(event.target.value);
         scene.setFog(fog.near, fog.far);
     });
 
@@ -78,7 +83,7 @@ export function start(applicationData) {
     appNamesScaleInput.value = text.scale;
     appNamesRotateCheckbox.checked = text.rotate;
     appNamesScaleInput.addEventListener('change', (event) => {
-        text.scale = event.target.value;
+        text.scale = parseFloat(event.target.value);
         scene.setTextScale(text.scale);
         scene.resetApplications(applicationData);
     });

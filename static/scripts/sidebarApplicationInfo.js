@@ -166,6 +166,10 @@ function generateGeometryDropdownElement(app, applicationData) {
         app.geometry = geometryDropdown.value;
         scene.resetApplications(applicationData);
     });
+    // If the app doesn't have a geometry, set it to the first option.
+    if (app.geometry == null) {
+        app.geometry = geometryOptions[0];
+    }
     for (let i = 0; i < geometryOptions.length; i++) {
         let option = document.createElement('option');
         option.value = geometryOptions[i];
@@ -264,7 +268,7 @@ function generateVector3InputElements(vs, applicationData, labels, step = 1, min
         let value = vs[i];
         let label = labels[i];
         let onChange = (newValue) => {
-            vs[i] = newValue;
+            vs[i] = parseFloat(newValue);
             scene.resetApplications(applicationData);
         }
         let input = generateNumberInput(value, label, onChange, step, min, max);

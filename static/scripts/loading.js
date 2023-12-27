@@ -1,5 +1,6 @@
 import * as alert from './alert.js'
 import * as sidebarApplicationInfo from './sidebarApplicationInfo.js'
+import * as sidebarSceneControls from './sidebarSceneControls.js'
 
 import {json} from "@codemirror/lang-json"
 import { basicSetup, EditorView } from 'codemirror'
@@ -7,7 +8,6 @@ import { oneDark } from '@codemirror/theme-one-dark';
 import * as scene from './scene.js';
 import { applicationData } from './applicationDataExample.js';
 
-var saveLayoutButton;
 var loadLayoutButton;
 
 var dialog;
@@ -22,28 +22,14 @@ var jsonTextBox;
 // CodeMirror variables
 var editorView;
 
-
 // Initialize the application info sidebar. Returns a promise that resolves
 // when the sidebar has been initialized.
 export function init() {
     return new Promise((resolve, reject) => {
-        saveLayoutButton = document.getElementById('save-layout');
-        loadLayoutButton = document.getElementById('load-layout');
 
+        // Dialog related elements
         dialog = document.getElementById("load-dialog");
-        dialogCloseButton = document.getElementById("load-layout-close");
-
-        dialogSubmitServerButton = document.getElementById("load-layout-submit-server");
-        serverSelect = document.getElementById("load-layout-server-select");
-        
-        dialogSubmitFileButton = document.getElementById("load-layout-submit-file");
-        jsonFileInput = document.getElementById("load-layout-file-input");
-
-        dialogSubmitTextButton = document.getElementById("load-layout-submit-text");
-        jsonTextBox = document.getElementById("load-layout-text-box");
-
-        saveLayoutButton.addEventListener('click', () => save("layout.json", applicationData));
-
+        loadLayoutButton = document.getElementById('load-layout');
         loadLayoutButton.addEventListener('click', () => {
             let jsonText = JSON.stringify(applicationData, null, 4);
             jsonTextBox.innerHTML = ""; // Clear any editors from previous loading.
@@ -73,10 +59,14 @@ export function init() {
             })
             dialog.showModal();
         });
-
+        dialogCloseButton = document.getElementById("load-layout-close");
         dialogCloseButton.addEventListener('click', () => {
             dialog.close();
         });
+
+        // Load from Server
+        dialogSubmitServerButton = document.getElementById("load-layout-submit-server");
+        serverSelect = document.getElementById("load-layout-server-select");
         dialogSubmitServerButton.addEventListener('click', () => {
             let architectureId = serverSelect.value;
             fetch('/architectures/' + architectureId)
@@ -93,6 +83,10 @@ export function init() {
                     console.error(error);
                 });
         });
+        
+        // Load from File
+        dialogSubmitFileButton = document.getElementById("load-layout-submit-file");
+        jsonFileInput = document.getElementById("load-layout-file-input");
         dialogSubmitFileButton.addEventListener('click', async function() {
             if (jsonFileInput.files.length == 0) {
                 alert.error("File missing from application data load.");
@@ -106,6 +100,10 @@ export function init() {
             alert.success("New application data loaded from file" + file.name +".");
             dialog.close();
         });
+
+        // Load from Text
+        dialogSubmitTextButton = document.getElementById("load-layout-submit-text");
+        jsonTextBox = document.getElementById("load-layout-text-box");
         dialogSubmitTextButton.addEventListener('click', () => {
             let newAppData = editorView.state.doc.toString();
             applicationData = JSON.parse(newAppData);
@@ -119,20 +117,8 @@ export function init() {
     });
 }
 
-function save(filename, data) {
-    let blob = new Blob([JSON.stringify(data)], {
-        type: "text/json",
-        name: filename
-    });
-    let saveLink = document.createElement('a');
-    saveLink.href = window.URL.createObjectURL(blob);
-    saveLink.download = "layout.json";
-    document.body.appendChild(saveLink);
-    saveLink.click();
-    saveLink.remove();
-}
-
 function reloadData(newAppData) {
     sidebarApplicationInfo.displayApplicationData(newAppData);
+    sidebarSceneControls.displayApplicationData(newAppData);
     scene.reset(newAppData);
 }

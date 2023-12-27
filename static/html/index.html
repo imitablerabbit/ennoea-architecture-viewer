@@ -23,19 +23,23 @@
                     <p id="sidebar-toggle-text">&lt;</p> 
                 </button>
 
-                <article id="save-load" class="collapsable">
-                    <button id="save-load-collapse-button" class="collapsable-toggle">
+                <!-- File section -->
+                <article id="file" class="collapsable">
+                    <button id="file-collapse-button" class="collapsable-toggle">
                         <p class="collapsable-toggle-text">&lt;</p>
                     </button>
                     <div class="collapsable-container">
-                        <label for="save-load-collapse-button" class="title">Save & Load:</label>
-                        <div id="save-load-form">
-                            <button id="save-layout">Save Layout</button>
-                            <button id="load-layout">Load Layout</button>
+                        <label for="file-collapse-button" class="title">File:</label>
+                        <div id="file-form">
+                            <button id="create-layout">New...</button>
+                            <button id="save-layout-server">Save to Server</button>
+                            <button id="save-layout-file">Save to File</button>
+                            <button id="load-layout">Load...</button>
                         </div>
                     </div>
                 </article>
 
+                <!-- Scene section -->
                 <article id="scene" class="collapsable">
                     <button id="scene-collapse-button" class="collapsable-toggle">
                         <p class="collapsable-toggle-text">&lt;</p>
@@ -102,6 +106,7 @@
                     </div>
                 </article>
 
+                <!-- Applications section -->
                 <article id="applications">
                     <h1 class="title">Applications:</h1>
 
@@ -117,9 +122,28 @@
                 
             </nav>
 
+            <!-- Dialog box to create a new architecture -->
+            <dialog id="create-dialog">
+                <div id="create-dialog-content">
+                    <button type="button" id="create-layout-close" class="close">x</button>
+
+                    <form id="create-layout-form">
+                        <h2>Create New Architecture</h2>
+                        <p>Architecture Name:</p>
+                        <input type="text" id="create-layout-name" placeholder="Name">
+                        
+                        <label for="create-layout-description">Description:</label>
+                        <textarea id="create-layout-description" placeholder="Description"></textarea>
+
+                        <button type="button" id="create-layout-submit">Create</button>
+                    </form>
+                </div>
+            </dialog>
+
+            <!-- Dialog box to load an architecture -->
             <dialog id="load-dialog">
                 <div id="load-dialog-content">
-                    <button id="load-layout-close" class="close">x</button>
+                    <button type="button" id="load-layout-close" class="close">x</button>
 
                     <form id="load-layout-server-form">
                         <h2>Load From Server:</h2>
@@ -148,6 +172,7 @@
                 </div>
             </dialog>
 
+            <!-- Dialog to display debug information -->
             <dialog id="debug">
                 <div id="debug-content">
                     <button id="debug-dialog-close" class="close">x</button>

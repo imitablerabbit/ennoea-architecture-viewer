@@ -33,6 +33,7 @@ export class PopupWindow {
 
         let titleBarElement = document.createElement('div');
         titleBarElement.classList.add('title-bar');
+        titleBarElement.classList.add('draggable');
         titleBarElement.innerText = this.title;
 
         let closeButtonElement = document.createElement('button');
@@ -55,11 +56,14 @@ export class PopupWindow {
         this.contentElementContainer = contentElementContainer;
 
         this.addEventListeners();
-
     }
 
     // Add event listeners to the dialog box.
     addEventListeners() {
+        this.windowElement.addEventListener('mousedown', (event) => {
+            this.bringToFront();
+        });
+
         this.titleBarElement.addEventListener('mousedown', (event) => {
             this.dragging = true;
             this.offsetX = event.clientX - this.windowElement.offsetLeft;
@@ -94,9 +98,23 @@ export class PopupWindow {
             }
         });
 
-        this.closeButtonElement.addEventListener('click', () => {
+        this.closeButtonElement.addEventListener('mouseup', (event) => {
+            // This is done on the mouseup event instead of the click event
+            // because the we want to workaround the mouseup event adding the
+            // element to the top of the parent element.
             this.destroy();
         });
+    }
+
+    // Set the title of the dialog box.
+    setTitle(title) {
+        this.titleBarElement.innerText = title;
+    }
+
+    // Set the content of the dialog box.
+    setContent(contentElement) {
+        this.contentElementContainer.innerHTML = '';
+        this.contentElementContainer.appendChild(contentElement);
     }
 
     // Sets the position of the dialog box. The position is relative to the
@@ -121,5 +139,10 @@ export class PopupWindow {
     // Destroy the dialog box.
     destroy() {
         this.windowElement.remove();
+    }
+
+    // Bring the dialog box to the front of the parent element.
+    bringToFront() {
+        this.parentElement.appendChild(this.windowElement);
     }
 }

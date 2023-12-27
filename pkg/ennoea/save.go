@@ -337,6 +337,13 @@ func (h *ArchitectureHandler) handlePut(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// Check if the loaded architecture is valid.
+	if err := arch.isValid(); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Invalid architecture: %v", err)
+		return
+	}
+
 	// Save the architecture
 	err = h.saveArchitecture(arch)
 	if err != nil {
@@ -375,8 +382,15 @@ func (h *ArchitectureHandler) saveArchitecture(arch Architecture) error {
 		arch.Info.ID = generateID()
 	}
 
+	// Create the architecture directory if it does not exist
+	dirPath := filepath.Join(h.filePath, arch.Info.ID)
+	err := os.MkdirAll(dirPath, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to create architecture directory: %v", err)
+	}
+
 	// Save the architecture to the save directory
-	err := h.saveArchitectureFile(arch)
+	err = h.saveArchitectureFile(arch)
 	if err != nil {
 		return fmt.Errorf("failed to save architecture file: %v", err)
 	}
@@ -407,14 +421,8 @@ func (h *ArchitectureHandler) saveArchitectureFile(arch Architecture) error {
 		return fmt.Errorf("failed to marshal architecture: %v", err)
 	}
 
-	// Create the architecture directory
-	dirPath := filepath.Join(h.filePath, arch.Info.ID)
-	err = os.Mkdir(dirPath, 0755)
-	if err != nil {
-		return fmt.Errorf("failed to create architecture directory: %v", err)
-	}
-
 	// Save the architecture file
+	dirPath := filepath.Join(h.filePath, arch.Info.ID)
 	filePath := filepath.Join(dirPath, "architecture.json")
 	err = os.WriteFile(filePath, file, 0644)
 	if err != nil {
