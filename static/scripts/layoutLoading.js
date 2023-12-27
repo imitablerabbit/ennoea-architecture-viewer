@@ -77,6 +77,22 @@ export function init() {
         dialogCloseButton.addEventListener('click', () => {
             dialog.close();
         });
+        dialogSubmitServerButton.addEventListener('click', () => {
+            let architectureId = serverSelect.value;
+            fetch('/architectures/' + architectureId)
+                .then(response => response.json())
+                .then(data => {
+                    applicationData = data;
+                    reloadData(applicationData);
+                    console.log(applicationData);
+                    alert.success("New application data loaded from server.");
+                    dialog.close();
+                })
+                .catch(error => {
+                    alert.error("Failed to load architecture data from server.");
+                    console.error(error);
+                });
+        });
         dialogSubmitFileButton.addEventListener('click', async function() {
             if (jsonFileInput.files.length == 0) {
                 alert.error("File missing from application data load.");
