@@ -15,7 +15,8 @@ build-all: build-dirs build-static build-server
 # Build golang files
 
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
-GO_FILES=$(call rwildcard,$(BUILD_NAME),*.go) $(call rwildcard,cmd/$(BUILD_NAME),*.go)
+GO_CMD_FILES=$(wildcard cmd/$(BUILD_NAME)/*.go)
+GO_FILES=$(GO_CMD_FILES) $(call rwildcard,pkg/,*.go)
 
 build-server: build $(BUILD_DIR)/$(BUILD_NAME)
 
@@ -23,7 +24,7 @@ $(BUILD_DIR)/$(BUILD_NAME): $(GO_FILES)
 	echo ${USER}; \
 	which go; \
 	go version; \
-	go build -o $(BUILD_DIR)/$(BUILD_NAME) $(GO_FILES)
+	go build -o $(BUILD_DIR)/$(BUILD_NAME) $(GO_CMD_FILES)
 
 # Build static files
 

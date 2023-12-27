@@ -12,8 +12,10 @@ var loadLayoutButton;
 
 var dialog;
 var dialogCloseButton;
+var dialogSubmitServerButton;
 var dialogSubmitFileButton;
 var dialogSubmitTextButton;
+var serverSelect;
 var jsonFileInput;
 var jsonTextBox;
 
@@ -30,9 +32,14 @@ export function init() {
 
         dialog = document.getElementById("load-dialog");
         dialogCloseButton = document.getElementById("load-layout-close");
+
+        dialogSubmitServerButton = document.getElementById("load-layout-submit-server");
+        serverSelect = document.getElementById("load-layout-server-select");
+        
         dialogSubmitFileButton = document.getElementById("load-layout-submit-file");
-        dialogSubmitTextButton = document.getElementById("load-layout-submit-text");
         jsonFileInput = document.getElementById("load-layout-file-input");
+
+        dialogSubmitTextButton = document.getElementById("load-layout-submit-text");
         jsonTextBox = document.getElementById("load-layout-text-box");
 
         saveLayoutButton.addEventListener('click', () => save("layout.json", applicationData));
@@ -40,6 +47,24 @@ export function init() {
         loadLayoutButton.addEventListener('click', () => {
             let jsonText = JSON.stringify(applicationData, null, 4);
             jsonTextBox.innerHTML = ""; // Clear any editors from previous loading.
+
+            // Load the architecture data from the server and add it
+            // to the select element.
+            serverSelect.innerHTML = "";
+            fetch('/architectures/')
+                .then(response => response.json())
+                .then(data => {
+                    for (let i = 0; i < data.length; i++) {
+                        let option = document.createElement('option');
+                        option.value = data[i].id;
+                        option.innerHTML = data[i].name;
+                        serverSelect.appendChild(option);
+                    }
+                })
+                .catch(error => {
+                    alert.error("Failed to load architecture data from server.");
+                    console.error(error);
+                });
 
             editorView = new EditorView({
                 doc: jsonText,
