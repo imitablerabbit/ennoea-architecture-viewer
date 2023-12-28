@@ -46,20 +46,49 @@ var hoverOutlinedObjects = [];
 var selectedOutlinedObjects = [];
 
 // Text geometry used for the application names.
-const loader = new FontLoader();
 var font;
 var textObjects = [];
 var textScale = 1;
 var textRotate = false;
 
+// Shaders
+var vertexShader;
+var fragmentShader;
+
 // Load the external files for the scene. Returns a promise that resolves
 // when all the files have been loaded.
 export function load() {
-    return new Promise((resolve, reject) => {
-        loader.load('static/css/fonts/Noto_Sans/NotoSans_Regular.json', function (f) {
+    let fontPromise = new Promise((resolve, reject) => {
+        let fontLoader = new FontLoader();
+        fontLoader.load('static/css/fonts/Noto_Sans/NotoSans_Regular.json', function (f) {
             font = f;
+        });
+        resolve();
+    });
+    
+    // Load the vertex and fragment shaders from external files.
+    let vertexPromise = new Promise((resolve, reject) => {
+        let vertexShaderLoader = new THREE.FileLoader(THREE.DefaultLoadingManager);
+        vertexShaderLoader.load('static/shaders/vertex.vert', function (data) {
+            console.log("vertex", data);
+            vertexShader = data;
+        });
+        resolve();
+    });
+
+    let fragmentPromise = new Promise((resolve, reject) => {
+        let fragmentShaderLoader = new THREE.FileLoader(THREE.DefaultLoadingManager);
+        fragmentShaderLoader.load('static/shaders/fragment.frag', function (data) {
+            console.log("fragment", data);
+            fragmentShader = data;
+        });
+        resolve();
+    });
+
+    return new Promise((resolve, reject) => {
+        Promise.allSettled([fontPromise, vertexPromise, fragmentPromise]).then(() => {
             resolve();
-        } );
+        });
     });
 }
 
@@ -186,18 +215,17 @@ export function createApplicationsFromData(applicationData) {
     sceneObjects.push(pointLight);
 
     // Create the application from the application data.
-    for (let i=0; i < applicationData.applications.length; i++) {
-        let application = applicationData.applications[i];
-
-        if (application.visible != null && !application.visible) {
+    for (let i=0; i < applicationData.components.length; i++) {
+        let component = applicationData.components[i];
+        let visible = component.object.visible;
+        if (visible != null && !visible) {
             continue;
         }
 
-        let color = application.object.color;
-        let position = application.object.position;
-        let rotation = application.object.rotation;
-        let scale = application.object.scale;
-        let servers = application.servers;
+        let color = component.object.color;
+        let position = component.object.position;
+        let rotation = component.object.rotation;
+        let scale = component.object.scale;
         let posX = position[0];
         let posY = position[1];
         let posZ = position[2];
@@ -207,60 +235,80 @@ export function createApplicationsFromData(applicationData) {
         let scaleX = scale[0];
         let scaleY = scale[1];
         let scaleZ = scale[2];
+        let geometry = component.object.geometry;
 
         // Convert the rotation from degrees to radians.
         rotX = rotX * Math.PI / 180;
         rotY = rotY * Math.PI / 180;
         rotZ = rotZ * Math.PI / 180;
 
+        let geometryMesh;
+
         // Set the geometry based on the geometry type in the application data.
-        let geometry = new THREE.BoxGeometry(1, 1, 1);
-        if (application.geometry == "box") {
-            geometry = new THREE.BoxGeometry(1, 1, 1);
-        } else if (application.geometry == "capsule") {
-            geometry = new THREE.CapsuleGeometry(1, 1, 16, 16);
-        } else if (application.geometry == "circle") {
-            geometry = new THREE.CircleGeometry(1, 32);
-        } else if (application.geometry == "cone") {
-            geometry = new THREE.ConeGeometry(1, 2, 32);
-        } else if (application.geometry == "cylinder") {
-            geometry = new THREE.CylinderGeometry(1, 1, 2.5, 32);
-        } else if (application.geometry == "dodecahedron") {
-            geometry = new THREE.DodecahedronGeometry(1, 0);
-        } else if (application.geometry == "icosahedron") {
-            geometry = new THREE.IcosahedronGeometry(1, 0);
-        } else if (application.geometry == "octahedron") {
-            geometry = new THREE.OctahedronGeometry(1, 0);
-        } else if (application.geometry == "plane") {
-            geometry = new THREE.PlaneGeometry(1, 1);
-        } else if (application.geometry == "ring") {
-            geometry = new THREE.RingGeometry(0.5, 1, 32);
-        } else if (application.geometry == "sphere") {
-            geometry = new THREE.SphereGeometry(1, 32, 16);
-        } else if (application.geometry == "tetrahedron") {
-            geometry = new THREE.TetrahedronGeometry(1, 0);
-        } else if (application.geometry == "torus") {
-            geometry = new THREE.TorusGeometry(1, 0.4, 16, 100);
-        } else if (application.geometry == "torusKnot") {
-            geometry = new THREE.TorusKnotGeometry(1, 0.4, 100, 16);
+        switch (geometry) {
+            case "box":
+                geometryMesh = new THREE.BoxGeometry(1, 1, 1);
+                break;
+            case "capsule":
+                geometryMesh = new THREE.CapsuleGeometry(1, 1, 16, 16);
+                break;
+            case "circle":
+                geometryMesh = new THREE.CircleGeometry(1, 32);
+                break;
+            case "cone":
+                geometryMesh = new THREE.ConeGeometry(1, 2, 32);
+                break;
+            case "cylinder":
+                geometryMesh = new THREE.CylinderGeometry(1, 1, 2.5, 32);
+                break;
+            case "dodecahedron":
+                geometryMesh = new THREE.DodecahedronGeometry(1, 0);
+                break;
+            case "icosahedron":
+                geometryMesh = new THREE.IcosahedronGeometry(1, 0);
+                break;
+            case "octahedron":
+                geometryMesh = new THREE.OctahedronGeometry(1, 0);
+                break;
+            case "plane":
+                geometryMesh = new THREE.PlaneGeometry(1, 1);
+                break;
+            case "ring":
+                geometryMesh = new THREE.RingGeometry(0.5, 1, 32);
+                break;
+            case "sphere":
+                geometryMesh = new THREE.SphereGeometry(1, 32, 16);
+                break;
+            case "tetrahedron":
+                geometryMesh = new THREE.TetrahedronGeometry(1, 0);
+                break;
+            case "torus":
+                geometryMesh = new THREE.TorusGeometry(1, 0.4, 16, 100);
+                break;
+            case "torusKnot":
+                geometryMesh = new THREE.TorusKnotGeometry(1, 0.4, 100, 16);
+                break;
+            default:
+                geometryMesh = new THREE.BoxGeometry(1, 1, 1);
+                break;
         }
 
         let material = new THREE.MeshStandardMaterial({
             color: color,
         });
-        let mesh = new THREE.Mesh(geometry, material);
+        let mesh = new THREE.Mesh(geometryMesh, material);
         mesh.position.set(posX, posY, posZ);
         mesh.rotateX(rotX);
         mesh.rotateY(rotY);
         mesh.rotateZ(rotZ);
         mesh.scale.set(scaleX, scaleY, scaleZ);
-        mesh.userData = application;
+        mesh.userData = component;
 
         scene.add(mesh);
         selectableObjects.push(mesh);
         sceneObjects.push(mesh);
 
-        let textGeo = new TextGeometry(application.name, {
+        let textGeo = new TextGeometry(component.name, {
             font: font,
             size: 1,
             height: 0.2,
@@ -313,8 +361,8 @@ export function createApplicationsFromData(applicationData) {
         sourceCenter.y = sourceLowest;
         targetCenter.y = targetLowest;
 
-        let sourceColor = sourceApplication.color;
-        let targetColor = targetApplication.color;
+        let sourceColor = sourceApplication.object.color;
+        let targetColor = targetApplication.object.color;
         let midpoint = getMidpoint(sourceCenter, targetCenter);
         midpoint.addVectors(new THREE.Vector3(0, -5, 0), midpoint);
 
@@ -329,75 +377,10 @@ export function createApplicationsFromData(applicationData) {
         //     linewidth: 10
         // });
 
-        let vertexShader = `
-            #include <fog_pars_vertex>
-
-            // Pass the vertex position to the fragment shader.
-            varying vec3 vPosition;
-
-            void main() {
-                vPosition = position;
-
-                #include <begin_vertex>
-                // This is also required for the fog.
-                // See https://github.com/mrdoob/three.js/blob/master/src/renderers/shaders/ShaderChunk/project_vertex.glsl.js#LL10
-                #include <project_vertex> 
-                #include <fog_vertex>
-            }
-        `;
-
-        let fragmentShader = `
-            #include <fog_pars_fragment>
-            uniform float time;
-
-            uniform vec3 sourcePosition;
-            uniform vec3 targetPosition;
-
-            uniform vec3 sourceColor;
-            uniform vec3 targetColor;
-
-            uniform float colorPercent;
-
-            varying vec3 vPosition;
-
-            void main() {
-                vec3 color = sourceColor;
-
-                // Change time to a value between 0 and 1. This will be used to
-                // calculate the position of the pulse.
-                float t = mod(time, 1.0);
-
-                // Work out the distance between the source and target.
-                float dist = distance(sourcePosition, targetPosition);
-
-                // Work out the distance from the source and target.
-                float distanceFromSource = distance(sourcePosition, vPosition);
-                float distanceFromTarget = distance(targetPosition, vPosition);
-
-                // How far along the line should the color change.
-                float distanceColorPercent = dist * colorPercent;
-
-                // Calculate the pulse color start and end points.
-                float pulsePoint = dist * t;
-
-                if (distanceFromSource < pulsePoint - distanceColorPercent) {
-                    color = sourceColor;
-                } else if (distanceFromSource > pulsePoint + distanceColorPercent) {
-                    color = sourceColor;
-                } else {
-                    color = targetColor;
-                }
-
-                gl_FragColor = vec4(color, 1.0);
-
-                #include <fog_fragment>
-            }
-        `;
-
         let colorPercentStart = 0.05;
         let material = new THREE.ShaderMaterial( {
             uniforms: THREE.UniformsUtils.merge( [
-				THREE.UniformsLib[ 'fog' ],
+                THREE.UniformsLib[ 'fog' ],
                 {
                     time: { value: 1.0 },
                     sourcePosition: { value: sourceCenter },
@@ -591,8 +574,8 @@ export function findObjectByName(name, selectableObjects) {
 
 // Find application data with the given name.
 export function findApplicationDataByName(name, applicationData) {
-    for (let i = 0; i < applicationData.applications.length; i++) {
-        let application = applicationData.applications[i];
+    for (let i = 0; i < applicationData.components.length; i++) {
+        let application = applicationData.components[i];
         if (application.name === name) {
             return application;
         }
