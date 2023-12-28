@@ -45,10 +45,16 @@ export class ArchitectureController {
 
     /**
      * Notify all subscribers with the current architecture state.
+     * If a subscriber throws an error, then we will continue
+     * notifying the other subscribers.
      */
     notifySubscribers() {
         this.subscribers.forEach(subscriber => {
-            subscriber(this.architectureState);
+            try {
+                subscriber(this.architectureState);
+            } catch (error) {
+                console.error(error);
+            }
         });
     }
 }

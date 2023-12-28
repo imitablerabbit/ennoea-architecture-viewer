@@ -193,10 +193,10 @@ export function createApplicationsFromData(applicationData) {
             continue;
         }
 
-        let color = application.color;
-        let position = application.position;
-        let rotation = application.rotation;
-        let scale = application.scale;
+        let color = application.object.color;
+        let position = application.object.position;
+        let rotation = application.object.rotation;
+        let scale = application.object.scale;
         let servers = application.servers;
         let posX = position[0];
         let posY = position[1];

@@ -21,17 +21,10 @@
             "rotate": true
         }
     },
-    "applications": [
+    "components": [
         {
+            "type": "app",
             "name": "App1",
-            "servers": [
-                {
-                    "name": "app1hostname1"
-                },
-                {
-                    "name": "app1hostname2"
-                }
-            ],
             "object": {
                 "position": [
                     0,
@@ -53,15 +46,8 @@
             }
         },
         {
+            "type": "app",
             "name": "App2",
-            "servers": [
-                {
-                    "name": "app2hostname1"
-                },
-                {
-                    "name": "app2hostname2"
-                }
-            ],
             "object":{
                 "position": [
                     0,
@@ -83,15 +69,8 @@
             }
         },
         {
+            "type": "app",
             "name": "Database",
-            "servers": [
-                {
-                    "name": "dbhostname1"
-                },
-                {
-                    "name": "dbhostname2"
-                }
-            ],
             "object": {
                 "position": [
                     -5,

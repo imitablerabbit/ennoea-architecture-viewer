@@ -4,10 +4,10 @@ import "fmt"
 
 // Architecture represents the architecture configuration.
 type Architecture struct {
-	Info         Info          `json:"info"`
-	Scene        Scene         `json:"scene"`
-	Applications []Application `json:"applications"`
-	Connections  []Connection  `json:"connections"`
+	Info        Info         `json:"info"`
+	Scene       Scene        `json:"scene"`
+	Components  []Component  `json:"components"`
+	Connections []Connection `json:"connections"`
 }
 
 // isValid returns an error if the architecture is invalid.
@@ -22,9 +22,9 @@ func (a Architecture) isValid() error {
 		return err
 	}
 
-	// Check that the applications are valid
-	for _, application := range a.Applications {
-		if err := application.isValid(); err != nil {
+	// Check that the components are valid
+	for _, c := range a.Components {
+		if err := c.isValid(); err != nil {
 			return err
 		}
 	}
@@ -155,56 +155,31 @@ func (t Text) isValid() error {
 }
 
 // Application represents the application configuration.
-type Application struct {
-	Name    string    `json:"name"`
-	Servers []Server  `json:"servers"`
-	Object  *Object3D `json:"object,omitempty"`
-}
-
-// isValid returns an error if the application is invalid.
-func (a Application) isValid() error {
-	// Check that the name is not empty
-	if a.Name == "" {
-		return fmt.Errorf("invalid application: name is empty")
-	}
-
-	if len(a.Servers) > 0 {
-		// Check that the servers are valid.
-		for _, server := range a.Servers {
-			if err := server.isValid(); err != nil {
-				return fmt.Errorf("invalid application: %w", err)
-			}
-		}
-		return nil
-	}
-
-	// Check that the object is valid if it is defined.
-	if a.Object != nil {
-		if err := a.Object.isValid(); err != nil {
-			return fmt.Errorf("invalid application: %w", err)
-		}
-	}
-
-	return nil
-}
-
-// Server represents the server configuration.
-type Server struct {
+type Component struct {
+	Type   string    `json:"type"`
 	Name   string    `json:"name"`
 	Object *Object3D `json:"object,omitempty"`
 }
 
-// isValid returns an error if the server is invalid.
-func (s Server) isValid() error {
+// isValid returns an error if the component is invalid.
+func (c Component) isValid() error {
+	// Check that the type is not empty or invalid.
+	if c.Type == "" {
+		return fmt.Errorf("invalid component: type is empty")
+	}
+	if c.Type != "application" && c.Type != "server" {
+		return fmt.Errorf("invalid component: invalid type: %s", c.Type)
+	}
+
 	// Check that the name is not empty
-	if s.Name == "" {
-		return fmt.Errorf("invalid server: name is empty")
+	if c.Name == "" {
+		return fmt.Errorf("invalid component: name is empty")
 	}
 
 	// Check that the object is valid if it is defined.
-	if s.Object != nil {
-		if err := s.Object.isValid(); err != nil {
-			return fmt.Errorf("invalid server: %w", err)
+	if c.Object != nil {
+		if err := c.Object.isValid(); err != nil {
+			return fmt.Errorf("invalid component: %w", err)
 		}
 	}
 
@@ -232,25 +207,30 @@ func (c Connection) isValid() error {
 	return nil
 }
 
+// Object3D represents a 3D object in the Ennoea Architecture Viewer.
 type Object3D struct {
-	// Position is the position of the object in the 3D world.
+	// Visible determines whether or not the object is visible in the 3D world.
+	// By default, the object is visible.
+	Visible bool `json:"visible"`
+
+	// Position represents the position of the object in the 3D world.
 	// The position is represented as a 3D vector in the x, y, z axis.
 	// By default, the position is [0, 0, 0].
 	Position [3]float64 `json:"position"`
 
-	// Rotation is the rotation of the object in the 3D world.
-	// The rotation is represented as degrees in the x, y, and z
-	// directions. By default, the rotation is [0, 0, 0].
+	// Rotation represents the rotation of the object in the 3D world.
+	// The rotation is represented as degrees in the x, y, and z directions.
+	// By default, the rotation is [0, 0, 0].
 	Rotation [3]float64 `json:"rotation"`
 
-	// Scale is the scale of the object in the 3D world. By
-	// default, the scale is [1, 1, 1].
+	// Scale represents the scale of the object in the 3D world.
+	// By default, the scale is [1, 1, 1].
 	Scale [3]float64 `json:"scale"`
 
-	// Geometry is the geometry of the object in the 3D world.
+	// Geometry represents the geometry of the object in the 3D world.
 	Geometry string `json:"geometry"`
 
-	// Color is the color of the object in the 3D world.
+	// Color represents the color of the object in the 3D world.
 	// The color is represented as a hexadecimal string.
 	Color string `json:"color"`
 }
