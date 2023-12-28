@@ -156,9 +156,9 @@ func (t Text) isValid() error {
 
 // Application represents the application configuration.
 type Application struct {
-	Name    string   `json:"name"`
-	Servers []Server `json:"servers"`
-	Object3D
+	Name    string    `json:"name"`
+	Servers []Server  `json:"servers"`
+	Object  *Object3D `json:"object,omitempty"`
 }
 
 // isValid returns an error if the application is invalid.
@@ -168,9 +168,21 @@ func (a Application) isValid() error {
 		return fmt.Errorf("invalid application: name is empty")
 	}
 
-	// Check that the object is valid
-	if err := a.Object3D.isValid(); err != nil {
-		return fmt.Errorf("invalid application: %w", err)
+	if len(a.Servers) > 0 {
+		// Check that the servers are valid.
+		for _, server := range a.Servers {
+			if err := server.isValid(); err != nil {
+				return fmt.Errorf("invalid application: %w", err)
+			}
+		}
+		return nil
+	}
+
+	// Check that the object is valid if it is defined.
+	if a.Object != nil {
+		if err := a.Object.isValid(); err != nil {
+			return fmt.Errorf("invalid application: %w", err)
+		}
 	}
 
 	return nil
@@ -178,8 +190,8 @@ func (a Application) isValid() error {
 
 // Server represents the server configuration.
 type Server struct {
-	Name string `json:"name"`
-	Object3D
+	Name   string    `json:"name"`
+	Object *Object3D `json:"object,omitempty"`
 }
 
 // isValid returns an error if the server is invalid.
@@ -189,9 +201,11 @@ func (s Server) isValid() error {
 		return fmt.Errorf("invalid server: name is empty")
 	}
 
-	// Check that the object is valid
-	if err := s.Object3D.isValid(); err != nil {
-		return fmt.Errorf("invalid server: %w", err)
+	// Check that the object is valid if it is defined.
+	if s.Object != nil {
+		if err := s.Object.isValid(); err != nil {
+			return fmt.Errorf("invalid server: %w", err)
+		}
 	}
 
 	return nil
