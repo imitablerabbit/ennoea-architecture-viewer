@@ -1,8 +1,8 @@
 {
     "info": {
         "id": "new_name1",
-        "name": "Unique Name for new_name1",
-        "description": "Unique Description for new_name1"
+        "name": "Simple Database",
+        "description": "A sample architecture for a simple database application. The application is composed of two servers, and a database. The two servers connect to the database."
     },
     "scene": {
         "camera": {

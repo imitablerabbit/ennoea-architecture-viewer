@@ -2,7 +2,7 @@
 $toggleWidth: 40px;
 $toggleHeight: 50px;
 
-$sidebarWidth: 350px;
+$sidebarWidth: 400px;
 $sidebarHeight: calc(100% - 60px);
 
 $navHeight: 60px;
@@ -194,7 +194,12 @@ body {
     padding: 0px;
 
     & > .collapsable-toggle {
-        display: inline;
+        font-size: 1.2rem;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         position: absolute;
         right: 10px;
         top: 24px;
@@ -310,35 +315,41 @@ body {
     button {
         width: 100%;
     }
+}
 
-    .info-box-kv {
-        font-size: 1rem;
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    
-        .key {
-            flex-grow: 2;
-            font-size: 1rem;
-        }
-    }
+.info-box-kv {
+    font-size: 1rem;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
 
-    .info-box-row {
-        display: flex;
-        gap: 10px;
-        align-items: center;
+.info-box-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
 
-        .key {
-            flex-grow: 2;
-            font-size: 1rem;
-        }
-    }
+.key {
+    flex-grow: 2;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.undefined {
+    color: grey;
+    font-style: italic;
 }
 
 .no-border {
     border: none;
 }
-
 
 #load-dialog {
     #load-dialog-content {
@@ -521,7 +532,7 @@ dialog {
         align-items: center;
 
         input[type=number] {
-            width: 45px;
+            width: 50px;
             margin-top: 2px;
             padding: 3px 0px 3px 3px;
         }

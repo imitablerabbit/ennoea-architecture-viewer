@@ -492,18 +492,20 @@ function onClick(event) {
     // Create a popup with the application information stored on the 
     // object's userData.
     if (selectedObjects.length > 0) {
-        let application = selectedObjects[0].userData;
+        let component = selectedObjects[0].userData;
+        console.log(component);
+        let object = component.object;
         let content = document.createElement("article");
         content.classList.add("info-box");
         content.classList.add("start-dark");
         content.classList.add("no-border");
         content.innerHTML = `
-            <section class="info-data-kv">Color: ${application.color}</section>
-            <section class="info-data-kv">Position: ${application.position}</section>
-            <section class="info-data-kv">Rotation: ${application.rotation}</section>
-            <section class="info-data-kv">Scale: ${application.scale}</section>
+            <section class="info-box-kv"><p class="key">Color:</p><p class="value" style="color: ${object.color}">${object.color}</p></section>
+            <section class="info-box-kv"><p class="key">Position:</p><p class="value">${object.position}</p></section>
+            <section class="info-box-kv"><p class="key">Rotation:</p><p class="value">${object.rotation}</p></section>
+            <section class="info-box-kv"><p class="key">Scale:</p><p class="value">${object.scale}</p></section>
         `;
-        let popup = new PopupWindow(document.body, application.name, content);
+        let popup = new PopupWindow(document.body, component.name, content);
         let popupElement = popup.getWindowElement();
         let popupWidth = popupElement.offsetWidth;
         console.log(popupWidth);

@@ -30,11 +30,27 @@
                     </button>
                     <div class="collapsable-container">
                         <label for="file-collapse-button" class="title">File:</label>
-                        <div id="file-form">
-                            <button id="create-layout">New...</button>
-                            <button id="save-layout-server">Save to Server</button>
-                            <button id="save-layout-file">Save to File</button>
-                            <button id="load-layout">Load...</button>
+
+                        <!-- Add file name and description -->
+                        <div class="info-box-list">
+                            <div id="file-info" class="info-box">
+                                <h2 class="title-container">File Info:</h2>
+                                <div class="info-box-kv grid-2">
+                                    <button id="create-layout">New...</button>
+                                    <button id="load-layout">Load...</button>
+                                    <button id="save-layout-server">Save to Server</button>
+                                    <button id="save-layout-file">Save to File</button>
+                                </div>
+
+                                <div class="info-box-kv">
+                                    <p class="key">Name:</p>
+                                    <p id="file-info-name-text" class="value undefined">No File Loaded</p>
+                                </div>
+                                <div class="info-box-kv">
+                                    <p class="key">Description:</p>
+                                    <p id="file-info-description-text" class="value undefined">No File Loaded</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </article>

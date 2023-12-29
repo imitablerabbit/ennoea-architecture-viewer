@@ -5,6 +5,7 @@ import * as collapsable from './collapsable.js'
 import * as fileCreate from './fileCreate.js'
 import * as fileSaving from './fileSaving.js';
 import * as fileLoading from './fileLoading.js';
+import * as sidebarFileInfo from './sidebarFileInfo.js';
 import * as sidebarSceneControls from './sidebarSceneControls.js';
 import * as sidebarApplicationInfo from './sidebarApplicationInfo.js';
 import * as debug from './debug.js';
@@ -29,6 +30,7 @@ function init() {
     let archController = new ArchitectureController();
 
     let scenePromise = scene.init(archController);
+    let sidebarFileInfoPromise = sidebarFileInfo.init(archController);
     let sidebarSceneControlsPromise = sidebarSceneControls.init(archController);
     let sidebarApplicationInfoPromise = sidebarApplicationInfo.init(archController);
 
@@ -38,6 +40,7 @@ function init() {
 
     let promises = [
         alertPromise, scenePromise, sidebarPromise,
+        sidebarFileInfoPromise,
         collapsablePromise, sidebarSceneControlsPromise,
         sidebarApplicationInfoPromise, createPromise,
         savingPromise, loadingPromise, debugPromise

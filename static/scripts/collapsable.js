@@ -1,7 +1,11 @@
 import gsap from 'gsap';
 
-// Initialize the collapsable module. Returns a promise that resolves when the
-// collapsable elements has been initialized.
+/**
+ * Initializes the collapsable functionality. This function should be called
+ * after the page has loaded.
+ * 
+ * @returns {Promise<void>} A promise that resolves when the initialization is complete.
+ */
 export function init() {
     return new Promise((resolve, reject) => {
         let collapsables = document.getElementsByClassName('collapsable');
@@ -12,15 +16,31 @@ export function init() {
             let collapsableContainer = collapsable.querySelector('.collapsable-container');
             setCollapsableData(collapsable, collapsableToggleText, collapsableContainer);
 
+            // Add a click event listener to the collapsable toggle so that we can
+            // toggle the collapsable element.
             collapsableToggle.addEventListener('click', () => {
                 toggleCollapsable(collapsable, collapsableToggleText, collapsableContainer)
             });
+            
+            // Add a resize observer to the collapsable container so that we can
+            // update the max height of the collapsable element when the container
+            // resizes.
+            let resizeObserver = new ResizeObserver(() => {
+                setCollapsableData(collapsable, collapsableToggleText, collapsableContainer);
+            });
+            resizeObserver.observe(collapsableContainer);
         }
         resolve();
     });
 }
 
-// Set the collapsable element to be active or inactive.
+/**
+ * Sets the data for a collapsable element.
+ * 
+ * @param {HTMLElement} collapsable - The collapsable element.
+ * @param {HTMLElement} collapsableToggleText - The toggle text element of the collapsable.
+ * @param {HTMLElement} collapsableContainer - The container element of the collapsable.
+ */
 function setCollapsableData(collapsable, collapsableToggleText, collapsableContainer) {
     let maxHeight = "25px";
     let rotation = "270deg";
@@ -32,6 +52,12 @@ function setCollapsableData(collapsable, collapsableToggleText, collapsableConta
     collapsableToggleText.style.transform = "rotateZ(" + rotation + ")";
 }
 
+/**
+ * Toggles the collapsable element and animates the height and rotation.
+ * @param {HTMLElement} collapsable - The collapsable element to toggle.
+ * @param {HTMLElement} collapsableToggleText - The text element to animate the rotation.
+ * @param {HTMLElement} collapsableContainer - The container element whose height will be animated.
+ */
 function toggleCollapsable(collapsable, collapsableToggleText, collapsableContainer) {
     collapsable.classList.toggle('active');
 
