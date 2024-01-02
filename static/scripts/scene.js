@@ -427,10 +427,11 @@ export function renderGroupsFromData(applicationData) {
         boxSize.y += padding * 2;
         boxSize.z += padding * 2;
 
-        // Create a bounding box mesh for the group.
+        // Create a bounding box wireframe for the group.
         let boxGeometry = new THREE.BoxGeometry(boxSize.x, boxSize.y, boxSize.z);
-        let boxMaterial = new THREE.MeshBasicMaterial({color: color, transparent: true, opacity: 0.1});
-        let boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
+        let edges = new THREE.EdgesGeometry(boxGeometry);
+        let boxMesh = new THREE.LineSegments(edges);
+        boxMesh.material.color.set(color);
         boxMesh.position.set(boxCenter.x, boxCenter.y, boxCenter.z);
         boxMesh.userData = group;
         scene.add(boxMesh);
