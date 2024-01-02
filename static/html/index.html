@@ -19,129 +19,200 @@
 
             <!-- Collapsable navbar on the left side spanning the height of the page -->
             <nav id="sidebar">
-                <button id="sidebar-toggle" class="activate-toggle active">
+                <button id="sidebar-toggle" class="activate-toggle active" type="button">
                     <p id="sidebar-toggle-text">&lt;</p> 
                 </button>
 
-                <article id="settings" class="collapsable">
-                    <button id="settings-collapse-button" class="collapsable-toggle">
-                        <p class="collapsable-toggle-text">&lt;</p>
-                    </button>
-                    <div class="collapsable-container">
-                        <label for="settings-collapse-button" class="title">Settings:</label>
-                        <div id="settings-form">
-                            <button id="save-layout">Save Layout</button>
-                            <button id="load-layout">Load Layout</button>
-                        </div>
-                    </div>
-                </article>
+                <div id="sidebar-container">
 
-                <article id="scene" class="collapsable">
-                    <button id="scene-collapse-button" class="collapsable-toggle">
-                        <p class="collapsable-toggle-text">&lt;</p>
-                    </button>
-                    <div class="collapsable-container">
+                    <!-- File section -->
+                    <article id="file" class="collapsable">
+                        <button id="file-collapse-button" class="collapsable-toggle">
+                            <p class="collapsable-toggle-text">&lt;</p>
+                        </button>
+                        <label for="file-collapse-button" class="title">File:</label>
+                        <div class="collapsable-container">
+
+                            <!-- Add file name and description -->
+                            <div class="info-box-list">
+                                <div id="file-info" class="info-box">
+                                    <h2 class="title-container">File Info:</h2>
+                                    <div class="info-box-kv grid-2">
+                                        <button id="create-layout">New...</button>
+                                        <button id="load-layout">Load...</button>
+                                        <button id="save-layout-server">Save to Server</button>
+                                        <button id="save-layout-file">Save to File</button>
+                                    </div>
+
+                                    <div class="info-box-kv">
+                                        <p class="key no-grow">Name:</p>
+                                        <p id="file-info-name-text" class="value undefined">No File Loaded</p>
+                                    </div>
+                                    <div class="info-box-kv column">
+                                        <p class="key">Description:</p>
+                                        <p id="file-info-description-text" class="value"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Scene section -->
+                    <article id="scene" class="collapsable">
+                        <button id="scene-collapse-button" class="collapsable-toggle">
+                            <p class="collapsable-toggle-text">&lt;</p>
+                        </button>
                         <label class="title" for="scene-collapse-button">Scene Controls:</label>
-                        <div id="scene-controls-info-list" class="info-box-list">
-
-                            <div class="info-box">
-                                <h2 class="title-container">Camera:</h2>
-                                <div class="info-box-kv">
-                                    <p class="key">Position:</p>
-                                    <div class="value vector-input-container">
-                                        <div class="number-input-container">
-                                            <label for="scene-camera-x">x</label>
-                                            <input type="number" id="scene-camera-x" value="0">
-                                        </div> 
-                                        <div class="number-input-container">
-                                            <label for="scene-camera-y">y</label>
-                                            <input type="number" id="scene-camera-y" value="0">
-                                        </div> 
-                                        <div class="number-input-container">
-                                            <label for="scene-camera-z">z</label>
-                                            <input type="number" id="scene-camera-z" value="0">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="info-box-row">
-                                    <button id="scene-camera-save">Set to Scene Position</button>
-                                </div>
-                            </div>
-
-                            <div class="info-box">
-                                <h2 class="title-container">Background:</h2>
-                                <div class="info-box-kv">
-                                    <p class="key">Fog:</p>
-                                    <div class="value vector-input-container">
-                                        <div class="number-input-container">
-                                            <label for="scene-fog-near">near</label>
-                                            <input type="number" id="scene-fog-near" value="" min="0">
-                                        </div>
-                                        <div class="number-input-container">
-                                            <label for="scene-fog-far">far</label>
-                                            <input type="number" id="scene-fog-far" value="" min="20">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="info-box">
-                                <h2 class="title-container">App Names:</h2>
-                                <div class="info-box-kv">
-                                    <label class="key" for="scene-text-scale">Scale:</label>
-                                    <input class="value" type="number" id="scene-text-scale" value="1" min="0" step="0.1">
-                                </div>
-                                <div class="info-box-kv">
-                                    <label class="key" for="scene-text-rotate">Rotate:</label>
-                                    <input class="value" type="checkbox" id="scene-text-rotate" checked>
-                                </div>
-                            </div>
+                        <div class="collapsable-container">
                             
+                            <div class="info-box-list">
+                                <div class="info-box">
+                                    <h2 class="title-container">Camera:</h2>
+                                    <div class="info-box-kv">
+                                        <p class="key">Position:</p>
+                                        <div class="value vector-input-container">
+                                            <div class="number-input-container">
+                                                <label for="scene-camera-x">x</label>
+                                                <input type="number" id="scene-camera-x" value="0">
+                                            </div> 
+                                            <div class="number-input-container">
+                                                <label for="scene-camera-y">y</label>
+                                                <input type="number" id="scene-camera-y" value="0">
+                                            </div> 
+                                            <div class="number-input-container">
+                                                <label for="scene-camera-z">z</label>
+                                                <input type="number" id="scene-camera-z" value="0">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="info-box-row">
+                                        <button id="scene-camera-save">Set to Scene Position</button>
+                                    </div>
+                                </div>
+
+                                <div class="info-box">
+                                    <h2 class="title-container">Background:</h2>
+                                    <div class="info-box-kv">
+                                        <p class="key">Fog:</p>
+                                        <div class="value vector-input-container">
+                                            <div class="number-input-container">
+                                                <label for="scene-fog-near">near</label>
+                                                <input type="number" id="scene-fog-near" value="" min="0">
+                                            </div>
+                                            <div class="number-input-container">
+                                                <label for="scene-fog-far">far</label>
+                                                <input type="number" id="scene-fog-far" value="" min="20">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="info-box">
+                                    <h2 class="title-container">App Names:</h2>
+                                    <div class="info-box-kv">
+                                        <label class="key" for="scene-text-scale">Scale:</label>
+                                        <input class="value" type="number" id="scene-text-scale" value="1" min="0" step="0.1">
+                                    </div>
+                                    <div class="info-box-kv">
+                                        <label class="key" for="scene-text-rotate">Rotate:</label>
+                                        <input class="value" type="checkbox" id="scene-text-rotate" checked>
+                                    </div>
+                                </div>
+                                
+                            </div>
                         </div>
-                    </div>
-                </article>
+                    </article>
 
-                <article id="applications">
-                    <h1 class="title">Applications:</h1>
+                    <!-- Applications section -->
+                    <article id="applications" class="collapsable">
+                        <button id="applications-collapse-button" class="collapsable-toggle">
+                            <p class="collapsable-toggle-text">&lt;</p>
+                        </button>
+                        <label class="title" for="applications-collapse-button">Applications:</label>
+                        <div class="collapsable-container">
+                            <div class="column">
+                                <!-- Filter input box for applications -->
+                                <div id="application-filter">
+                                    <label for="application-filter-input">Filter:</label>
+                                    <input type="search" id="application-filter-input" placeholder="">
+                                </div>
 
-                    <!-- Filter input box for applications -->
-                    <div id="application-filter">
-                        <label for="application-filter-input">Filter:</label>
-                        <input type="search" id="application-filter-input" placeholder="">
-                    </div>
+                                <!-- Application info boxes will be added to this via sidebarApplicationInfo.js -->
+                                <section id="application-info-list" class="info-box-list"></section>
+                            </div>
+                        </div>
+                    </article>
 
-                    <!-- Application info boxes will be added to this via sidebarApplicationInfo.js -->
-                    <section id="application-info-list" class="info-box-list"></section>
-                </article>
+                </div>
                 
             </nav>
 
-            <dialog id="load-dialog">
-                <div id="load-dialog-content">
-                    <button id="load-layout-close" class="close">x</button>
+            <!-- Dialog box to create a new architecture -->
+            <dialog id="create-dialog">
+                <div id="create-dialog-content" class="info-box start-dark">
+                    <div class="title-container">
+                        <h1 class="title">Create New Architecture</h1>
+                        <button type="button" id="create-layout-close" class="close">x</button>
+                    </div>
 
-                    <form id="load-layout-file-form" method="dialog">
-                        <h2>Load From File:</h2>
-                        <p>Update the application data by loading in a JSON file.</p>
-                        <input type="file" name="load-file" id="load-layout-file-input">
-                        <button id="load-layout-submit-file">Submit File</button>
-                    </form>
-
-                    <form id="load-layout-text-form" method="dialog">
-                        <h2>Load From Text:</h2>
-                        <p>Specify JSON data directly in the browser to update the application data.</p>
-                        <div id="load-layout-text-box"></div>
-                        <button id="load-layout-submit-text">Submit Text</button>
+                    <form>
+                        <div class="info-box-kv column">
+                            <label for="create-layout-name" class="key">Name:</label>
+                            <input type="text" id="create-layout-name"placeholder="Name">
+                        </div>
+                            
+                        <div class="info-box-kv column">
+                            <label for="create-layout-description" class="key">Description:</label>
+                            <textarea id="create-layout-description" placeholder="Description"></textarea>
+                        </div>
+    
+                        <div>
+                            <button type="button" id="create-layout-submit">Create</button>
+                        </div>
                     </form>
                 </div>
             </dialog>
 
+            <!-- Dialog box to load an architecture -->
+            <dialog id="load-dialog">
+                <div id="load-dialog-content" class="info-box start-dark">
+                    <div class="title-container">
+                        <h1 class="title">Load Architecture</h1>
+                        <button type="button" id="load-layout-close" class="close">x</button>
+                    </div>
+
+                    <form id="load-layout-server-form">
+                        <h2>Load From Server:</h2>
+                        <select id="load-layout-server-select">
+                            <option value="architecture1">Architecture 1</option>
+                            <option value="architecture2">Architecture 2</option>
+                            <option value="architecture3">Architecture 3</option>
+                        </select>
+                        <button type="button" id="load-layout-submit-server">Load</button>
+                    </form>
+
+                    <form id="load-layout-file-form" method="dialog">
+                        <h2>Load From File:</h2>
+                        <input type="file" name="load-file" id="load-layout-file-input">
+                        <button type="button" id="load-layout-submit-file">Submit File</button>
+                    </form>
+
+                    <form id="load-layout-text-form" method="dialog">
+                        <h2>Load From Text:</h2>
+                        <div id="load-layout-text-box"></div>
+                        <button type="button" id="load-layout-submit-text">Submit Text</button>
+                    </form>
+                </div>
+            </dialog>
+
+            <!-- Dialog to display debug information -->
             <dialog id="debug">
-                <div id="debug-content">
-                    <button id="debug-dialog-close" class="close">x</button>
-                    <h1>Debug Console</h2>
-                    <p>This is a debug dialog. From here you can test out the functionality of the application such as the alert system.</p>
+                <div id="debug-content" class="info-box start-dark">
+                    <div class="title-container">
+                        <h1 class="title">Debug Console</h2>
+                        <button id="debug-dialog-close" class="close">x</button>
+                    </div>
 
                     <div>
                         <h2>Alert Debugging</h3>

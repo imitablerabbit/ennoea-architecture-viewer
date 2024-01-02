@@ -53,6 +53,7 @@ function generateAlertElement(tag, content, ...alertClasses) {
 
     var alertTextElement = document.createElement('p');
     alertTextElement.innerHTML = content;
+    console.log(content);
 
     var alertCloseButton = document.createElement('button');
     alertCloseButton.className = "close";

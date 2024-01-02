@@ -1,12 +1,15 @@
+import * as alert from './alert.js'
 import * as scene from './scene.js'
 import * as sidebar from './sidebar.js'
 import * as collapsable from './collapsable.js'
-import * as alert from './alert.js'
-import * as layoutLoading from './layoutLoading.js';
+import * as fileCreate from './fileCreate.js'
+import * as fileSaving from './fileSaving.js';
+import * as fileLoading from './fileLoading.js';
+import * as sidebarFileInfo from './sidebarFileInfo.js';
 import * as sidebarSceneControls from './sidebarSceneControls.js';
 import * as sidebarApplicationInfo from './sidebarApplicationInfo.js';
-import { applicationData } from './applicationDataExample.js';
 import * as debug from './debug.js';
+import {ArchitectureController} from './architectureController.js'
 
 
 // Load the scene and all of the modules after the page has loaded.
@@ -20,18 +23,27 @@ function init() {
     // Initialize all modules. We need to wait for all of them to finish
     // before we can start the application.
     let alertPromise = alert.init();
-    let scenePromise = scene.init();
-    let sidebarPromise = sidebar.init();
-    let collapsablePromise = collapsable.init();
-    let sidebarSceneControlsPromise = sidebarSceneControls.init();
-    let sidebarApplicationInfoPromise = sidebarApplicationInfo.init();
-    let layoutLoadingPromise = layoutLoading.init();
     let debugPromise = debug.init();
+    let collapsablePromise = collapsable.init();
+    let sidebarPromise = sidebar.init();
+
+    let archController = new ArchitectureController();
+
+    let scenePromise = scene.init(archController);
+    let sidebarFileInfoPromise = sidebarFileInfo.init(archController);
+    let sidebarSceneControlsPromise = sidebarSceneControls.init(archController);
+    let sidebarApplicationInfoPromise = sidebarApplicationInfo.init(archController);
+
+    let createPromise = fileCreate.init(archController);
+    let savingPromise = fileSaving.init(archController);
+    let loadingPromise = fileLoading.init(archController);
+
     let promises = [
         alertPromise, scenePromise, sidebarPromise,
+        sidebarFileInfoPromise,
         collapsablePromise, sidebarSceneControlsPromise,
-        sidebarApplicationInfoPromise,
-        layoutLoadingPromise, debugPromise
+        sidebarApplicationInfoPromise, createPromise,
+        savingPromise, loadingPromise, debugPromise
     ];
     Promise.allSettled(promises).then(() => {
         start();
@@ -39,8 +51,5 @@ function init() {
 }
 
 function start() {
-    scene.reset(applicationData);
     scene.start();
-    sidebarSceneControls.start(applicationData);
-    sidebarApplicationInfo.start(applicationData);
 }

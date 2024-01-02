@@ -15,7 +15,8 @@ build-all: build-dirs build-static build-server
 # Build golang files
 
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
-GO_FILES=$(call rwildcard,$(BUILD_NAME),*.go) $(call rwildcard,cmd/$(BUILD_NAME),*.go)
+GO_CMD_FILES=$(wildcard cmd/$(BUILD_NAME)/*.go)
+GO_FILES=$(GO_CMD_FILES) $(call rwildcard,pkg/,*.go)
 
 build-server: build $(BUILD_DIR)/$(BUILD_NAME)
 
@@ -23,7 +24,7 @@ $(BUILD_DIR)/$(BUILD_NAME): $(GO_FILES)
 	echo ${USER}; \
 	which go; \
 	go version; \
-	go build -o $(BUILD_DIR)/$(BUILD_NAME) $(GO_FILES)
+	go build -o $(BUILD_DIR)/$(BUILD_NAME) $(GO_CMD_FILES)
 
 # Build static files
 
@@ -31,16 +32,18 @@ HTML_FILES=$(wildcard $(SRC_STATIC)/html/*)
 IMAGE_FILES=$(wildcard $(SRC_STATIC)/images/*)
 SCSS_FILES=$(wildcard $(SRC_STATIC)/css/*.scss)
 JS_FILES=$(wildcard $(SRC_STATIC)/scripts/*.js)
+SHADER_FILES=$(wildcard $(SRC_STATIC)/shaders/*)
 DEPS_FOLDER=$(wildcard $(SRC_STATIC)/deps)
 
 BUILD_JS_FILES=$(BUILD_STATIC)/scripts/index.min.js # Built using webpack
 BUILD_CSS_FILES=$(addprefix $(BUILD_STATIC)/css/,$(notdir $(SCSS_FILES:.scss=.css)))
 BUILD_HTML_FILES=$(addprefix $(BUILD_STATIC)/html/,$(notdir $(HTML_FILES)))
 BUILD_IMAGE_FILES=$(addprefix $(BUILD_STATIC)/images/,$(notdir $(IMAGE_FILES)))
+BUILD_SHADER_FILES=$(addprefix $(BUILD_STATIC)/shaders/,$(notdir $(SHADER_FILES)))
 
-build-static: node_modules build-dirs move-deps $(BUILD_JS_FILES) $(BUILD_CSS_FILES) $(BUILD_HTML_FILES) $(BUILD_IMAGE_FILES)
+build-static: node_modules build-dirs move-deps $(BUILD_JS_FILES) $(BUILD_CSS_FILES) $(BUILD_HTML_FILES) $(BUILD_IMAGE_FILES) $(BUILD_SHADER_FILES)
 
-build-dirs: build build/static/css build/static/html build/static/images build/static/scripts
+build-dirs: build build/static/css build/static/html build/static/images build/static/scripts build/static/shaders
 
 build:
 	mkdir ./build
@@ -57,6 +60,9 @@ build/static/images:
 build/static/scripts:
 	mkdir -p ./build/static/scripts
 
+build/static/shaders:
+	mkdir -p ./build/static/shaders
+
 move-deps: build/static/css
 	cp -r $(DEPS_FOLDER)/css/* ./build/static/css
 
@@ -66,10 +72,13 @@ build/static/scripts/%.js: $(JS_FILES)
 build/static/css/%.css: $(SCSS_FILES)
 	./node_modules/.bin/sass --style=compressed --no-source-map $< $@
 
-build/static/html/%: $(HTML_FILES)
+build/static/html/%: $(SRC_STATIC)/html/%
 	cp $< $@
 
-build/static/images/%: $(IMAGE_FILES)
+build/static/images/%: $(SRC_STATIC)/images/%
+	cp $< $@
+
+build/static/shaders/%: $(SRC_STATIC)/shaders/%
 	cp $< $@
 
 # Other tools
