@@ -8,18 +8,26 @@ export class ArchitectureController {
     }
 
     /**
-     * Get the current architecture state.
+     * Get the current architecture state. If the architecture state is an
+     * object, then we will clone it before returning it.
      * @returns {any} The architecture state.
      */
     getArchitectureState() {
+        if (typeof this.architectureState === 'object' && this.architectureState !== null) {
+            return structuredClone(this.architectureState);
+        }
         return this.architectureState;
     }
 
     /**
-     * Set the new architecture state and notify subscribers.
+     * Set the new architecture state and notify subscribers. If the architecture
+     * state is an object, then we will clone it before setting it.
      * @param {any} newArchitectureState - The new architecture state.
      */
     setArchitectureState(newArchitectureState) {
+        if (typeof newArchitectureState === 'object' && newArchitectureState !== null) {
+            newArchitectureState = structuredClone(newArchitectureState);
+        }
         this.architectureState = newArchitectureState;
         this.notifySubscribers();
     }

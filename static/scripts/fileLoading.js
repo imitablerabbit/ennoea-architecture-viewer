@@ -73,7 +73,7 @@ export function init(archController) {
                 .then(data => {
                     let applicationData = data;
                     reloadData(archController, applicationData);
-                    alert.success("New application data loaded from server. Loaded architecture: " + data.name + ".");
+                    alert.success("New application data loaded from server. Loaded architecture: " + name + ".");
                     dialog.close();
                 })
                 .catch(error => {

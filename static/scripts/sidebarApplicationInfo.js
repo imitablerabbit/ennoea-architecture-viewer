@@ -200,20 +200,6 @@ function generateAppTitleElement(name, color, update) {
     return titleContainer;
 }
 
-/* Generate the application info elements for an object.
-* Object data contains the object's position, rotation, scale
-* and the color of the object. The elements are added to a
-* container element that is returned.
-*/
-function generateObjectElements(app, objectData) {
-    let container = document.createElement('div');
-    container.classList.add('object-container');
-
-
-    return container;
-
-}
-
 /**
  * Generates a color picker element.
  * 

@@ -60,7 +60,27 @@ export class PopupWindow {
 
     // Add event listeners to the dialog box.
     addEventListeners() {
-        this.windowElement.addEventListener('mousedown', (event) => {
+        // Add an 'esc' key listener to close the dialog box.
+        let escHandler = (event) => {
+            if (event.key === 'Escape') {
+                this.destroy();
+                document.removeEventListener('keydown', escHandler);
+                event.stopImmediatePropagation();
+            }
+        }
+        document.addEventListener('keydown', escHandler);
+
+        this.closeButtonElement.addEventListener('mouseup', (event) => {
+            // This is done on the mouseup event instead of the click event
+            // because the we want to workaround the mouseup event adding the
+            // element to the top of the parent element.
+            this.destroy();
+
+            // Remove the 'esc' key listener.
+            document.removeEventListener('keydown', escHandler);
+        });
+
+        this.titleBarElement.addEventListener('mousedown', (event) => {
             this.bringToFront();
         });
 
@@ -96,13 +116,6 @@ export class PopupWindow {
                 this.windowElement.style.left = x + 'px';
                 this.windowElement.style.top = y + 'px';
             }
-        });
-
-        this.closeButtonElement.addEventListener('mouseup', (event) => {
-            // This is done on the mouseup event instead of the click event
-            // because the we want to workaround the mouseup event adding the
-            // element to the top of the parent element.
-            this.destroy();
         });
     }
 

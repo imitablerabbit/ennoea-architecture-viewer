@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -14,7 +15,6 @@ import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { PopupWindow } from './popupWindow.js';
 import * as alert from './alert.js';
 
-
 // Canvas dimensions and positions
 var width, height;
 var xPos, yPos;
@@ -23,6 +23,7 @@ var container;
 // three.js scene and higher level controls.
 var renderer, scene, camera;
 var composer, renderPass;
+var orbitControls, transformControls;
 var controls;
 var cameraLookAtPosition = new THREE.Vector3(0, 0, 0);
 var sceneObjects = [];
@@ -55,6 +56,10 @@ var textRotate = false;
 var vertexShader;
 var fragmentShader;
 
+// Controllers
+var architectureController;
+var previousApplicationData;
+
 // Load the external files for the scene. Returns a promise that resolves
 // when all the files have been loaded.
 export function load() {
@@ -70,7 +75,7 @@ export function load() {
     let vertexPromise = new Promise((resolve, reject) => {
         let vertexShaderLoader = new THREE.FileLoader(THREE.DefaultLoadingManager);
         vertexShaderLoader.load('static/shaders/vertex.vert', function (data) {
-            console.log("vertex shader loaded:", data);
+            console.info("vertex shader loaded:", data);
             vertexShader = data;
         });
         resolve();
@@ -79,7 +84,7 @@ export function load() {
     let fragmentPromise = new Promise((resolve, reject) => {
         let fragmentShaderLoader = new THREE.FileLoader(THREE.DefaultLoadingManager);
         fragmentShaderLoader.load('static/shaders/fragment.frag', function (data) {
-            console.log("fragment shader loaded:", data);
+            console.info("fragment shader loaded:", data);
             fragmentShader = data;
         });
         resolve();
@@ -102,7 +107,9 @@ export function init(archController) {
         xPos = window.innerWidth - width;
         yPos = window.innerHeight - height;
 
-        console.log("init: Container Sizes: Width: " + width + " Height: " + height);
+        architectureController = archController;
+
+        console.info("init: Container Sizes: Width: " + width + " Height: " + height);
 
         renderer = new THREE.WebGLRenderer({antialias: true});
         renderer.setPixelRatio(window.devicePixelRatio);
@@ -134,13 +141,24 @@ export function init(archController) {
         outlinePassSelected.visibleEdgeColor = new THREE.Color(1, 0, 0);
         composer.addPass(outlinePassSelected);
 
-        controls = new OrbitControls(camera, renderer.domElement, scene);
-        controls.addEventListener('change', () => {
+        orbitControls = new OrbitControls(camera, renderer.domElement, scene);
+        transformControls = new TransformControls(camera, renderer.domElement);
+        let controlsChange = () => {
             if (textRotate) {
                 rotateText();
             }
             render();
+        };
+        orbitControls.addEventListener('change', controlsChange);
+        transformControls.addEventListener('change', controlsChange);
+        transformControls.addEventListener('dragging-changed', (event) => {
+            // Disable orbit controls when transform controls are being used.
+            // Obit controls will immediately become usable again when the
+            // user stops dragging the object around.
+            orbitControls.enabled = ! event.value;
         });
+        controls = orbitControls; // OrbitControls is the default controls.
+        scene.add(transformControls); // Add the transform controls to the scene.
 
         ambientLight = new THREE.AmbientLight(0xffffff, 1);
         scene.add(ambientLight);
@@ -152,11 +170,12 @@ export function init(archController) {
         window.onresize = windowResize;
 
         archController.subscribe((applicationData) => {
-            reset(applicationData);
+            reset(previousApplicationData, applicationData);
+            previousApplicationData = applicationData;
         });
 
         resolve();
-    });    
+    });
 }
 
 // Start the animation loop. This should be called after the scene has
@@ -165,17 +184,77 @@ export function start() {
     animate();
 }
 
-// Reset the scene based on the new application data.
-export function reset(applicationData) {
-    clearObjects();
-    createSceneFromData(applicationData);
-    createApplicationsFromData(applicationData);
+/**
+ * Resets the scene and applications based on the previous and current application data.
+ * 
+ * @param {object} previousApplicationData - The previous application data.
+ * @param {object} applicationData - The current application data.
+ */
+export function reset(previousApplicationData, applicationData) {
+    console.info("reset: previousApplicationData: ", previousApplicationData);
+    console.info("reset: applicationData: ", applicationData);
+    resetScene(previousApplicationData, applicationData);
+    resetApplications(previousApplicationData, applicationData);
 }
 
-// Reset only the application meshes in the scene. This will
-// not reset the scene level data. This is used when we do not
-// want to reset the camera position or the fog.
-export function resetApplications(applicationData) {
+/**
+ * Resets the scene based on the provided application data.
+ * 
+ * @param {object} previousApplicationData - The previous application data.
+ * @param {object} applicationData - The current application data.
+ * @returns {void}
+ */
+export function resetScene(previousApplicationData, applicationData) {
+    if (applicationData === undefined) {
+        console.error("reset: applicationData is undefined, skipping scene reset");
+        return;
+    }
+    if (applicationData.scene === undefined) {
+        console.error("reset: applicationData.scene is undefined, skipping scene reset");
+        return;
+    }
+    if (previousApplicationData != undefined) {
+        let prevJSON = JSON.stringify(previousApplicationData.scene);
+        let currJSON = JSON.stringify(applicationData.scene);
+        if (prevJSON == currJSON) {
+            console.info("reset: applicationData.scene is the same as previousApplicationData.scene, skipping scene reset");
+            return;
+        }
+    }
+    createSceneFromData(applicationData);
+}
+
+/**
+ * Resets the applications in the scene based on the provided application data.
+ * If the application data does not contain any components, the application reset is skipped.
+ * If the application data is the same as the previous application data, the application reset is skipped.
+ * Otherwise, the scene is cleared and new applications are created based on the application data.
+ * 
+ * @param {object} previousApplicationData - The previous application data.
+ * @param {object} applicationData - The new application data.
+ */
+export function resetApplications(previousApplicationData, applicationData) {
+    if (applicationData.components === undefined) {
+        // This should be an empty list of components.
+        console.error("resetApplications: applicationData.components is undefined, skipping application reset");
+        return;
+    }
+    if (previousApplicationData != undefined) {
+        // Check if the components, connections, and groups are the same.
+        let prevJSONComp = JSON.stringify(previousApplicationData.components);
+        let currJSONComp = JSON.stringify(applicationData.components);
+
+        let prevJSONConn = JSON.stringify(previousApplicationData.connections);
+        let currJSONConn = JSON.stringify(applicationData.connections);
+
+        let prevJSONGroup = JSON.stringify(previousApplicationData.groups);
+        let currJSONGroup = JSON.stringify(applicationData.groups);
+
+        if (prevJSONComp == currJSONComp && prevJSONConn == currJSONConn && prevJSONGroup == currJSONGroup) {
+            console.info("resetApplications: applicationData.components, applicationData.connections, and applicationData.groups are the same as previousApplicationData, skipping application reset");
+            return;
+        }
+    }
     clearObjects();
     createApplicationsFromData(applicationData);
 }
@@ -651,18 +730,105 @@ function onClick(event) {
     // object's userData.
     if (selectedObjects.length > 0) {
         let component = selectedObjects[0].userData;
-        console.log("onClick", component);
         let object = component.object;
+
         let content = document.createElement("article");
         content.classList.add("info-box");
         content.classList.add("start-dark");
         content.classList.add("no-border");
-        content.innerHTML = `
-            <section class="info-box-kv"><p class="key">Color:</p><p class="value" style="color: ${object.color}">${object.color}</p></section>
-            <section class="info-box-kv"><p class="key">Position:</p><p class="value">${object.position}</p></section>
-            <section class="info-box-kv"><p class="key">Rotation:</p><p class="value">${object.rotation}</p></section>
-            <section class="info-box-kv"><p class="key">Scale:</p><p class="value">${object.scale}</p></section>
-        `;
+
+        let colorSection = document.createElement("section");
+        colorSection.classList.add("info-box-kv");
+        let colorKey = document.createElement("p");
+        colorKey.classList.add("key");
+        colorKey.textContent = "Color:";
+        let colorValue = document.createElement("p");
+        colorValue.classList.add("value");
+        colorValue.style.color = object.color;
+        colorValue.textContent = object.color;
+        colorSection.appendChild(colorKey);
+        colorSection.appendChild(colorValue);
+        
+        let positionSection = document.createElement("section");
+        positionSection.classList.add("info-box-kv");
+        let positionKey = document.createElement("p");
+        positionKey.classList.add("key");
+        positionKey.textContent = "Position:";
+        let positionValue = document.createElement("p");
+        positionValue.classList.add("value");
+        positionValue.textContent = object.position.join(", ");
+        positionSection.appendChild(positionKey);
+        positionSection.appendChild(positionValue);
+        
+        let rotationSection = document.createElement("section");
+        rotationSection.classList.add("info-box-kv");
+        let rotationKey = document.createElement("p");
+        rotationKey.classList.add("key");
+        rotationKey.textContent = "Rotation:";
+        let rotationValue = document.createElement("p");
+        rotationValue.classList.add("value");
+        rotationValue.textContent = object.rotation.join(", ");
+        rotationSection.appendChild(rotationKey);
+        rotationSection.appendChild(rotationValue);
+        
+        let scaleSection = document.createElement("section");
+        scaleSection.classList.add("info-box-kv");
+        let scaleKey = document.createElement("p");
+        scaleKey.classList.add("key");
+        scaleKey.textContent = "Scale:";
+        let scaleValue = document.createElement("p");
+        scaleValue.classList.add("value");
+        scaleValue.textContent = object.scale.join(", ");
+        scaleSection.appendChild(scaleKey);
+        scaleSection.appendChild(scaleValue);
+
+        // Add buttons to the content that will switch the controls to
+        // TransformControls so that the user can manipulate the object.
+
+        // Translate button
+        let translateButton = document.createElement("button");
+        translateButton.classList.add("button");
+        translateButton.textContent = "Translate";
+        translateButton.addEventListener("click", () => {
+            let object = selectedObjects[0];
+            setTransformControls(architectureController, object, "translate");
+        });
+        let translateButtonContainer = document.createElement("div");
+        translateButtonContainer.classList.add("info-box-row");
+        translateButtonContainer.appendChild(translateButton);
+
+        // Rotate button
+        let rotateButton = document.createElement("button");
+        rotateButton.classList.add("button");
+        rotateButton.textContent = "Rotate";
+        rotateButton.addEventListener("click", () => {
+            let object = selectedObjects[0];
+            setTransformControls(architectureController, object, "rotate");
+        });
+        let rotateButtonContainer = document.createElement("div");
+        rotateButtonContainer.classList.add("info-box-row");
+        rotateButtonContainer.appendChild(rotateButton);
+
+        // Scale button
+        let scaleButton = document.createElement("button");
+        scaleButton.classList.add("button");
+        scaleButton.textContent = "Scale";
+        scaleButton.addEventListener("click", () => {
+            let object = selectedObjects[0];
+            setTransformControls(architectureController, object, "scale");
+        });
+        let scaleButtonContainer = document.createElement("div");
+        scaleButtonContainer.classList.add("info-box-row");
+        scaleButtonContainer.appendChild(scaleButton);
+
+        content.appendChild(colorSection);
+        content.appendChild(positionSection);
+        content.appendChild(rotationSection);
+        content.appendChild(scaleSection);
+        content.appendChild(translateButtonContainer);
+        content.appendChild(rotateButtonContainer);
+        content.appendChild(scaleButtonContainer);
+
         let popup = new PopupWindow(document.body, component.name, content);
         let popupElement = popup.getWindowElement();
         let popupWidth = popupElement.offsetWidth;
@@ -673,7 +839,6 @@ function onClick(event) {
         popup.setPosition(popupX, popupY);
         popup.show();
     }
-
 }
 
 // Handle window resizing. This is used to update the camera and renderer
@@ -721,7 +886,7 @@ function render() {
 
 // Find the object with the given name.
 export function findObjectByName(name, selectableObjects) {
-    console.log("findObjectByName: " + name + " selectableObjects: ", selectableObjects);
+    console.info("findObjectByName: " + name + " selectableObjects: ", selectableObjects);
     for (let i = 0; i < selectableObjects.length; i++) {
         let object = selectableObjects[i];
         if (object.userData.name === name) {
@@ -857,3 +1022,67 @@ function rotateText() {
         textObject.lookAt(cameraPosition);
     }
 }
+
+// Controls functions
+
+// Set the controls to TransformControls.
+export function setTransformControls(archController, object, mode="translate") {
+    // A mouse up handler for when the user is done transforming the object.
+    // We will fetch the architecture data and update the object with the
+    // new position, rotation and scale. We will have to find the object
+    // in the architecture data by name.
+    let mouseUpHandler = () => {
+        let component = object.userData;
+        let objectName = component.name;
+        let objectPosition = object.position;
+        let objectRotation = object.rotation;
+        let objectScale = object.scale;
+        let position = [objectPosition.x, objectPosition.y, objectPosition.z];
+        let rotation = [objectRotation.x, objectRotation.y, objectRotation.z];
+        let scale = [objectScale.x, objectScale.y, objectScale.z];
+
+        // Round the position, rotation and scale to 2 decimal places.
+        let roundTo = 2;
+        let roundMap = (value) => {
+            return Math.round(value * Math.pow(10, roundTo)) / Math.pow(10, roundTo);
+        }
+        position = position.map(roundMap);
+        rotation = rotation.map(roundMap);
+        scale = scale.map(roundMap);
+
+        let archData = archController.getArchitectureState();
+        let components = archData.components;
+        for (let i = 0; i < components.length; i++) {
+            let component = components[i];
+            if (component.name === objectName) {
+                component.object.position = position;
+                component.object.rotation = rotation;
+                component.object.scale = scale;
+                archController.setArchitectureState(archData);
+                break;
+            }
+        }
+    };
+    transformControls.addEventListener('mouseUp', mouseUpHandler);
+
+    // Add an 'esc' key handler to cancel the transform controls.
+    let escKeyHandler = (event) => {
+        if (event.key === "Escape") {
+            transformControls.detach();
+            transformControls.removeEventListener('mouseUp', mouseUpHandler);
+            document.removeEventListener('keydown', escKeyHandler);
+            controls = orbitControls;
+            
+            // Stop other 'esc' key handlers from firing.
+            event.stopImmediatePropagation();
+        }
+    };
+    document.addEventListener('keydown', escKeyHandler);
+    transformControls.detach();
+    transformControls.attach(object);
+    transformControls.enabled = true;
+    transformControls.setMode(mode);
+    controls = transformControls;
+}
+
+
