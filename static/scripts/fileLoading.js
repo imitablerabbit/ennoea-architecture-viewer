@@ -67,16 +67,17 @@ export function init(archController) {
         serverSelect = document.getElementById("load-layout-server-select");
         dialogSubmitServerButton.addEventListener('click', () => {
             let architectureId = serverSelect.value;
+            let name = serverSelect.options[serverSelect.selectedIndex].text;
             fetch('/architectures/' + architectureId)
                 .then(response => response.json())
                 .then(data => {
                     let applicationData = data;
                     reloadData(archController, applicationData);
-                    alert.success("New application data loaded from server.");
+                    alert.success("New application data loaded from server. Loaded architecture: " + data.name + ".");
                     dialog.close();
                 })
                 .catch(error => {
-                    alert.error("Failed to load architecture data from server.");
+                    alert.error("Failed to load architecture data from server. Failed loading architecture: " + name + ".");
                     console.error(error);
                 });
         });
@@ -114,5 +115,5 @@ export function init(archController) {
 
 function reloadData(archController, newAppData) {
     archController.setArchitectureState(newAppData);
-    console.log(newAppData);
+    console.log("reloadData:", newAppData);
 }

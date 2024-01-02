@@ -49,15 +49,16 @@ export function init(archController) {
                     rotate: true
                 }
             }
-            let applications = [];
+            let components = [];
             let connections = [];
             let newAppData = {
                 info: info,
                 scene: scene,
-                applications: applications,
+                components: components,
                 connections: connections
             };
             reloadData(archController, newAppData);
+            dialog.close();
         });
 
         resolve();

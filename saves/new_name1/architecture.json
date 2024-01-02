@@ -7,9 +7,9 @@
     "scene": {
         "camera": {
             "position": [
-                -7.6177872829043505,
-                10.601536948378223,
-                7.053871207673685
+                -4.882552574784174,
+                4.2409059015089285,
+                9.430461256323017
             ]
         },
         "fog": {
@@ -26,6 +26,7 @@
             "type": "app",
             "name": "App1",
             "object": {
+                "visible": true,
                 "position": [
                     0,
                     0,
@@ -48,7 +49,8 @@
         {
             "type": "app",
             "name": "App2",
-            "object":{
+            "object": {
+                "visible": true,
                 "position": [
                     0,
                     0,
@@ -72,6 +74,7 @@
             "type": "app",
             "name": "Database",
             "object": {
+                "visible": true,
                 "position": [
                     -5,
                     0,
@@ -90,6 +93,23 @@
                 "geometry": "cylinder",
                 "color": "#85ea46"
             }
+        }
+    ],
+    "groups": [
+        {
+            "name": "Apps",
+            "color": "#ff0000",
+            "components": [
+                "App1",
+                "App2"
+            ]
+        },
+        {
+            "name": "Database",
+            "color": "#00ff00",
+            "components": [
+                "Database"
+            ]
         }
     ],
     "connections": [

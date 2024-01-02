@@ -9,6 +9,8 @@ $navHeight: 60px;
 $navBGColor: #161616;
 $navFGColor: #ffffff;
 
+$primaryColor: #b1d0ff;
+
 $bgColor: #2a2b2b;
 $fgColor: #ffffff;
 $successBGColor: #79ff79;
@@ -109,21 +111,6 @@ body {
     padding: 0px;
     box-sizing: border-box;
 
-    display: flex;
-    flex-direction: column;
-
-    // Add the dashed lines between the articles within the sidebar.
-    > :nth-child(n) {
-        border-bottom: dashed thin white;
-    }
-    > :nth-last-child(1) {
-        border-bottom: none;
-    }
-    
-    & > article {
-        padding: 30px 30px;
-    }
-
     #sidebar-toggle {
         position: absolute;
         width: $toggleWidth;
@@ -145,15 +132,26 @@ body {
         }
     }
 
-    & > article h1.title {
-        margin-bottom: 30px;
+    #sidebar-container {
+        display: inline-block;
+        width: 100%;
+        height: 100%;
+
+        overflow-y: auto;
+        overflow-x: visible;
+
+        & > article {
+            padding: 30px 30px;
+            position: relative;
+            border-bottom: dashed thin white;
+            flex-grow: 0;
+        }
     }
 }
 
 #file {
     display: flex;
     flex-direction: column;
-    gap: 10px;
     flex: none;
 
     #file-form {
@@ -172,7 +170,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    overflow-y: auto;
 
     #application-filter {
         display: flex;
@@ -183,42 +180,62 @@ body {
             flex-grow: 2;
         }
     }
+
+    #application-info-list {
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
+        max-height: 800px;
+    }
 }
 
 .collapsable {
-    height: fit-content;
     overflow: hidden;
-    max-height: 100vh;
     position: relative;
     margin: 0px;
     padding: 0px;
+    display: flex;
+    flex-direction: column;
+}
 
-    & > .collapsable-toggle {
-        font-size: 1.2rem;
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        right: 10px;
-        top: 24px;
+.collapsable-container {
+    position: relative;
+    overflow: hidden;
 
-        .collapsable-toggle-text {
-            padding: 0px;
-            margin: 0px;
-            transform: rotateZ(-90deg);
-        }
+    height: 0px;
+    &.active {
+        height: auto;
+    }
 
-        &:hover {
-            cursor: pointer;
-        }
+    & > :first-child {
+        padding-top: 30px;
+    }
+}
+
+.collapsable-toggle {
+    font-size: 1.2rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: 10px;
+    top: 24px;
+
+    .collapsable-toggle-text {
+        padding: 0px;
+        margin: 0px;
+        transform: rotateZ(-90deg);
+    }
+
+    &:hover {
+        cursor: pointer;
     }
 }
 
 .title {
     display: block;
-    margin-bottom: 30px;
     font-weight: bold;
     font-size: 1.4rem;
 }
@@ -231,7 +248,7 @@ body {
 }
 
 .info-box {
-    --box-color: #{$fgColor};
+    --box-color: #{$primaryColor};
 
     flex: none;
     width: 100%;
@@ -244,18 +261,18 @@ body {
     border-radius: $borderRadius;
 
     // Alternating colors for the info table. Default is light then dark.
-    >:nth-child(2n) {
+    >:nth-child(2n):not(.title-container) {
         background-color: $bgColor;
     }
-    >:nth-child(2n+1) {
+    >:nth-child(2n+1):not(.title-container) {
         background-color: $navBGColor;
     }
 
     // Alternate version of the above. Dark then light.
-    &.start-dark >:nth-child(2n) {
+    &.start-dark >:nth-child(2n):not(.title-container) {
         background-color: $navBGColor;
     }
-    &.start-dark >:nth-child(2n+1) {
+    &.start-dark >:nth-child(2n+1):not(.title-container) {
         background-color: $bgColor;
     }
 
@@ -303,6 +320,13 @@ body {
                 border: none;
             }
         }
+
+        button.close {
+            display: inline-block;
+            position: relative;
+            top: 0px;
+            right: 0px;
+        }
     }
 
     .color-display {
@@ -334,6 +358,22 @@ body {
     flex-grow: 2;
     font-size: 1rem;
     font-weight: bold;
+
+    &.no-grow {
+        flex-grow: 0;
+    }
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+    };
 }
 
 .grid-2 {
@@ -356,46 +396,25 @@ body {
         display: flex;
         flex-direction: column;
         height: 100%;
-        box-sizing: border-box;
-        padding: 10px;
-
-        h1, h2, p {
-            padding: 0px;
-            margin: 0px;
-        }
 
         form {
-            width: 100%;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            padding: 20px 0px;
         }
 
         #load-layout-text-form {
             flex-grow: 1;
 
             #load-layout-text-box {
-                flex-grow: 1;
                 border: solid 2px $navFGColor;
                 white-space: pre;
+                overflow-y: auto;
+                height: 250px;
             }
         }
     }    
 }
-
-
-#debug {
-    width: fit-content;
-    height: fit-content;
-    max-width: 60%;
-    max-height: 60%;
-
-    h1, h2, h3 {
-        margin: 10px 0px;
-    }
-}
-
 
 #container {
     position: absolute;
@@ -464,14 +483,30 @@ body {
 dialog {
     background-color: $navBGColor;
     color: $navFGColor;
-    border: solid thin $fgColor;
-    width: 40%;
-    height: 50%;
-    padding: 20px;
+    width: 800px;
+    height: fit-content;
+    max-height: 60%;
+    padding: 0px;
+    border: none;
 
     &::backdrop {
         backdrop-filter: blur(5px);
         background-color: rgba(0, 0, 0, 0.5);
+    }
+}
+
+#create-dialog {
+    width: 500px;
+    height: fit-content;
+
+    form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        input, textarea {
+            margin-bottom: 10px;
+        }
     }
 }
 
@@ -580,7 +615,7 @@ button {
         border-radius: 4px;
         background-color: $errorFGColor;
         color: inherit;
-        border: solid 2px;
+        border: solid 2px transparent;
         box-sizing: border-box;
         padding: 0px;
 
@@ -597,7 +632,8 @@ input[type="text"],
 input[type="number"],
 input[type="checkbox"],
 input[type="color"],
-input[type="search"]
+input[type="search"],
+textarea
 {
     background-color: $navBGColor;
     color: $fgColor;
@@ -609,16 +645,20 @@ input[type="search"]
 }
 input[type="checkbox"] {
     margin-top: 2px;
+    width: auto;
 
     &:hover {
         cursor: pointer;
     }
 }
+textarea {
+    min-height: 200px;
+    font-family: inherit;
+}
 
 label:hover {
     cursor: pointer;
 }
-
 
 // Scrollbar styling
 

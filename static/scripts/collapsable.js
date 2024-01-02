@@ -1,5 +1,7 @@
 import gsap from 'gsap';
 
+let gsapAnimating = false;
+
 /**
  * Initializes the collapsable functionality. This function should be called
  * after the page has loaded.
@@ -21,14 +23,18 @@ export function init() {
             collapsableToggle.addEventListener('click', () => {
                 toggleCollapsable(collapsable, collapsableToggleText, collapsableContainer)
             });
-            
-            // Add a resize observer to the collapsable container so that we can
+
+            // Add a mutation observer to the collapsable container so that we can
             // update the max height of the collapsable element when the container
-            // resizes.
-            let resizeObserver = new ResizeObserver(() => {
+            // or its child elements change.
+            let mutationObserver = new MutationObserver(() => {
+                if (gsapAnimating) {
+                    console.log('skipping mutation gsap animating');
+                    return;
+                }
                 setCollapsableData(collapsable, collapsableToggleText, collapsableContainer);
             });
-            resizeObserver.observe(collapsableContainer);
+            mutationObserver.observe(collapsableContainer, { childList: true, subtree: true });
         }
         resolve();
     });
@@ -42,13 +48,16 @@ export function init() {
  * @param {HTMLElement} collapsableContainer - The container element of the collapsable.
  */
 function setCollapsableData(collapsable, collapsableToggleText, collapsableContainer) {
-    let maxHeight = "25px";
+    let height = "0px";
     let rotation = "270deg";
     if (collapsable.classList.contains('active')) {
-        maxHeight = collapsableContainer.clientHeight + "px";
+        height = collapsableContainer.scrollHeight + "px";
         rotation = "90deg";
     }
-    collapsable.style.maxHeight = maxHeight;
+    
+    // Adjust the height of the collapsable container so that we can get the
+    // height of the container.
+    collapsableContainer.style.height = height;
     collapsableToggleText.style.transform = "rotateZ(" + rotation + ")";
 }
 
@@ -60,28 +69,49 @@ function setCollapsableData(collapsable, collapsableToggleText, collapsableConta
  */
 function toggleCollapsable(collapsable, collapsableToggleText, collapsableContainer) {
     collapsable.classList.toggle('active');
-
-    let maxHeight = "25px";
+    
+    let height = collapsableContainer.scrollHeight + "px";
+    let newHeight = "0px";
     let rotation = "90deg";
     let newRotation = "270deg";
+
     if (collapsable.classList.contains('active')) {
-        maxHeight = collapsableContainer.clientHeight + "px";
+        height = "0px";
+        newHeight = collapsableContainer.scrollHeight + "px";
         rotation = "270deg";
         newRotation = "90deg";
     }
 
-    gsap.to(collapsable, {
-        maxHeight: maxHeight,
-        duration: 0.5
+    let heightPromise = new Promise((resolve, reject) => {
+        gsap.fromTo(collapsableContainer, {
+            height: height,
+        }, {
+            height: newHeight,
+            duration: 0.5
+        }).then(() => {
+            resolve();
+        });
     });
 
     // fromTo() is used here instead of to() because we want to
     // animate the rotation from a known starting point. Otherwise
     // the animation will rotate in different directions.
-    gsap.fromTo(collapsableToggleText, {
-        rotateZ: rotation
-    }, {
-        rotateZ: newRotation,
-        duration: 0.5
+    let rotationPromise = new Promise((resolve, reject) => {
+        gsap.fromTo(collapsableToggleText, {
+            rotateZ: rotation
+        }, {
+            rotateZ: newRotation,
+            duration: 0.5
+        }).then(() => {
+            resolve();
+        });
+    });
+
+    // Set the gsapAnimating flag to true so that we can prevent
+    // the resize observer from updating the height of the collapsable
+    // container.
+    gsapAnimating = true;
+    Promise.allSettled([heightPromise, rotationPromise]).then(() => {
+        gsapAnimating = false;
     });
 }

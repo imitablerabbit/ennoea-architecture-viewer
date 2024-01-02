@@ -4,9 +4,23 @@ import "fmt"
 
 // Architecture represents the architecture configuration.
 type Architecture struct {
-	Info        Info         `json:"info"`
-	Scene       Scene        `json:"scene"`
-	Components  []Component  `json:"components"`
+	// Info represents higher level information about the architecture.
+	Info Info `json:"info"`
+
+	// Scene represents the scene configuration. The scene is the
+	// 3D world that the architecture is rendered in. This includes
+	// the camera, fog, and text settings.
+	Scene Scene `json:"scene"`
+
+	// Components is a list of the components in the architecture.
+	Components []Component `json:"components"`
+
+	// Groups is a list of the groups in the architecture. Groups
+	// are used to group components together. This is useful for
+	// defining what severs make up an application.
+	Groups []Group `json:"groups"`
+
+	// Connections is a list of the connections in the architecture.
 	Connections []Connection `json:"connections"`
 }
 
@@ -25,6 +39,13 @@ func (a Architecture) isValid() error {
 	// Check that the components are valid
 	for _, c := range a.Components {
 		if err := c.isValid(); err != nil {
+			return err
+		}
+	}
+
+	// Check that the groups are valid
+	for _, g := range a.Groups {
+		if err := g.isValid(); err != nil {
 			return err
 		}
 	}
@@ -76,9 +97,15 @@ func (i Info) isValid() error {
 
 // Scene represents the scene configuration.
 type Scene struct {
+	// Camera represents the camera configuration.
 	Camera Camera `json:"camera"`
-	Fog    Fog    `json:"fog"`
-	Text   Text   `json:"text"`
+
+	// Fog represents the fog configuration.
+	Fog Fog `json:"fog"`
+
+	// Text represents the text configuration that is
+	// above each component.
+	Text Text `json:"text"`
 }
 
 // isValid returns an error if the scene is invalid.
@@ -103,6 +130,7 @@ func (s Scene) isValid() error {
 
 // Camera represents the camera configuration.
 type Camera struct {
+	// Position represents the position of the camera in the 3D world.
 	Position [3]float64 `json:"position"`
 }
 
@@ -118,8 +146,11 @@ func (c Camera) isValid() error {
 
 // Fog represents the fog configuration.
 type Fog struct {
+	// Near represents the near value of the fog.
 	Near float64 `json:"near"`
-	Far  float64 `json:"far"`
+
+	// Far represents the far value of the fog.
+	Far float64 `json:"far"`
 }
 
 // Fog represents the fog configuration.
@@ -140,8 +171,11 @@ func (f Fog) isValid() error {
 
 // Text represents the text configuration.
 type Text struct {
-	Scale  float64 `json:"scale"`
-	Rotate bool    `json:"rotate"`
+	// Scale represents the scale of the text in the 3D world.
+	Scale float64 `json:"scale"`
+
+	// Rotate determines whether or not the text is rotated in the 3D world.
+	Rotate bool `json:"rotate"`
 }
 
 // isValid returns an error if the text settings is invalid.
@@ -156,9 +190,15 @@ func (t Text) isValid() error {
 
 // Application represents the application configuration.
 type Component struct {
-	Type   string    `json:"type"`
-	Name   string    `json:"name"`
-	Object *Object3D `json:"object,omitempty"`
+	// Type is the type of the component. The type must be either
+	// "app" or "server".
+	Type string `json:"type"`
+
+	// Name is the name of the component.
+	Name string `json:"name"`
+
+	// Object is the 3D object of the component.
+	Object Object3D `json:"object"`
 }
 
 // isValid returns an error if the component is invalid.
@@ -167,7 +207,7 @@ func (c Component) isValid() error {
 	if c.Type == "" {
 		return fmt.Errorf("invalid component: type is empty")
 	}
-	if c.Type != "application" && c.Type != "server" {
+	if c.Type != "app" && c.Type != "server" {
 		return fmt.Errorf("invalid component: invalid type: %s", c.Type)
 	}
 
@@ -177,10 +217,52 @@ func (c Component) isValid() error {
 	}
 
 	// Check that the object is valid if it is defined.
-	if c.Object != nil {
-		if err := c.Object.isValid(); err != nil {
-			return fmt.Errorf("invalid component: %w", err)
+	if err := c.Object.isValid(); err != nil {
+		return fmt.Errorf("invalid component: %w", err)
+	}
+
+	return nil
+}
+
+// Group represents the group configuration.
+type Group struct {
+	// Name is the name of the group.
+	Name string `json:"name"`
+
+	// Color is the color of the group. The color is represented
+	// as a hexadecimal string.
+	Color string `json:"color"`
+
+	// Components is a list of the names of the components in the group.
+	// The components must be defined in the components section.
+	Components []string `json:"components"`
+
+	// BoundingBox is the bounding box of the group.
+	BoundingBox BoundingBox `json:"boundingBox"`
+}
+
+// isValid returns an error if the group is invalid.
+func (g Group) isValid() error {
+	// Check that the name is not empty
+	if g.Name == "" {
+		return fmt.Errorf("invalid group: name is empty")
+	}
+
+	// Check that the color is valid
+	if err := isValidColor(g.Color); err != nil {
+		return fmt.Errorf("invalid group: %w", err)
+	}
+
+	// Check that the components are valid
+	for _, component := range g.Components {
+		if component == "" {
+			return fmt.Errorf("invalid group: component name is empty")
 		}
+	}
+
+	// Check that the bounding box is valid
+	if err := g.BoundingBox.isValid(); err != nil {
+		return fmt.Errorf("invalid group: %w", err)
 	}
 
 	return nil
@@ -188,7 +270,10 @@ func (c Component) isValid() error {
 
 // Connection represents the connection configuration.
 type Connection struct {
+	// Source is the name of the source component.
 	Source string `json:"source"`
+
+	// Target is the name of the target component.
 	Target string `json:"target"`
 }
 
@@ -371,4 +456,68 @@ func parseHexColor(color string) ([3]int, error) {
 	}
 
 	return rgb, nil
+}
+
+// BoundingBox represents a bounding box in the Ennoea Architecture Viewer.
+type BoundingBox struct {
+	// Position represents the position of the bounding box in the 3D world.
+	// The position is represented as a 3D vector in the x, y, z axis.
+	// By default, the position is [0, 0, 0].
+	Position [3]float64 `json:"position"`
+
+	// Rotation represents the rotation of the bounding box in the 3D world.
+	// The rotation is represented as degrees in the x, y, and z directions.
+	// By default, the rotation is [0, 0, 0].
+	Rotation [3]float64 `json:"rotation"`
+
+	// Scale represents the scale of the bounding box in the 3D world.
+	// By default, the scale is [1, 1, 1].
+	Scale [3]float64 `json:"scale"`
+
+	// Color represents the color of the bounding box in the 3D world.
+	// The color is represented as a hexadecimal string.
+	Color string `json:"color"`
+
+	// Wireframe determines whether or not the bounding box is a wireframe.
+	// By default, the bounding box is not a wireframe.
+	Wireframe bool `json:"wireframe"`
+
+	// Opacity represents the opacity of the bounding box in the 3D world.
+	// The opacity is represented as a float between 0 and 1.
+	// By default, the opacity is 1.
+	Opacity float64 `json:"opacity"`
+
+	// Visible determines whether or not the bounding box is visible in the 3D world.
+	// By default, the bounding box is visible.
+	Visible bool `json:"visible"`
+}
+
+// isValid returns an error if the bounding box is invalid.
+func (b BoundingBox) isValid() error {
+	// Check that the position is valid
+	if err := isValidPosition(b.Position); err != nil {
+		return fmt.Errorf("invalid bounding box: %w", err)
+	}
+
+	// Check that the rotation is valid
+	if err := isValidRotation(b.Rotation); err != nil {
+		return fmt.Errorf("invalid bounding box: %w", err)
+	}
+
+	// Check that the scale is valid
+	if err := isValidScale(b.Scale); err != nil {
+		return fmt.Errorf("invalid bounding box: %w", err)
+	}
+
+	// Check that the color is valid
+	if err := isValidColor(b.Color); err != nil {
+		return fmt.Errorf("invalid bounding box: %w", err)
+	}
+
+	// Check that the opacity is valid
+	if b.Opacity < 0 || b.Opacity > 1 {
+		return fmt.Errorf("invalid bounding box: opacity is not between 0 and 1")
+	}
+
+	return nil
 }

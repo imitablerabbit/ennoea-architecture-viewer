@@ -70,7 +70,7 @@ export function load() {
     let vertexPromise = new Promise((resolve, reject) => {
         let vertexShaderLoader = new THREE.FileLoader(THREE.DefaultLoadingManager);
         vertexShaderLoader.load('static/shaders/vertex.vert', function (data) {
-            console.log("vertex", data);
+            console.log("vertex shader loaded:", data);
             vertexShader = data;
         });
         resolve();
@@ -79,7 +79,7 @@ export function load() {
     let fragmentPromise = new Promise((resolve, reject) => {
         let fragmentShaderLoader = new THREE.FileLoader(THREE.DefaultLoadingManager);
         fragmentShaderLoader.load('static/shaders/fragment.frag', function (data) {
-            console.log("fragment", data);
+            console.log("fragment shader loaded:", data);
             fragmentShader = data;
         });
         resolve();
@@ -102,7 +102,7 @@ export function init(archController) {
         xPos = window.innerWidth - width;
         yPos = window.innerHeight - height;
 
-        console.log("Width: " + width + " Height: " + height);
+        console.log("init: Container Sizes: Width: " + width + " Height: " + height);
 
         renderer = new THREE.WebGLRenderer({antialias: true});
         renderer.setPixelRatio(window.devicePixelRatio);
@@ -214,11 +214,35 @@ export function createApplicationsFromData(applicationData) {
     scene.add(pointLight);
     sceneObjects.push(pointLight);
 
-    // Create the application from the application data.
+    if (applicationData === undefined) {
+        console.error("createApplicationsFromData: applicationData is undefined, skipping scene applications");
+        return;
+    }
+
+    renderApplicationsFromData(applicationData);
+    renderGroupsFromData(applicationData);
+    renderConnectionsFromData(applicationData);
+}
+
+/**
+ * Renders applications from the provided application data.
+ * 
+ * @param {Object} applicationData - The data containing information about the applications.
+ */
+export function renderApplicationsFromData(applicationData) {
+    if (applicationData === undefined) {
+        console.error("renderApplicationsFromData: applicationData is undefined, skipping scene applications");
+        return;
+    }
+    if (applicationData.components === undefined) {
+        console.error("renderApplicationsFromData: applicationData.components is undefined, skipping scene applications");
+        return;
+    }
     for (let i=0; i < applicationData.components.length; i++) {
         let component = applicationData.components[i];
         let visible = component.object.visible;
         if (visible != null && !visible) {
+            console.info("renderApplicationsFromData: Skipping invisible application: " + component.name);
             continue;
         }
 
@@ -295,6 +319,14 @@ export function createApplicationsFromData(applicationData) {
 
         let material = new THREE.MeshStandardMaterial({
             color: color,
+
+            // It seems that we cannot use the transparent property with the
+            // bounding box geometry. This is because the bounding box geometry
+            // will also be transparent and there will be culling of objects
+            // that are behind the bounding box.
+
+            // transparent: true,
+            // opacity: 0.5,
         });
         let mesh = new THREE.Mesh(geometryMesh, material);
         mesh.position.set(posX, posY, posZ);
@@ -339,34 +371,143 @@ export function createApplicationsFromData(applicationData) {
         sceneObjects.push(textMesh);
         textObjects.push(textMesh);
     }
+}
 
-    // Add the connections between the applications.
+/**
+ * Renders the groups from the application data.
+ * 
+ * @param {Object} applicationData - The application data containing groups.
+ * @param {Object} applicationData.groups - The groups to render.
+ */
+export function renderGroupsFromData(applicationData) {
+    if (applicationData === undefined) {
+        console.error("renderGroupsFromData: applicationData is undefined, skipping scene groups");
+        return;
+    }
+    if (applicationData.groups === undefined) {
+        console.error("renderGroupsFromData: applicationData.groups is undefined, skipping scene groups");
+        return;
+    }
+    for (let i=0; i < applicationData.groups.length; i++) {
+        let group = applicationData.groups[i];
+        let name = group.name;
+        let color = group.color;
+        let components = group.components;
+
+        let groupMesh = new THREE.Group();
+        groupMesh.name = name;
+        groupMesh.userData = group;
+        scene.add(groupMesh);
+        sceneObjects.push(groupMesh);
+
+        for (let j=0; j < components.length; j++) {
+            let component = components[j];
+            let componentMesh = findObjectByName(component, selectableObjects);
+            if (componentMesh == null) {
+                console.error("renderGroupsFromData: Could not find component: " + component);
+                alert.error("Error rendering group " + name + ": could not find component: " + component);
+                continue;
+            }
+            groupMesh.add(componentMesh);
+        }
+
+        // Create a bounding box for the group.
+        let box = new THREE.Box3().setFromObject(groupMesh);
+        let boxCenter = new THREE.Vector3();
+        box.getCenter(boxCenter);
+        let boxSize = new THREE.Vector3();
+        box.getSize(boxSize);
+
+        // Adjust the box size with padding by adding the padding
+        // to each side of the box. We do not want to multiply the
+        // size of the box as it could be rectangular and we want
+        // to keep the aspect ratio.
+        let padding = 0.5;
+        boxSize.x += padding * 2;
+        boxSize.y += padding * 2;
+        boxSize.z += padding * 2;
+
+        // Create a bounding box mesh for the group.
+        let boxGeometry = new THREE.BoxGeometry(boxSize.x, boxSize.y, boxSize.z);
+        let boxMaterial = new THREE.MeshBasicMaterial({color: color, transparent: true, opacity: 0.1});
+        let boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
+        boxMesh.position.set(boxCenter.x, boxCenter.y, boxCenter.z);
+        boxMesh.userData = group;
+        scene.add(boxMesh);
+        sceneObjects.push(boxMesh);
+    }
+}
+
+
+/**
+ * Renders connections from application data.
+ * 
+ * @param {Object} applicationData - The application data containing connections.
+ */
+export function renderConnectionsFromData(applicationData) {
+    if (applicationData === undefined) {
+        console.error("renderConnectionsFromData: applicationData is undefined, skipping scene connections");
+        return;
+    }
+    if (applicationData.connections === undefined) {
+        console.error("renderConnectionsFromData: applicationData.connections is undefined, skipping scene connections");
+        return;
+    }
     for (let i=0; i < applicationData.connections.length; i++) {
         let connection = applicationData.connections[i];
         let source = connection.source;
         let target = connection.target;
+
         let sourceApplication = findApplicationDataByName(source, applicationData);
         let targetApplication = findApplicationDataByName(target, applicationData);
         let sourceMesh = findObjectByName(source, selectableObjects);
-        let targetMesh = findObjectByName(target, selectableObjects);
-        if (sourceMesh == null || targetMesh == null) {
-            alert.error("Could not find source or target for connection: " + source + " -> " + target);
+        if (sourceMesh == null) {
+            console.error("renderConnectionsFromData: Could not find source for connection: " + source + " -> " + target);
+            alert.error("Could not find source for connection: " + source + " -> " + target);
             continue;
         }
+        let targetMesh = findObjectByName(target, selectableObjects);
+        if (targetMesh == null) {
+            console.error("renderConnectionsFromData: Could not find target for connection: " + source + " -> " + target);
+            alert.error("Could not find target for connection: " + source + " -> " + target);
+            continue;
+        }
+        let objects = [sourceMesh, targetMesh];
 
         let sourceCenter = getMeshCenter(sourceMesh);
         let targetCenter = getMeshCenter(targetMesh);
-        let sourceLowest = getLowestYPoint(sourceMesh);
-        let targetLowest = getLowestYPoint(targetMesh);
-        sourceCenter.y = sourceLowest;
-        targetCenter.y = targetLowest;
 
-        let sourceColor = sourceApplication.object.color;
-        let targetColor = targetApplication.object.color;
+        // Set the arrow start and end points to the center of the
+        // source and target meshes to start with.
+        let arrowStart = sourceCenter;
+        let arrowEnd = targetCenter;
+
+        // Raytrace from the source center in the direction of the
+        // target center to find the intersection point. This is where
+        // the arrow will end.
+        let raycaster = new THREE.Raycaster();
+        let direction = new THREE.Vector3();
+        direction.subVectors(targetCenter, sourceCenter);
+        direction.normalize();
+        raycaster.set(sourceCenter, direction);
+        let intersects = raycaster.intersectObjects(objects);
+        if (intersects.length > 0) {
+            arrowEnd = intersects[0].point;
+        }
+
+        // Raytrace from the target center in the direction of the
+        // source center to find the intersection point. This is where
+        // the arrow will start.
+        direction.subVectors(sourceCenter, targetCenter);
+        raycaster.set(targetCenter, direction);
+        intersects = raycaster.intersectObjects(objects);
+        if (intersects.length > 0) {
+            arrowStart = intersects[0].point;
+        }
+
         let midpoint = getMidpoint(sourceCenter, targetCenter);
-        midpoint.addVectors(new THREE.Vector3(0, -5, 0), midpoint);
-
-        let curve = new THREE.QuadraticBezierCurve3(sourceCenter, midpoint, targetCenter);
+        midpoint.addVectors(new THREE.Vector3(0, -2, 0), midpoint);
+        let curve = new THREE.QuadraticBezierCurve3(arrowStart, midpoint, arrowEnd);
         let points = curve.getPoints(50);
         let geometry = new THREE.BufferGeometry().setFromPoints(points);
         // let material = new THREE.LineBasicMaterial({
@@ -376,6 +517,9 @@ export function createApplicationsFromData(applicationData) {
         //     // https://threejs.org/docs/?q=LineBasicMaterial#api/en/materials/LineBasicMaterial.linewidth
         //     linewidth: 10
         // });
+
+        let sourceColor = sourceApplication.object.color;
+        let targetColor = targetApplication.object.color;
 
         let colorPercentStart = 0.05;
         let material = new THREE.ShaderMaterial( {
@@ -401,10 +545,6 @@ export function createApplicationsFromData(applicationData) {
         let colorPercentFluctuation = colorPercentStart / 3;
         let colorPercentMin = colorPercentStart - colorPercentFluctuation;
         let colorPercentMax = colorPercentStart + colorPercentFluctuation;
-        console.log("colorPercentStart: " + colorPercentStart);
-        console.log("colorPercentFluctuation: " + colorPercentFluctuation);
-        console.log("colorPercentMin: " + colorPercentMin);
-        console.log("colorPercentMax: " + colorPercentMax);
         setInterval(() => {
             material.uniforms.time.value += 0.005;
 
@@ -425,7 +565,7 @@ export function createApplicationsFromData(applicationData) {
         sceneObjects.push(line);
 
         // Add the arrow head just before the target.
-        let arrowHead = new THREE.ArrowHelper(curve.getTangent(1), targetCenter, 0, sourceColor, 0.4, 0.2);
+        let arrowHead = new THREE.ArrowHelper(curve.getTangent(1), arrowEnd, 0, sourceColor, 0.4, 0.2);
         scene.add(arrowHead);
         sceneObjects.push(arrowHead);
     }
@@ -438,7 +578,6 @@ function getMeshCenter(mesh) {
     const box = new THREE.Box3().setFromObject(mesh);
     const center = new THREE.Vector3();
     box.getCenter(center);
-    console.log("BBox Center:", center);
     return center;
 }
 
@@ -493,7 +632,7 @@ function onClick(event) {
     // object's userData.
     if (selectedObjects.length > 0) {
         let component = selectedObjects[0].userData;
-        console.log(component);
+        console.log("onClick", component);
         let object = component.object;
         let content = document.createElement("article");
         content.classList.add("info-box");
@@ -508,12 +647,10 @@ function onClick(event) {
         let popup = new PopupWindow(document.body, component.name, content);
         let popupElement = popup.getWindowElement();
         let popupWidth = popupElement.offsetWidth;
-        console.log(popupWidth);
 
         // Show the popup based on the mouse position.
         let popupX = event.clientX - xPos - (popupWidth / 2);
         let popupY = event.clientY - yPos - 20;
-        console.log(popupX, popupY);
         popup.setPosition(popupX, popupY);
         popup.show();
     }
@@ -565,6 +702,7 @@ function render() {
 
 // Find the object with the given name.
 export function findObjectByName(name, selectableObjects) {
+    console.log("findObjectByName: " + name + " selectableObjects: ", selectableObjects);
     for (let i = 0; i < selectableObjects.length; i++) {
         let object = selectableObjects[i];
         if (object.userData.name === name) {
@@ -590,15 +728,15 @@ export function findApplicationDataByName(name, applicationData) {
 // Set the camera position. position is an array of 3 numbers.
 export function setCameraPosition(position) {
     if (position === null) {
-        console.error("position is null: ", position);
+        console.error("setCameraPosition: position is null: ", position);
         return;
     }
     if (Object.prototype.toString.call(position) != '[object Array]') {
-        console.error("position is not an Array: ", position);
+        console.error("setCameraPosition: position is not an Array: ", position);
         return;
     }
     if (position.length != 3) {
-        console.error("position is not a 3 element Array: ", position);
+        console.error("setCameraPosition: position is not a 3 element Array: ", position);
         return;
     }
 
@@ -621,15 +759,15 @@ export function getCameraPosition() {
 // Set the camera look at position. position is an array of 3 numbers.
 export function setCameraLookAt(position) {
     if (position === null) {
-        console.error("position is null: ", position);
+        console.error("setCameraLookAt: position is null: ", position);
         return;
     }
     if (Object.prototype.toString.call(position) != '[object Array]') {
-        console.error("position is not an Array: ", position);
+        console.error("setCameraLookAt: position is not an Array: ", position);
         return;
     }
     if (position.length != 3) {
-        console.error("position is not a 3 element Array: ", position);
+        console.error("setCameraLookAt: position is not a 3 element Array: ", position);
         return;
     }
 

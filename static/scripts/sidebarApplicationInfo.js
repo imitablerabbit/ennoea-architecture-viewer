@@ -62,6 +62,15 @@ export function init(archController) {
 export function displayArchitectureData(archController, architectureData) {
     applicationInfoSidebarElement.innerHTML = '';
 
+    if (architectureData === undefined) {
+        console.log('architecture data is undefined, cannot display application info');
+        return;
+    }
+    if (architectureData.components === undefined) {
+        console.log('architecture data components are undefined, cannot display application info');
+        return;
+    }
+
     for (let i = 0; i < architectureData.components.length; i++) {
         let component = architectureData.components[i];
         if (filterText != '' && !component.name.toLowerCase().includes(filterText.toLowerCase())) {
@@ -113,22 +122,22 @@ function generateComponentElement(component, update) {
     }
     let geometryDataElement = generateGeometryDropdownElement(object.geometry, geometryUpdate);
 
-    let positionUpdate = function(newPosition) {
-        component.object.position = newPosition;
+    let positionUpdate = function(i, newPosition) {
+        component.object.position[i] = newPosition;
         update(component);
     }
     let positionVectorElement = generateVector3InputElements(object.position, ["x", "y", "z"], positionUpdate, 1);
     let positionDataElement = generateAppKVElementDataElement('Position: ', positionVectorElement);
 
-    let rotationUpdate = function(newRotation) {
-        component.object.rotation = newRotation;
+    let rotationUpdate = function(i, newRotation) {
+        component.object.rotation[i] = newRotation;
         update(component);
     }
     let rotationVectorElement = generateVector3InputElements(object.rotation, ["x", "y", "z"], rotationUpdate, 1);
     let rotationDataElement = generateAppKVElementDataElement('Rotation: ', rotationVectorElement);
 
-    let scaleUpdate = function(newScale) {
-        component.object.scale = newScale;
+    let scaleUpdate = function(i, newScale) {
+        component.object.scale[i] = newScale;
         update(component);
     }
     let scaleVectorElement = generateVector3InputElements(object.scale, ["x", "y", "z"], scaleUpdate, 1);
@@ -178,7 +187,6 @@ function generateAppTitleElement(name, color, update) {
     nameElement.innerText = name;
 
     let l = luma(color);
-    console.log("luma", l);
     if (l < 60) {
         nameElement.classList.add('dark');
     }
@@ -391,7 +399,7 @@ function generateVector3InputElements(vs, labels, update, step = 1, min = null, 
         let label = labels[i];
         let onChange = (newValue) => {
             newValue = parseFloat(newValue);
-            update(newValue);
+            update(i, newValue);
         }
         let input = generateNumberInput(value, label, onChange, step, min, max);
         container.appendChild(input);
