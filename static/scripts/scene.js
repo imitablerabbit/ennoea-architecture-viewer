@@ -507,7 +507,22 @@ export function renderConnectionsFromData(applicationData) {
         }
 
         let midpoint = getMidpoint(sourceCenter, targetCenter);
-        midpoint.addVectors(new THREE.Vector3(0, -2, 0), midpoint);
+
+        // Add gravity to the midpoint if the source and target are
+        // not on the same y plane. We want a slight curve in the
+        // arrow. We also want to make sure that the arrow is not
+        // pointing up or down.
+        let sourceLowestY = getLowestYPoint(sourceMesh);
+        let targetLowestY = getLowestYPoint(targetMesh);
+        let lowestY = Math.min(sourceLowestY, targetLowestY);
+        let sourceHighestY = getHighestYPoint(sourceMesh);
+        let targetHighestY = getHighestYPoint(targetMesh);
+        let highestY = Math.max(sourceHighestY, targetHighestY);
+        let gravity = 0.5;
+        if (lowestY != highestY) {
+            midpoint.y -= gravity;
+        }
+
         let curve = new THREE.QuadraticBezierCurve3(arrowStart, midpoint, arrowEnd);
         let points = curve.getPoints(50);
         let geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -566,7 +581,10 @@ export function renderConnectionsFromData(applicationData) {
         sceneObjects.push(line);
 
         // Add the arrow head just before the target.
-        let arrowHead = new THREE.ArrowHelper(curve.getTangent(1), arrowEnd, 0, sourceColor, 0.4, 0.2);
+        let arrowHeadStart = curve.getPoint(1);
+        let arrowHeadDirection = curve.getTangent(1);
+        arrowHeadDirection.normalize();
+        let arrowHead = new THREE.ArrowHelper(arrowHeadDirection, arrowHeadStart, 0, sourceColor, 0.4, 0.2);
         scene.add(arrowHead);
         sceneObjects.push(arrowHead);
     }
