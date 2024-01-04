@@ -259,7 +259,6 @@ function generateVector3InputElements(vs, labels, update, step = 1, min = null, 
         let value = vs[i];
         let label = labels[i];
         let onChange = (newValue) => {
-            newValue = parseFloat(newValue);
             update(i, newValue);
         }
         let input = generateNumberInput(value, label, onChange, step, min, max);
@@ -291,7 +290,9 @@ function generateNumberInput(value, label, onChange, step = 1, min = null, max =
     input.setAttribute('type', 'number');
     input.setAttribute('step', step);
     input.addEventListener('change', () => {
-        onChange(input.value);
+        let value = input.value;
+        let parsedValue = parseFloat(value);
+        onChange(parsedValue);
     });
     if (min != null) {
         input.setAttribute('min', min);

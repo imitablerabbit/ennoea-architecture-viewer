@@ -144,6 +144,26 @@
                         </div>
                     </article>
 
+                    <!-- Groups section -->
+                    <article id="groups" class="collapsable">
+                        <button id="groups-collapse-button" class="collapsable-toggle">
+                            <p class="collapsable-toggle-text">&lt;</p>
+                        </button>
+                        <label class="title" for="groups-collapse-button">Groups:</label>
+                        <div class="collapsable-container">
+                            <div class="column">
+                                <!-- Filter input box for groups -->
+                                <div id="group-filter">
+                                    <label for="group-filter-input">Filter:</label>
+                                    <input type="search" id="group-filter-input" placeholder="">
+                                </div>
+
+                                <!-- Group info boxes will be added to this via sidebarGroupInfo.js -->
+                                <section id="group-info-list" class="info-box-list"></section>
+                            </div>
+                        </div>
+                    </article>
+
                 </div>
                 
             </nav>

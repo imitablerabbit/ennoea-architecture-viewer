@@ -8,6 +8,7 @@ import * as fileLoading from './fileLoading.js';
 import * as sidebarFileInfo from './sidebarFileInfo.js';
 import * as sidebarSceneControls from './sidebarSceneControls.js';
 import * as sidebarApplicationControls from './sidebarApplicationControls.js';
+import * as sidebarGroupControls from './sidebarGroupControls.js';
 import * as debug from './debug.js';
 import {ArchitectureController} from './architectureController.js'
 
@@ -33,17 +34,17 @@ function init() {
     let sidebarFileInfoPromise = sidebarFileInfo.init(archController);
     let sidebarSceneControlsPromise = sidebarSceneControls.init(archController);
     let sidebarApplicationInfoPromise = sidebarApplicationControls.init(archController);
+    let sidebarGroupInfoPromise = sidebarGroupControls.init(archController);
 
     let createPromise = fileCreate.init(archController);
     let savingPromise = fileSaving.init(archController);
     let loadingPromise = fileLoading.init(archController);
 
     let promises = [
-        alertPromise, scenePromise, sidebarPromise,
-        sidebarFileInfoPromise,
-        collapsablePromise, sidebarSceneControlsPromise,
-        sidebarApplicationInfoPromise, createPromise,
-        savingPromise, loadingPromise, debugPromise
+        alertPromise, scenePromise, sidebarPromise, collapsablePromise,
+        sidebarFileInfoPromise, sidebarSceneControlsPromise,
+        sidebarApplicationInfoPromise, sidebarGroupInfoPromise,
+        createPromise, savingPromise, loadingPromise, debugPromise
     ];
     Promise.allSettled(promises).then(() => {
         start();
