@@ -2,10 +2,8 @@ import {
     generateAppTitleElement,
     generateAppKVElementDataElement,
     generateCheckboxElement,
-    generateGeometryDropdownElement,
-    generateVector3InputElements,
-    generateJumpToButtonElement,
-    generateNumberInput
+    generateNumberInput,
+    generateEditableListElement
 } from './sidebarControls.js';
 
 // Populate the application info section within the sidebar. This should
@@ -94,11 +92,15 @@ function generateGroupElement(group, update) {
     sectionElement.style.setProperty('--box-color', group.boundingBox.color);
     let boundingBox = group.boundingBox;
 
-    let titleUpdate = function(newColor) {
+    let titleNameUpdate = function(newName) {
+        group.name = newName;
+        update(group);
+    }
+    let titleColorUpdate = function(newColor) {
         group.boundingBox.color = newColor;
         update(group);
     }
-    let titleContainer = generateAppTitleElement(group.name, boundingBox.color, titleUpdate);
+    let titleContainer = generateAppTitleElement(group.name, titleNameUpdate, boundingBox.color, titleColorUpdate);
     
     let visibleUpdate = function(newVisible) {
         group.boundingBox.visible = newVisible;
@@ -113,9 +115,18 @@ function generateGroupElement(group, update) {
     let paddingNumberInput = generateNumberInput(group.boundingBox.padding, "", paddingUpdate, 0.1);
     let paddingDataElement = generateAppKVElementDataElement("Padding:", paddingNumberInput);
 
+    let serverListUpdate = function(newServerList) {
+        group.serverList = newServerList;
+        update(group);
+    }
+    let serverListElement = generateEditableListElement(group.components, serverListUpdate, ["App1", "App2", "Database"]);
+    let serverListDataElement = generateAppKVElementDataElement("Server List:", serverListElement);
+    serverListDataElement.classList.add('column');
+
     sectionElement.appendChild(titleContainer);
     sectionElement.appendChild(visibilityDataElement);
     sectionElement.appendChild(paddingDataElement);
+    sectionElement.appendChild(serverListDataElement);
     return sectionElement;
 }
 

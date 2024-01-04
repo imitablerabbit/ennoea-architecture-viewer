@@ -189,6 +189,15 @@ body {
     }
 }
 
+#groups {
+    #group-info-list {
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
+        max-height: 800px;
+    }
+}
+
 .collapsable {
     overflow: hidden;
     position: relative;
@@ -368,6 +377,10 @@ body {
     }
 }
 
+.editable-list-container {
+    width: 100%;
+}
+
 .column {
     display: flex;
     flex-direction: column;
@@ -384,6 +397,20 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.span-2 {
+    grid-column: span 2;
+}
+
+.span-3 {
+    grid-column: span 3;
 }
 
 .undefined {

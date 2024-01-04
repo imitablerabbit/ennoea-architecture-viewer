@@ -94,11 +94,15 @@ function generateComponentElement(component, update) {
 
     let object = component.object;
 
-    let titleUpdate = function(newColor) {
+    let titleNameUpdate = function(newName) {
+        component.name = newName;
+        update(component);
+    }
+    let titleColorUpdate = function(newColor) {
         component.object.color = newColor;
         update(component);
     }
-    let titleContainer = generateAppTitleElement(component.name, object.color, titleUpdate);
+    let titleContainer = generateAppTitleElement(component.name, titleNameUpdate, object.color, titleColorUpdate);
     
     let visibleUpdate = function(newVisible) {
         component.object.visible = newVisible;

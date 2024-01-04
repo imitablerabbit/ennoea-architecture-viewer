@@ -10,7 +10,8 @@ export {
     generateAppKVDataElement,
     generatAppKListDataElement,
     generateVector3InputElements,
-    generateNumberInput
+    generateNumberInput,
+    generateEditableListElement
 };
 
 const geometryOptions = [
@@ -53,19 +54,25 @@ function luma(color) {
  * @param {function} update - The function to be called when the color is updated.
  * @returns {HTMLElement} The generated application title element.
  */
-function generateAppTitleElement(name, color, update) {
+function generateAppTitleElement(name, nameUpdate, color, colorUpdate) {
     let titleContainer = document.createElement('div');
     titleContainer.classList.add('title-container');
 
     let nameElement = document.createElement('h2');
     nameElement.classList.add('title');
     nameElement.innerText = name;
+    nameElement.contentEditable = true;
+
+    // Update the name when the user exits the content editable.
+    nameElement.addEventListener('blur', () => {
+        nameUpdate(nameElement.innerText);
+    });
 
     let l = luma(color);
     if (l < 60) {
         nameElement.classList.add('dark');
     }
-    let colorUpdate = function(newColor) {
+    let colorUpdateFun = function(newColor) {
         update(newColor);
     }
     let colorDataElement = generateColorPickerElement(color, colorUpdate);
@@ -303,5 +310,73 @@ function generateNumberInput(value, label, onChange, step = 1, min = null, max =
 
     container.appendChild(labelElement);
     container.appendChild(input);
+    return container;
+}
+
+// Generates an editable list. This element contains a select element
+// generated from a list of options. Next to the dropdown select element
+// is a button to add a new item to the list. When the add button is clicked,
+// the option is added to the div below the select and add button. Each item
+// in the list has a remove button that removes the item from the list.
+// Whenever an item is added or removed, the update function is called with
+// the new list of items.
+function generateEditableListElement(list, update, options=[]) {
+    let container = document.createElement('div');
+    container.classList.add('editable-list-container');
+    container.classList.add('grid-3');
+
+    let select = document.createElement('select');
+    for (let i = 0; i < options.length; i++) {
+        let option = document.createElement('option');
+        option.innerText = options[i];
+        select.appendChild(option);
+    }
+    select.classList.add('span-2');
+
+    let add = document.createElement('button');
+    add.innerText = 'Add';
+    add.addEventListener('click', () => {
+        let item = select.value;
+        list.push(item);
+        update(list);
+        let itemElement = generateEditableListItemElement(item, list, update);
+        container.appendChild(itemElement);
+    });
+
+    container.appendChild(select);
+    container.appendChild(add);
+
+    for (let i = 0; i < list.length; i++) {
+        let item = list[i];
+        let itemElement = generateEditableListItemElement(item, list, update);
+        itemElement.classList.add('span-3');
+        container.appendChild(itemElement);
+    }
+
+    return container;
+}
+
+// Generates a list item for the editable list element.
+// This element contains a button to remove the item from the list.
+function generateEditableListItemElement(item, list, update) {
+    let container = document.createElement('div');
+    container.classList.add('editable-list-item-container');
+    container.classList.add('grid-3');
+
+    let itemElement = document.createElement('p');
+    itemElement.innerText = item;
+    itemElement.classList.add('span-2');
+
+    let remove = document.createElement('button');
+    remove.innerText = 'Remove';
+    remove.addEventListener('click', () => {
+        let index = list.indexOf(item);
+        list.splice(index, 1);
+        update(list);
+        container.remove();
+    });
+
+    container.appendChild(itemElement);
+    container.appendChild(remove);
     return container;
 }
