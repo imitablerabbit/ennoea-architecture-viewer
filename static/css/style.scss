@@ -196,6 +196,10 @@ body {
     padding: 0px;
     display: flex;
     flex-direction: column;
+
+    &.active {
+        height: auto;
+    }
 }
 
 .collapsable-container {

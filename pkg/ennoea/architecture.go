@@ -229,10 +229,6 @@ type Group struct {
 	// Name is the name of the group.
 	Name string `json:"name"`
 
-	// Color is the color of the group. The color is represented
-	// as a hexadecimal string.
-	Color string `json:"color"`
-
 	// Components is a list of the names of the components in the group.
 	// The components must be defined in the components section.
 	Components []string `json:"components"`
@@ -246,11 +242,6 @@ func (g Group) isValid() error {
 	// Check that the name is not empty
 	if g.Name == "" {
 		return fmt.Errorf("invalid group: name is empty")
-	}
-
-	// Check that the color is valid
-	if err := isValidColor(g.Color); err != nil {
-		return fmt.Errorf("invalid group: %w", err)
 	}
 
 	// Check that the components are valid
@@ -460,32 +451,14 @@ func parseHexColor(color string) ([3]int, error) {
 
 // BoundingBox represents a bounding box in the Ennoea Architecture Viewer.
 type BoundingBox struct {
-	// Position represents the position of the bounding box in the 3D world.
-	// The position is represented as a 3D vector in the x, y, z axis.
-	// By default, the position is [0, 0, 0].
-	Position [3]float64 `json:"position"`
-
-	// Rotation represents the rotation of the bounding box in the 3D world.
-	// The rotation is represented as degrees in the x, y, and z directions.
-	// By default, the rotation is [0, 0, 0].
-	Rotation [3]float64 `json:"rotation"`
-
-	// Scale represents the scale of the bounding box in the 3D world.
-	// By default, the scale is [1, 1, 1].
-	Scale [3]float64 `json:"scale"`
+	// Padding represents the padding of the bounding box in the 3D world.
+	// The padding is a single value that is applied to all sides of the
+	// bounding box.
+	Padding float64 `json:"padding"`
 
 	// Color represents the color of the bounding box in the 3D world.
 	// The color is represented as a hexadecimal string.
 	Color string `json:"color"`
-
-	// Wireframe determines whether or not the bounding box is a wireframe.
-	// By default, the bounding box is not a wireframe.
-	Wireframe bool `json:"wireframe"`
-
-	// Opacity represents the opacity of the bounding box in the 3D world.
-	// The opacity is represented as a float between 0 and 1.
-	// By default, the opacity is 1.
-	Opacity float64 `json:"opacity"`
 
 	// Visible determines whether or not the bounding box is visible in the 3D world.
 	// By default, the bounding box is visible.
@@ -494,29 +467,14 @@ type BoundingBox struct {
 
 // isValid returns an error if the bounding box is invalid.
 func (b BoundingBox) isValid() error {
-	// Check that the position is valid
-	if err := isValidPosition(b.Position); err != nil {
-		return fmt.Errorf("invalid bounding box: %w", err)
-	}
-
-	// Check that the rotation is valid
-	if err := isValidRotation(b.Rotation); err != nil {
-		return fmt.Errorf("invalid bounding box: %w", err)
-	}
-
-	// Check that the scale is valid
-	if err := isValidScale(b.Scale); err != nil {
-		return fmt.Errorf("invalid bounding box: %w", err)
+	// Check that the padding is valid
+	if b.Padding < 0 {
+		return fmt.Errorf("invalid bounding box: padding is negative")
 	}
 
 	// Check that the color is valid
 	if err := isValidColor(b.Color); err != nil {
 		return fmt.Errorf("invalid bounding box: %w", err)
-	}
-
-	// Check that the opacity is valid
-	if b.Opacity < 0 || b.Opacity > 1 {
-		return fmt.Errorf("invalid bounding box: opacity is not between 0 and 1")
 	}
 
 	return nil

@@ -59,7 +59,7 @@ export class ArchitectureController {
     notifySubscribers() {
         this.subscribers.forEach(subscriber => {
             try {
-                subscriber(this.architectureState);
+                subscriber(this.getArchitectureState());
             } catch (error) {
                 console.error(error);
             }

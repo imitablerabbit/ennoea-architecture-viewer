@@ -15,18 +15,27 @@ import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { PopupWindow } from './popupWindow.js';
 import * as alert from './alert.js';
 
+import * as eventStack from './eventStack.js';
+
 // Canvas dimensions and positions
 var width, height;
 var xPos, yPos;
 var container;
 
 // three.js scene and higher level controls.
-var renderer, scene, camera;
+var renderer, scene
 var composer, renderPass;
-var orbitControls, transformControls;
-var controls;
-var cameraLookAtPosition = new THREE.Vector3(0, 0, 0);
 var sceneObjects = [];
+
+// Camera position and controls.
+var camera;
+var orbitControls;
+var cameraLookAtPosition = new THREE.Vector3(0, 0, 0);
+
+// Transform controls.
+var transformControls;
+var transformEscHandler, transformMouseHandler;
+var transformObjectName = null;
 
 // General Scene elements.
 var ambientLight;
@@ -157,7 +166,6 @@ export function init(archController) {
             // user stops dragging the object around.
             orbitControls.enabled = ! event.value;
         });
-        controls = orbitControls; // OrbitControls is the default controls.
         scene.add(transformControls); // Add the transform controls to the scene.
 
         ambientLight = new THREE.AmbientLight(0xffffff, 1);
@@ -240,6 +248,11 @@ export function resetApplications(previousApplicationData, applicationData) {
         return;
     }
     if (previousApplicationData != undefined) {
+        // Check if the scene.text is the same as previousApplicationData.scene.text.
+        // This is something that is rendered when rendering the applications.
+        let prevJSONText = JSON.stringify(previousApplicationData.scene.text);
+        let currJSONText = JSON.stringify(applicationData.scene.text);
+
         // Check if the components, connections, and groups are the same.
         let prevJSONComp = JSON.stringify(previousApplicationData.components);
         let currJSONComp = JSON.stringify(applicationData.components);
@@ -250,8 +263,11 @@ export function resetApplications(previousApplicationData, applicationData) {
         let prevJSONGroup = JSON.stringify(previousApplicationData.groups);
         let currJSONGroup = JSON.stringify(applicationData.groups);
 
-        if (prevJSONComp == currJSONComp && prevJSONConn == currJSONConn && prevJSONGroup == currJSONGroup) {
-            console.info("resetApplications: applicationData.components, applicationData.connections, and applicationData.groups are the same as previousApplicationData, skipping application reset");
+        if (prevJSONText == currJSONText &&
+            prevJSONComp == currJSONComp &&
+            prevJSONConn == currJSONConn &&
+            prevJSONGroup == currJSONGroup) {
+            console.info("resetApplications: scene.text, applicationData.components, applicationData.connections, and applicationData.groups are the same as previousApplicationData, skipping application reset");
             return;
         }
     }
@@ -449,6 +465,12 @@ export function renderApplicationsFromData(applicationData) {
         scene.add(textMesh);
         sceneObjects.push(textMesh);
         textObjects.push(textMesh);
+
+        // Attach the object to the transform controls if the object
+        // was previously being transformed.
+        if (transformObjectName != null && transformObjectName == component.name) {
+            setTransformControls(architectureController, mesh, transformControls.getMode());
+        }
     }
 }
 
@@ -470,8 +492,16 @@ export function renderGroupsFromData(applicationData) {
     for (let i=0; i < applicationData.groups.length; i++) {
         let group = applicationData.groups[i];
         let name = group.name;
-        let color = group.color;
         let components = group.components;
+        let boundingBox = group.boundingBox;
+        let padding = boundingBox.padding;
+        let color = boundingBox.color;
+        let visible = boundingBox.visible;
+        if (visible != null && !visible) {
+            console.info("renderGroupsFromData: Skipping invisible group: " + name);
+            continue;
+        }
+
 
         let groupMesh = new THREE.Group();
         groupMesh.name = name;
@@ -501,10 +531,9 @@ export function renderGroupsFromData(applicationData) {
         // to each side of the box. We do not want to multiply the
         // size of the box as it could be rectangular and we want
         // to keep the aspect ratio.
-        let padding = 0.5;
-        boxSize.x += padding * 2;
-        boxSize.y += padding * 2;
-        boxSize.z += padding * 2;
+        boxSize.x += padding;
+        boxSize.y += padding;
+        boxSize.z += padding;
 
         // Create a bounding box wireframe for the group.
         let boxGeometry = new THREE.BoxGeometry(boxSize.x, boxSize.y, boxSize.z);
@@ -617,11 +646,12 @@ export function renderConnectionsFromData(applicationData) {
         let targetColor = targetApplication.object.color;
 
         let colorPercentStart = 0.05;
+        let intialTime = Math.random();
         let material = new THREE.ShaderMaterial( {
             uniforms: THREE.UniformsUtils.merge( [
                 THREE.UniformsLib[ 'fog' ],
                 {
-                    time: { value: 1.0 },
+                    time: { value: intialTime },
                     sourcePosition: { value: sourceCenter },
                     targetPosition: { value: targetCenter },
                     sourceColor: { value: new THREE.Color(sourceColor) },
@@ -636,23 +666,8 @@ export function renderConnectionsFromData(applicationData) {
         } );
 
         // Set interval to update the time uniform.
-        let colorPercentIncrement = 0.001;
-        let colorPercentFluctuation = colorPercentStart / 3;
-        let colorPercentMin = colorPercentStart - colorPercentFluctuation;
-        let colorPercentMax = colorPercentStart + colorPercentFluctuation;
         setInterval(() => {
             material.uniforms.time.value += 0.005;
-
-            // // Pulse the size of the color change up and down.
-            // let colorPercent = material.uniforms.colorPercent.value;
-            // colorPercent += colorPercentIncrement;
-            // if (colorPercent > colorPercentMax) {
-            //     colorPercentIncrement = -colorPercentIncrement;
-            // } else if (colorPercent < colorPercentMin) {
-            //     colorPercentIncrement = -colorPercentIncrement;
-            // }
-
-            // material.uniforms.colorPercent.value = colorPercent;
         }, 10);
 
         let line = new THREE.Line(geometry, material);
@@ -669,7 +684,9 @@ export function renderConnectionsFromData(applicationData) {
     }
 }
 
+// ------------------------------------------------------------
 // Vertex helper functions.
+// ------------------------------------------------------------
 
 // Get the center of a mesh in world space.
 function getMeshCenter(mesh) {
@@ -699,7 +716,9 @@ function getHighestYPoint(mesh) {
     return box.max.y;
 }
 
+// ------------------------------------------------------------
 // Event handlers
+// ------------------------------------------------------------
 
 // Handle mouse movement. This is used to detect when the mouse is hovering
 // over an object.
@@ -731,6 +750,7 @@ function onClick(event) {
     if (selectedObjects.length > 0) {
         let component = selectedObjects[0].userData;
         let object = component.object;
+        let name = component.name;
 
         let content = document.createElement("article");
         content.classList.add("info-box");
@@ -790,7 +810,11 @@ function onClick(event) {
         translateButton.classList.add("button");
         translateButton.textContent = "Translate";
         translateButton.addEventListener("click", () => {
-            let object = selectedObjects[0];
+            // Find the object in the selectable objects list with the
+            // same name as the selected object. This is because the
+            // scene might have been reset and the selected object is
+            // a new object.
+            let object = findObjectByName(name, selectableObjects);
             setTransformControls(architectureController, object, "translate");
         });
         let translateButtonContainer = document.createElement("div");
@@ -802,7 +826,7 @@ function onClick(event) {
         rotateButton.classList.add("button");
         rotateButton.textContent = "Rotate";
         rotateButton.addEventListener("click", () => {
-            let object = selectedObjects[0];
+            let object = findObjectByName(name, selectableObjects);
             setTransformControls(architectureController, object, "rotate");
         });
         let rotateButtonContainer = document.createElement("div");
@@ -814,7 +838,7 @@ function onClick(event) {
         scaleButton.classList.add("button");
         scaleButton.textContent = "Scale";
         scaleButton.addEventListener("click", () => {
-            let object = selectedObjects[0];
+            let object = findObjectByName(name, selectableObjects);
             setTransformControls(architectureController, object, "scale");
         });
         let scaleButtonContainer = document.createElement("div");
@@ -852,21 +876,30 @@ function windowResize() {
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
     composer.setSize(width, height);
-    controls.update();
+    orbitControls.update();
 }
 
+// ------------------------------------------------------------
 // Scene rendering.
+// ------------------------------------------------------------
 
-// Render the scene. This is going to be called every frame via requestAnimationFrame.
-// This is the main loop for the rendering.
+
+/**
+ * Animates the scene by requesting the next animation frame and
+ * rendering the scene.
+ */
 function animate() {
     requestAnimationFrame( animate );
     render();
 }
 
-// Render the scene. We are using a composer to render the scene with
-// the outline pass. Carefully organise the objects to be outlined so that
-// we do not have the same object outlined twice.
+/**
+ * Renders the scene with outlined objects based on the current
+ * hover and selection states.
+ * 
+ * Carefully organise the objects to be outlined so that we
+ * do not have the same object outlined twice.
+ */
 function render() {
     hoverOutlinedObjects = [...hoveredObjects];
     selectedOutlinedObjects = [];
@@ -882,9 +915,17 @@ function render() {
     composer.render();
 }
 
+// ------------------------------------------------------------
 // Helper functions for finding objects and application data.
+// ------------------------------------------------------------
 
-// Find the object with the given name.
+/**
+ * Finds an object by its name in an array of selectable objects.
+ * 
+ * @param {string} name - The name of the object to find.
+ * @param {Array} selectableObjects - An array of selectable objects.
+ * @returns {Object|null} - The object with the specified name, or null if not found.
+ */
 export function findObjectByName(name, selectableObjects) {
     console.info("findObjectByName: " + name + " selectableObjects: ", selectableObjects);
     for (let i = 0; i < selectableObjects.length; i++) {
@@ -896,7 +937,12 @@ export function findObjectByName(name, selectableObjects) {
     return null;
 }
 
-// Find application data with the given name.
+/**
+ * Finds an application data object by its name in the given application data.
+ * @param {string} name - The name of the application to search for.
+ * @param {object} applicationData - The application data object to search in.
+ * @returns {object|null} - The found application data object, or null if not found.
+ */
 export function findApplicationDataByName(name, applicationData) {
     for (let i = 0; i < applicationData.components.length; i++) {
         let application = applicationData.components[i];
@@ -907,9 +953,15 @@ export function findApplicationDataByName(name, applicationData) {
     return null;
 }
 
+// ------------------------------------------------------------
 // Scene manipulation functions.
+// ------------------------------------------------------------
 
-// Set the camera position. position is an array of 3 numbers.
+/**
+ * Sets the position of the camera.
+ * 
+ * @param {number[]} position - The position to set the camera to. Should be a 3-element array [x, y, z].
+ */
 export function setCameraPosition(position) {
     if (position === null) {
         console.error("setCameraPosition: position is null: ", position);
@@ -930,17 +982,24 @@ export function setCameraPosition(position) {
         z: position[2],
         duration: 1,
         onUpdate: () => {
-            controls.update();
+            orbitControls.update();
         }
     });
 }
 
-// Get the camera position.
+/**
+ * Retrieves the position of the camera.
+ * @returns {number[]} An array containing the x, y, and z coordinates of the camera position.
+ */
 export function getCameraPosition() {
     return [camera.position.x, camera.position.y, camera.position.z];
 }
 
-// Set the camera look at position. position is an array of 3 numbers.
+/**
+ * Sets the camera's look-at position.
+ * 
+ * @param {number[]} position - The position to set the camera's look-at point to. Should be a 3-element array.
+ */
 export function setCameraLookAt(position) {
     if (position === null) {
         console.error("setCameraLookAt: position is null: ", position);
@@ -960,38 +1019,58 @@ export function setCameraLookAt(position) {
         y: position[1],
         z: position[2],
         duration: 1,
-        onUpdate: () => controls.update()
+        onUpdate: () => orbitControls.update()
     });
-    controls.target = cameraLookAtPosition;
+    orbitControls.target = cameraLookAtPosition;
 }
 
-// Set the fog planes in the scene.
+/**
+ * Sets the fog properties of the scene.
+ * @param {number} near - The near distance of the fog.
+ * @param {number} far - The far distance of the fog.
+ */
 export function setFog(near, far) {
     scene.fog.near = near;
     scene.fog.far = far;
 
 }
 
-// Get the fog planes in the scene.
+/**
+ * Retrieves the value of the 'near' property of the fog in the scene.
+ * @returns {number} The value of the 'near' property.
+ */
 export function getFogNear() {
     return scene.fog.near;
 }
+
+/**
+ * Retrieves the value of the 'far' property of the fog in the scene.
+ * @returns {number} The value of the 'far' property of the fog.
+ */
 export function getFogFar() {
     return scene.fog.far;
 }
 
-// Set the text scale in the scene. Text us scaled uniformly in all
-// directions.
+/**
+ * Sets the text scale for the scene.
+ * @param {number} scale - The scale value to set.
+ */
 export function setTextScale(scale) {
     textScale = scale;
-    
 }
+
+/**
+ * Retrieves the text scale value.
+ * @returns {number} The text scale value.
+ */
 export function getTextScale() {
     return textScale;
 }
 
-// Set the text rotation in the scene. This determines
-// whether the text should be rotated to face the camera.
+/**
+ * Sets the rotation of the text objects in the scene.
+ * @param {number} rotation - The rotation value in radians.
+ */
 export function setTextRotate(rotation) {
     textRotate = rotation;
 
@@ -1006,11 +1085,18 @@ export function setTextRotate(rotation) {
 
     rotateText();
 }
+
+/**
+ * Retrieves the value of the text rotation.
+ * @returns {number} The value of the text rotation.
+ */
 export function getTextRotate() {
     return textRotate;
 }
 
-// Rotate the text to face the camera.
+/**
+ * Rotates the text objects to face the camera.
+ */
 function rotateText() {
     for (let i = 0; i < textObjects.length; i++) {
         let textObject = textObjects[i];
@@ -1023,10 +1109,23 @@ function rotateText() {
     }
 }
 
+// ------------------------------------------------------------
 // Controls functions
+// ------------------------------------------------------------
 
-// Set the controls to TransformControls.
+/**
+ * Sets up transform controls for an object in the scene.
+ * 
+ * @param {Object} archController - The architecture controller object.
+ * @param {Object3D} object - The object to attach the transform controls to.
+ * @param {string} [mode="translate"] - The mode of the transform controls (translate, rotate, or scale).
+ */
 export function setTransformControls(archController, object, mode="translate") {
+    // Remove any existing transform controls. This is to prevent
+    // multiple transform controls from being attached to the same
+    // object.
+    removeTransformControls();
+
     // A mouse up handler for when the user is done transforming the object.
     // We will fetch the architecture data and update the object with the
     // new position, rotation and scale. We will have to find the object
@@ -1040,6 +1139,11 @@ export function setTransformControls(archController, object, mode="translate") {
         let position = [objectPosition.x, objectPosition.y, objectPosition.z];
         let rotation = [objectRotation.x, objectRotation.y, objectRotation.z];
         let scale = [objectScale.x, objectScale.y, objectScale.z];
+
+        // Convert the rotation from radians to degrees.
+        rotation = rotation.map((value) => {
+            return value * 180 / Math.PI;
+        });
 
         // Round the position, rotation and scale to 2 decimal places.
         let roundTo = 2;
@@ -1055,6 +1159,7 @@ export function setTransformControls(archController, object, mode="translate") {
         for (let i = 0; i < components.length; i++) {
             let component = components[i];
             if (component.name === objectName) {
+
                 component.object.position = position;
                 component.object.rotation = rotation;
                 component.object.scale = scale;
@@ -1062,27 +1167,36 @@ export function setTransformControls(archController, object, mode="translate") {
                 break;
             }
         }
-    };
-    transformControls.addEventListener('mouseUp', mouseUpHandler);
+    };    
 
     // Add an 'esc' key handler to cancel the transform controls.
     let escKeyHandler = (event) => {
         if (event.key === "Escape") {
-            transformControls.detach();
-            transformControls.removeEventListener('mouseUp', mouseUpHandler);
-            document.removeEventListener('keydown', escKeyHandler);
-            controls = orbitControls;
+            removeTransformControls();
             
             // Stop other 'esc' key handlers from firing.
             event.stopImmediatePropagation();
         }
     };
-    document.addEventListener('keydown', escKeyHandler);
-    transformControls.detach();
+
+    transformMouseHandler = mouseUpHandler;
+    transformEscHandler = escKeyHandler;
+
+    transformObjectName = object.userData.name;
+    eventStack.subscribe("keydown", escKeyHandler);
+    transformControls.addEventListener('mouseUp', mouseUpHandler);
     transformControls.attach(object);
     transformControls.enabled = true;
     transformControls.setMode(mode);
-    controls = transformControls;
 }
 
-
+/**
+ * Removes the transform controls and disables their functionality.
+ */
+export function removeTransformControls() {
+    transformObjectName = null;
+    eventStack.unsubscribe("keydown", transformEscHandler);
+    transformControls.removeEventListener('mouseUp', transformMouseHandler);
+    transformControls.detach();
+    transformControls.enabled = false;
+}

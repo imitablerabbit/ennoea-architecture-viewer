@@ -1,3 +1,5 @@
+import * as eventStack from './eventStack.js';
+
 // Create a small moveable dialog box with a title and content. The dialog box
 // can be moved by dragging the title bar. The dialog box can be closed by
 // clicking the close button. The dialog box cannot be moved outside the bounds
@@ -64,11 +66,11 @@ export class PopupWindow {
         let escHandler = (event) => {
             if (event.key === 'Escape') {
                 this.destroy();
-                document.removeEventListener('keydown', escHandler);
+                eventStack.unsubscribe('keydown', escHandler);
                 event.stopImmediatePropagation();
             }
         }
-        document.addEventListener('keydown', escHandler);
+        eventStack.subscribe('keydown', escHandler);
 
         this.closeButtonElement.addEventListener('mouseup', (event) => {
             // This is done on the mouseup event instead of the click event
@@ -77,7 +79,7 @@ export class PopupWindow {
             this.destroy();
 
             // Remove the 'esc' key listener.
-            document.removeEventListener('keydown', escHandler);
+            eventStack.unsubscribe('keydown', escHandler);
         });
 
         this.titleBarElement.addEventListener('mousedown', (event) => {
@@ -88,13 +90,18 @@ export class PopupWindow {
             this.dragging = true;
             this.offsetX = event.clientX - this.windowElement.offsetLeft;
             this.offsetY = event.clientY - this.windowElement.offsetTop;
+
+            // Prevent the default behavior of the mouse down event so that
+            // the dialog box doesn't lose focus. This stops any text from
+            // being selected when the mouse is dragged.
+            event.preventDefault();
         });
 
         this.titleBarElement.addEventListener('mouseup', (event) => {
             this.dragging = false;
         });
 
-        this.titleBarElement.addEventListener('mousemove', (event) => {
+        document.addEventListener('mousemove', (event) => {
             if (this.dragging) {
                 let x = event.clientX - this.offsetX;
                 let y = event.clientY - this.offsetY;

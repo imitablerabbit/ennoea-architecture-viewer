@@ -7,7 +7,7 @@ import * as fileSaving from './fileSaving.js';
 import * as fileLoading from './fileLoading.js';
 import * as sidebarFileInfo from './sidebarFileInfo.js';
 import * as sidebarSceneControls from './sidebarSceneControls.js';
-import * as sidebarApplicationInfo from './sidebarApplicationInfo.js';
+import * as sidebarApplicationControls from './sidebarApplicationControls.js';
 import * as debug from './debug.js';
 import {ArchitectureController} from './architectureController.js'
 
@@ -32,7 +32,7 @@ function init() {
     let scenePromise = scene.init(archController);
     let sidebarFileInfoPromise = sidebarFileInfo.init(archController);
     let sidebarSceneControlsPromise = sidebarSceneControls.init(archController);
-    let sidebarApplicationInfoPromise = sidebarApplicationInfo.init(archController);
+    let sidebarApplicationInfoPromise = sidebarApplicationControls.init(archController);
 
     let createPromise = fileCreate.init(archController);
     let savingPromise = fileSaving.init(archController);
