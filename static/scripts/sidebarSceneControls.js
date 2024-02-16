@@ -20,9 +20,53 @@ var appNamesRotateCheckbox;
 // when the sidebar has been initialized.
 export function init(archController) {
     return new Promise((resolve, reject) => {
+        if (archController === undefined) {
+            reject({error: 'archController is undefined'});
+            return;
+        }
+
         sceneCameraXInput = document.getElementById('scene-camera-x');
+        if (sceneCameraXInput === null) {
+            reject({error: 'scene-camera-x not found'});
+            return;
+        }
         sceneCameraYInput = document.getElementById('scene-camera-y');
+        if (sceneCameraYInput === null) {
+            reject({error: 'scene-camera-y not found'});
+            return;
+        }
         sceneCameraZInput = document.getElementById('scene-camera-z');
+        if (sceneCameraZInput === null) {
+            reject({error: 'scene-camera-z not found'});
+            return;
+        }
+        sceneCameraSaveButton = document.getElementById('scene-camera-save');
+        if (sceneCameraSaveButton === null) {
+            reject({error: 'scene-camera-save not found'});
+            return;
+        }
+        fogNearInput = document.getElementById('scene-fog-near');
+        if (fogNearInput === null) {
+            reject({error: 'scene-fog-near not found'});
+            return;
+        }
+        fogFarInput = document.getElementById('scene-fog-far');
+        if (fogFarInput === null) {
+            reject({error: 'scene-fog-far not found'});
+            return;
+        }
+        appNamesScaleInput = document.getElementById('scene-text-scale');
+        if (appNamesScaleInput === null) {
+            reject({error: 'scene-text-scale not found'});
+            return;
+        }
+        appNamesRotateCheckbox = document.getElementById('scene-text-rotate');
+        if (appNamesRotateCheckbox === null) {
+            reject({error: 'scene-text-rotate not found'});
+            return;
+        }
+
+        // Subscribe to the camera position inputs for changes.
         sceneCameraXInput.addEventListener('change', (event) => {
             let applicationData = archController.getArchitectureState();
             let cameraPosition = applicationData.scene.camera.position;
@@ -41,7 +85,8 @@ export function init(archController) {
             cameraPosition[2] = event.target.value;
             scene.setCameraPosition(cameraPosition); // Just moving the camera in scene, not updating state
         });
-        sceneCameraSaveButton = document.getElementById('scene-camera-save');
+
+        // Subscribe to the save button for changes.
         sceneCameraSaveButton.addEventListener('click', (event) => {
             let applicationData = archController.getArchitectureState();
             let cameraPosition = scene.getCameraPosition();
@@ -49,8 +94,7 @@ export function init(archController) {
             archController.setArchitectureState(applicationData);
         });
 
-        fogNearInput = document.getElementById('scene-fog-near');
-        fogFarInput = document.getElementById('scene-fog-far');
+        // Subscribe to the fog inputs for changes.
         fogNearInput.addEventListener('change', (event) => {
             let applicationData = archController.getArchitectureState();
             applicationData.scene.fog.near = parseFloat(event.target.value);
@@ -62,8 +106,7 @@ export function init(archController) {
             archController.setArchitectureState(applicationData);
         });
 
-        appNamesScaleInput = document.getElementById('scene-text-scale');
-        appNamesRotateCheckbox = document.getElementById('scene-text-rotate');
+        // Subscribe to the text inputs for changes.
         appNamesScaleInput.addEventListener('change', (event) => {
             let applicationData = archController.getArchitectureState();
             applicationData.scene.text.scale = parseFloat(event.target.value);

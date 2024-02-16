@@ -13,22 +13,51 @@ var createSubmitButton;
 // when the sidebar has been initialized.
 export function init(archController) {
     return new Promise((resolve, reject) => {
+        if (archController === undefined) {
+            reject({error: 'archController is undefined'});
+            return;
+        }
 
         // Dialog related elements
         dialog = document.getElementById("create-dialog");
+        if (dialog === null) {
+            reject({error: 'create-dialog not found'});
+            return;
+        }
+        dialogCloseButton = document.getElementById("create-layout-close");
+        if (dialogCloseButton === null) {
+            reject({error: 'create-layout-close not found'});
+            return;
+        }
         createLayoutButton = document.getElementById('create-layout');
+        if (createLayoutButton === null) {
+            reject({error: 'create-layout not found'});
+            return;
+        }
+        createNameInput = document.getElementById("create-layout-name");
+        if (createNameInput === null) {
+            reject({error: 'create-layout-name not found'});
+            return;
+        }
+        createDescriptionInput = document.getElementById("create-layout-description");
+        if (createDescriptionInput === null) {
+            reject({error: 'create-layout-description not found'});
+            return;
+        }
+        createSubmitButton = document.getElementById("create-layout-submit");
+        if (createSubmitButton === null) {
+            reject({error: 'create-layout-submit not found'});
+            return;
+        }
+
         createLayoutButton.addEventListener('click', () => {
             dialog.showModal();
         });
-        dialogCloseButton = document.getElementById("create-layout-close");
         dialogCloseButton.addEventListener('click', () => {
             dialog.close();
         });
 
         // create form related elements
-        createNameInput = document.getElementById("create-layout-name");
-        createDescriptionInput = document.getElementById("create-layout-description");
-        createSubmitButton = document.getElementById("create-layout-submit");
         createSubmitButton.addEventListener('click', () => {
             let name = createNameInput.value;
             let description = createDescriptionInput.value;

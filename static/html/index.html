@@ -164,6 +164,26 @@
                         </div>
                     </article>
 
+                    <!-- Connections section -->
+                    <article id="connections" class="collapsable">
+                        <button id="connections-collapse-button" class="collapsable-toggle">
+                            <p class="collapsable-toggle-text">&lt;</p>
+                        </button>
+                        <label class="title" for="connections-collapse-button">Connections:</label>
+                        <div class="collapsable-container">
+                            <div class="column">
+                                <!-- Filter input box for connections -->
+                                <div id="connection-filter">
+                                    <label for="connection-filter-input">Filter:</label>
+                                    <input type="search" id="connection-filter-input" placeholder="">
+                                </div>
+
+                                <!-- Connection info boxes will be added to this via sidebarConnectionInfo.js -->
+                                <section id="connection-info-list" class="info-box-list"></section>
+                            </div>
+                        </div>
+                    </article>
+
                 </div>
                 
             </nav>

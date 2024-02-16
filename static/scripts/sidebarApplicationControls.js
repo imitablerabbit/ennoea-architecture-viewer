@@ -2,9 +2,8 @@ import {
     generateAppTitleElement,
     generateAppKVElementDataElement,
     generateCheckboxElement,
-    generateGeometryDropdownElement,
     generateVector3InputElements,
-    generateJumpToButtonElement
+    generateDropdownElement,
 } from './sidebarControls.js';
 
 // Populate the application info section within the sidebar. This should
@@ -17,6 +16,24 @@ var applicationInfoSidebarElement;
 var filterInput;
 var filterText = '';
 
+// Geometry options for the dropdown element.
+const geometryOptions = [
+    "box",
+    "capsule",
+    "circle",
+    "cone",
+    "cylinder",
+    "dodecahedron",
+    "icosahedron",
+    "octahedron",
+    "plane",
+    "ring",
+    "sphere",
+    "tetrahedron",
+    "torus",
+    "torusKnot"
+];
+
 /**
  * Initializes the application info sidebar.
  * 
@@ -25,9 +42,23 @@ var filterText = '';
  */
 export function init(archController) {
     return new Promise((resolve, reject) => {
-        applicationInfoSidebarElement = document.getElementById('application-info-list');
+        if (archController === undefined) {
+            reject({error: 'archController is undefined'});
+            return;
+        }
 
+        applicationInfoSidebarElement = document.getElementById('application-info-list');
+        if (applicationInfoSidebarElement === null) {
+            reject({error: 'application-info-list not found'});
+            return;
+        }
         filterInput = document.getElementById('application-filter-input');
+        if (filterInput === null) {
+            reject({error: 'application-filter-input not found'});
+            return;
+        }
+
+        // Subscribe to the filter input for changes.
         filterInput.addEventListener('input', () => {
             filterText = filterInput.value;
             let architectureData = archController.getArchitectureState();
@@ -149,3 +180,39 @@ function generateComponentElement(component, update) {
     return sectionElement;
 }
 
+/**
+ * Generates a dropdown element for selecting a geometry and attaches an event listener to update the selected geometry.
+ * 
+ * @param {string|null} geometry - The currently selected geometry.
+ * @param {function} update - The function to be called when the selected geometry is updated.
+ * @returns {HTMLElement} The generated dropdown element.
+ */
+function generateGeometryDropdownElement(geometry, update) {
+    let geometryDropdown = generateDropdownElement(geometryOptions, geometry, update);
+    let geometryDataElement = generateAppKVElementDataElement('Geometry: ', geometryDropdown);
+    return geometryDataElement;
+}
+
+/**
+ * Generates a jump-to button element.
+ * 
+ * @param {Array<number>} position - The position to jump to.
+ * @returns {HTMLElement} - The jump-to button container element.
+ */
+function generateJumpToButtonElement(position) {
+    let jumpToButtonContainer = document.createElement('div');
+    let jumpToButton = document.createElement('button');
+    jumpToButton.addEventListener('click', () => {
+        // TODO: This is a hacky way to jump to the application.
+        // We could instead update the camera position and look at
+        // the application via the architecture controller.
+        let cameraPosition = [...position];
+        cameraPosition[1] += 10;
+        cameraPosition[2] += 10;
+        scene.setCameraPosition(cameraPosition);
+        scene.setCameraLookAt(position);
+    });
+    jumpToButton.innerText = 'Jump To';
+    jumpToButtonContainer.appendChild(jumpToButton);
+    return jumpToButtonContainer;
+}

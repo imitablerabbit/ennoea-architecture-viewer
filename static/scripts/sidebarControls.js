@@ -4,8 +4,7 @@ export {
     generateAppTitleElement,
     generateColorPickerElement,
     generateCheckboxElement,
-    generateGeometryDropdownElement,
-    generateJumpToButtonElement,
+    generateDropdownElement,
     generateAppKVElementDataElement,
     generateAppKVDataElement,
     generatAppKListDataElement,
@@ -13,23 +12,6 @@ export {
     generateNumberInput,
     generateEditableListElement
 };
-
-const geometryOptions = [
-    "box",
-    "capsule",
-    "circle",
-    "cone",
-    "cylinder",
-    "dodecahedron",
-    "icosahedron",
-    "octahedron",
-    "plane",
-    "ring",
-    "sphere",
-    "tetrahedron",
-    "torus",
-    "torusKnot"
-];
 
 /**
  * Calculates the luma value of a given color.
@@ -122,57 +104,30 @@ function generateCheckboxElement(k, checked, update) {
 }
 
 /**
- * Generates a dropdown element for selecting a geometry and attaches an event listener to update the selected geometry.
+ * Generates a dropdown element for selecting a from a list of options.
+ * Attaches an event listener to update the selected option.
  * 
- * @param {string|null} geometry - The currently selected geometry.
- * @param {function} update - The function to be called when the selected geometry is updated.
+ * @param {Array<string>} options - The list of options for the dropdown.
+ * @param {string} selected - The currently selected option.
+ * @param {function} update - The function to be called when the selected option is updated.
  * @returns {HTMLElement} The generated dropdown element.
  */
-function generateGeometryDropdownElement(geometry, update) {
-    let geometryDropdown = document.createElement('select');
-    geometryDropdown.addEventListener('change', () => {
-        update(geometryDropdown.value);
+function generateDropdownElement(options, selected, update) {
+    let dropdown = document.createElement('select');
+    dropdown.addEventListener('change', () => {
+        update(dropdown.value);
     });
 
-    // If the app doesn't have a geometry, set it to the first option.
-    if (geometry == null) {
-        geometry = geometryOptions[0];
-    }
-    for (let i = 0; i < geometryOptions.length; i++) {
+    for (let i = 0; i < options.length; i++) {
         let option = document.createElement('option');
-        option.value = geometryOptions[i];
-        option.innerText = geometryOptions[i];
-        if (geometry == geometryOptions[i]) {
+        option.value = options[i];
+        option.innerText = options[i];
+        if (selected == options[i]) {
             option.selected = true;
         }
-        geometryDropdown.appendChild(option);
+        dropdown.appendChild(option);
     }
-    let geometryDataElement = generateAppKVElementDataElement('Geometry: ', geometryDropdown);
-    return geometryDataElement;
-}
-
-/**
- * Generates a jump-to button element.
- * 
- * @param {Array<number>} position - The position to jump to.
- * @returns {HTMLElement} - The jump-to button container element.
- */
-function generateJumpToButtonElement(position) {
-    let jumpToButtonContainer = document.createElement('div');
-    let jumpToButton = document.createElement('button');
-    jumpToButton.addEventListener('click', () => {
-        // TODO: This is a hacky way to jump to the application.
-        // We could instead update the camera position and look at
-        // the application via the architecture controller.
-        let cameraPosition = [...position];
-        cameraPosition[1] += 10;
-        cameraPosition[2] += 10;
-        scene.setCameraPosition(cameraPosition);
-        scene.setCameraLookAt(position);
-    });
-    jumpToButton.innerText = 'Jump To';
-    jumpToButtonContainer.appendChild(jumpToButton);
-    return jumpToButtonContainer;
+    return dropdown;
 }
 
 // General data element creation functions

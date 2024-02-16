@@ -24,9 +24,23 @@ var filterText = '';
  */
 export function init(archController) {
     return new Promise((resolve, reject) => {
-        groupInfoSidebarElement = document.getElementById('group-info-list');
+        if (archController === undefined) {
+            reject({error: 'archController is undefined'});
+            return;
+        }
 
+        groupInfoSidebarElement = document.getElementById('group-info-list');
+        if (groupInfoSidebarElement === null) {
+            reject({error: 'group-info-list not found'});
+            return;
+        }
         filterInput = document.getElementById('group-filter-input');
+        if (filterInput === null) {
+            reject({error: 'group-filter-input not found'});
+            return;
+        }
+
+        // Subscribe to the filter input for changes.
         filterInput.addEventListener('input', () => {
             filterText = filterInput.value;
             let architectureData = archController.getArchitectureState();

@@ -24,9 +24,58 @@ var editorView;
 // when the sidebar has been initialized.
 export function init(archController) {
     return new Promise((resolve, reject) => {
-        // Dialog related elements
+        if (archController === undefined) {
+            reject({error: 'archController is undefined'});
+            return;
+        }
+        
         dialog = document.getElementById("load-dialog");
+        if (!dialog) {
+            reject({error: 'Failed to find element with id "load-dialog"'});
+            return;
+        }
         loadLayoutButton = document.getElementById('load-layout');
+        if (!loadLayoutButton) {
+            reject({error: 'Failed to find element with id "load-layout"'});
+            return;
+        }
+        dialogCloseButton = document.getElementById("load-layout-close");
+        if (!dialogCloseButton) {
+            reject({error: 'Failed to find element with id "load-layout-close"'});
+            return;
+        }
+        dialogSubmitServerButton = document.getElementById("load-layout-submit-server");
+        if (!dialogSubmitServerButton) {
+            reject({error: 'Failed to find element with id "load-layout-submit-server"'});
+            return;
+        }
+        serverSelect = document.getElementById("load-layout-server-select");
+        if (!serverSelect) {
+            reject({error: 'Failed to find element with id "load-layout-server-select"'});
+            return;
+        }
+        dialogSubmitFileButton = document.getElementById("load-layout-submit-file");
+        if (!dialogSubmitFileButton) {
+            reject({error: 'Failed to find element with id "load-layout-submit-file"'});
+            return;
+        }
+        jsonFileInput = document.getElementById("load-layout-file-input");
+        if (!jsonFileInput) {
+            reject({error: 'Failed to find element with id "load-layout-file-input"'});
+            return;
+        }
+        dialogSubmitTextButton = document.getElementById("load-layout-submit-text");
+        if (!dialogSubmitTextButton) {
+            reject({error: 'Failed to find element with id "load-layout-submit-text"'});
+            return;
+        }
+        jsonTextBox = document.getElementById("load-layout-text-box");
+        if (!jsonTextBox) {
+            reject({error: 'Failed to find element with id "load-layout-text-box"'});
+            return;
+        }
+
+        // Dialog related elements
         loadLayoutButton.addEventListener('click', () => {
             // Load the architecture data from the server and add it
             // to the select element.
@@ -57,14 +106,12 @@ export function init(archController) {
 
             dialog.showModal();
         });
-        dialogCloseButton = document.getElementById("load-layout-close");
+
         dialogCloseButton.addEventListener('click', () => {
             dialog.close();
         });
 
         // Load from Server
-        dialogSubmitServerButton = document.getElementById("load-layout-submit-server");
-        serverSelect = document.getElementById("load-layout-server-select");
         dialogSubmitServerButton.addEventListener('click', () => {
             let architectureId = serverSelect.value;
             let name = serverSelect.options[serverSelect.selectedIndex].text;
@@ -83,8 +130,6 @@ export function init(archController) {
         });
         
         // Load from File
-        dialogSubmitFileButton = document.getElementById("load-layout-submit-file");
-        jsonFileInput = document.getElementById("load-layout-file-input");
         dialogSubmitFileButton.addEventListener('click', async function() {
             if (jsonFileInput.files.length == 0) {
                 alert.error("File missing from application data load.");
@@ -99,8 +144,6 @@ export function init(archController) {
         });
 
         // Load from Text
-        dialogSubmitTextButton = document.getElementById("load-layout-submit-text");
-        jsonTextBox = document.getElementById("load-layout-text-box");
         dialogSubmitTextButton.addEventListener('click', () => {
             let newAppData = editorView.state.doc.toString();
             let applicationData = JSON.parse(newAppData);
