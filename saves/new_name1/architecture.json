@@ -122,12 +122,18 @@
     ],
     "connections": [
         {
+            "name": "App1-Database",
             "source": "App1",
-            "target": "Database"
+            "target": "Database",
+            "outRate": 1000,
+            "inRate": 200
         },
         {
+            "name": "App2-Database",
             "source": "App2",
-            "target": "Database"
+            "target": "Database",
+            "outRate": 20000,
+            "inRate": 100
         }
     ]
 }

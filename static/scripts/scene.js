@@ -502,13 +502,11 @@ export function renderGroupsFromData(applicationData) {
             continue;
         }
 
-
         let groupMesh = new THREE.Group();
         groupMesh.name = name;
         groupMesh.userData = group;
-        scene.add(groupMesh);
-        sceneObjects.push(groupMesh);
 
+        let anyVisiable = false;
         for (let j=0; j < components.length; j++) {
             let component = components[j];
             let componentMesh = findObjectByName(component, selectableObjects);
@@ -517,8 +515,17 @@ export function renderGroupsFromData(applicationData) {
                 alert.error("Error rendering group " + name + ": could not find component: " + component);
                 continue;
             }
+            anyVisiable = true;
             groupMesh.add(componentMesh);
         }
+
+        if (!anyVisiable) {
+            console.info("renderGroupsFromData: Skipping group " + name + " because it does not contain any visible components");
+            continue;
+        }
+
+        scene.add(groupMesh);
+        sceneObjects.push(groupMesh);
 
         // Create a bounding box for the group.
         let box = new THREE.Box3().setFromObject(groupMesh);
@@ -546,7 +553,6 @@ export function renderGroupsFromData(applicationData) {
         sceneObjects.push(boxMesh);
     }
 }
-
 
 /**
  * Renders connections from application data.
@@ -645,7 +651,16 @@ export function renderConnectionsFromData(applicationData) {
         let sourceColor = sourceApplication.object.color;
         let targetColor = targetApplication.object.color;
 
-        let colorPercentStart = 0.05;
+        let flow = connection.flow;
+        let inRate = connection.inRate;
+        let outRate = connection.outRate;
+        if (flow == "in") {
+            outRate = 0;
+        } else if (flow == "out") {
+            inRate = 0;
+        }
+
+        let pulsePercentStart = 0.05;
         let intialTime = Math.random();
         let material = new THREE.ShaderMaterial( {
             uniforms: THREE.UniformsUtils.merge( [
@@ -656,7 +671,9 @@ export function renderConnectionsFromData(applicationData) {
                     targetPosition: { value: targetCenter },
                     sourceColor: { value: new THREE.Color(sourceColor) },
                     targetColor: { value: new THREE.Color(targetColor) },
-                    colorPercent: { value: colorPercentStart }
+                    pulsePercent: { value: pulsePercentStart },
+                    inRate: { value: inRate },
+                    outRate: { value: outRate }
                 }
             ] ),
             // lights: true,
@@ -665,10 +682,16 @@ export function renderConnectionsFromData(applicationData) {
             fragmentShader: fragmentShader
         } );
 
-        // Set interval to update the time uniform.
+        // Set interval to update the time uniform. This will make the
+        // arrow pulse. The interval is set to 10ms and the pulse
+        // percent is increased by 0.01 every 10ms. This will make the
+        // arrow pulse every 1 second.
+        let pulseRate = 1;
+        let intervalTime = 10;
+        let timeDelta = pulseRate / (1 / (intervalTime / 1000));
         setInterval(() => {
-            material.uniforms.time.value += 0.005;
-        }, 10);
+            material.uniforms.time.value += timeDelta;
+        }, intervalTime);
 
         let line = new THREE.Line(geometry, material);
         scene.add(line);

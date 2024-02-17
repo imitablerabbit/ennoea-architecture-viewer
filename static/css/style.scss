@@ -389,6 +389,8 @@ body {
     input,
     select,
     textarea {
+        height: fit-content;
+        margin: auto;
         width: 100%;
     };
 }

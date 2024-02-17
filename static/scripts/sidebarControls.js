@@ -32,8 +32,9 @@ function luma(color) {
  * Generates an application title element with the given name, color, and update function.
  * 
  * @param {string} name - The name of the application.
+ * @param {function} nameUpdate - The function to be called when the name is updated.
  * @param {string} color - The color of the application.
- * @param {function} update - The function to be called when the color is updated.
+ * @param {function} colorUpdate - The function to be called when the color is updated.
  * @returns {HTMLElement} The generated application title element.
  */
 function generateAppTitleElement(name, nameUpdate, color, colorUpdate) {
@@ -50,17 +51,21 @@ function generateAppTitleElement(name, nameUpdate, color, colorUpdate) {
         nameUpdate(nameElement.innerText);
     });
 
+    titleContainer.appendChild(nameElement);
+
+    if (color == null) {
+        color = 'var(--color-primary)';
+    }
     let l = luma(color);
     if (l < 60) {
         nameElement.classList.add('dark');
     }
-    let colorUpdateFun = function(newColor) {
-        update(newColor);
-    }
-    let colorDataElement = generateColorPickerElement(color, colorUpdate);
 
-    titleContainer.appendChild(nameElement);
-    titleContainer.appendChild(colorDataElement);
+    // Add a color picker element if the color can be updated.
+    if (colorUpdate) {
+        let colorDataElement = generateColorPickerElement(color, colorUpdate);
+        titleContainer.appendChild(colorDataElement);
+    }
     return titleContainer;
 }
 

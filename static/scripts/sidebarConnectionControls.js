@@ -1,6 +1,8 @@
 import {
     generateAppKVElementDataElement,
-    generateDropdownElement
+    generateAppTitleElement,
+    generateDropdownElement,
+    generateNumberInput
 } from './sidebarControls.js';
 
 // Populate the connection info section within the sidebar.
@@ -10,6 +12,9 @@ var connectionsInfoSidebarElement;
 // Filter variables
 var filterInput;
 var filterText = '';
+
+// Connection flow options
+var flowOptions = ['out', 'in', 'bi'];
 
 /**
  * Initializes the application info sidebar.
@@ -108,21 +113,57 @@ export function displayArchitectureData(archController, architectureData) {
 function generateConnectionElement(connection, connectionsList, update) {
     let sectionElement = document.createElement('section');
     sectionElement.classList.add('info-box');
-    
-    let sourceDropdown = generateDropdownElement(connectionsList, connection.source, (newSource) => {
+
+    let titleNameUpdate = function(newName) {
+        connection.name = newName;
+        update(connection);
+    };
+    let titleContainer = generateAppTitleElement(connection.name, titleNameUpdate);
+
+    let sourceUpdate = function(newSource) {
         connection.source = newSource;
         update(connection);
-    });
+    };
+    let sourceDropdown = generateDropdownElement(connectionsList, connection.source, sourceUpdate);
     let sourceElement = generateAppKVElementDataElement('Source', sourceDropdown);
 
-    let targetDropdown = generateDropdownElement(connectionsList, connection.target, (newTarget) => {
+    let targetUpdate = function(newTarget) {
         connection.target = newTarget;
         update(connection);
-    });
+    };
+    let targetDropdown = generateDropdownElement(connectionsList, connection.target, targetUpdate);
     let targetElement = generateAppKVElementDataElement('Target', targetDropdown);
 
+    let flowUpdate = function(newFlow) {
+        connection.flow = newFlow;
+        update(connection);
+    };
+    let flowDropdown = generateDropdownElement(flowOptions, connection.flow, flowUpdate);
+    let flowElement = generateAppKVElementDataElement('Flow', flowDropdown);
+
+    let inRateUpdate = function(newInRate) {
+        connection.inRate = newInRate;
+        update(connection);
+    };
+    let inRateInput = generateNumberInput(connection.inRate, "", inRateUpdate, 10, 0);
+    let inRateElement = generateAppKVElementDataElement('In Rate', inRateInput);
+    inRateElement.setAttribute('title', 'Value is ignored if the "flow" is set to "out"');
+
+    let outRateUpdate = function(newOutRate) {
+        connection.outRate = newOutRate;
+        update(connection);
+    }
+    let outRateInput = generateNumberInput(connection.outRate, "", outRateUpdate, 10, 0);
+    let outRateElement = generateAppKVElementDataElement('Out Rate', outRateInput);
+    outRateElement.setAttribute('title', 'Value is ignored if the "flow" is set to "in"');
+
+    sectionElement.appendChild(titleContainer);
     sectionElement.appendChild(sourceElement);
     sectionElement.appendChild(targetElement);
+    sectionElement.appendChild(flowElement);
+    sectionElement.appendChild(inRateElement);
+    sectionElement.appendChild(outRateElement);
+
     return sectionElement;
 }
 

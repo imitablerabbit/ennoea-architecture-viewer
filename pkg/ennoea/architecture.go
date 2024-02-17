@@ -261,15 +261,40 @@ func (g Group) isValid() error {
 
 // Connection represents the connection configuration.
 type Connection struct {
+	// Name is the name of the connection.
+	Name string `json:"name"`
+
 	// Source is the name of the source component.
 	Source string `json:"source"`
 
 	// Target is the name of the target component.
 	Target string `json:"target"`
+
+	// Flow is the flow of the connection. The flow must be either
+	// "in", "out", or "bi". If the flow is "in", the connection
+	// will only show the in flow rate. If the flow is "out", the
+	// connection will only show the out flow rate. If the flow is
+	// "bi", the connection will show both the in and out flow rates.
+	Flow string `json:"flow"`
+
+	// OutRate is the rate of the out flow of the connection.
+	// The rate is represented as a number of bytes per second.
+	// This is ignored if the flow is "in".
+	OutRate int `json:"outRate,omitempty"`
+
+	// InRate is the rate of the in flow of the connection.
+	// The rate is represented as a number of bytes per second.
+	// This is ignored if the flow is "out".
+	InRate int `json:"inRate,omitempty"`
 }
 
 // isValid returns an error if the connection is invalid.
 func (c Connection) isValid() error {
+	// Check that the name is not empty
+	if c.Name == "" {
+		return fmt.Errorf("invalid connection: name is empty")
+	}
+
 	// Check that the source is not empty
 	if c.Source == "" {
 		return fmt.Errorf("invalid connection: source is empty")
@@ -278,6 +303,24 @@ func (c Connection) isValid() error {
 	// Check that the target is not empty
 	if c.Target == "" {
 		return fmt.Errorf("invalid connection: target is empty")
+	}
+
+	// Check that the flow is not empty or invalid
+	if c.Flow == "" {
+		return fmt.Errorf("invalid connection: flow is empty")
+	}
+	if c.Flow != "in" && c.Flow != "out" && c.Flow != "bi" {
+		return fmt.Errorf("invalid connection: invalid flow: %s", c.Flow)
+	}
+
+	// Check that the out rate is valid if it is defined
+	if c.OutRate < 0 {
+		return fmt.Errorf("invalid connection: out rate is negative")
+	}
+
+	// Check that the in rate is valid if it is defined
+	if c.InRate < 0 {
+		return fmt.Errorf("invalid connection: in rate is negative")
 	}
 
 	return nil
