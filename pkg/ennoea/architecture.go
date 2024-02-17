@@ -190,6 +190,12 @@ func (t Text) isValid() error {
 
 // Application represents the application configuration.
 type Component struct {
+	// ID is the unique identifier of the component. The ID is
+	// used to find the component in the 3D world and in the UI.
+	// This will allow us to change the name of the component
+	// without breaking the connections.
+	ID string `json:"id"`
+
 	// Type is the type of the component. The type must be either
 	// "app" or "server".
 	Type string `json:"type"`
@@ -203,6 +209,11 @@ type Component struct {
 
 // isValid returns an error if the component is invalid.
 func (c Component) isValid() error {
+	// Check that the ID is not empty
+	if c.ID == "" {
+		return fmt.Errorf("invalid component: id is empty")
+	}
+
 	// Check that the type is not empty or invalid.
 	if c.Type == "" {
 		return fmt.Errorf("invalid component: type is empty")
@@ -226,6 +237,11 @@ func (c Component) isValid() error {
 
 // Group represents the group configuration.
 type Group struct {
+	// ID is the unique identifier of the group. The ID is used to
+	// find the group in the 3D world and in the UI. This will allow
+	// us to change the name of the group.
+	ID string `json:"id"`
+
 	// Name is the name of the group.
 	Name string `json:"name"`
 
@@ -239,6 +255,11 @@ type Group struct {
 
 // isValid returns an error if the group is invalid.
 func (g Group) isValid() error {
+	// Check that the ID is not empty
+	if g.ID == "" {
+		return fmt.Errorf("invalid group: id is empty")
+	}
+
 	// Check that the name is not empty
 	if g.Name == "" {
 		return fmt.Errorf("invalid group: name is empty")
@@ -261,6 +282,11 @@ func (g Group) isValid() error {
 
 // Connection represents the connection configuration.
 type Connection struct {
+	// ID is the unique identifier of the connection. The ID is used
+	// to find the connection in the 3D world and in the UI. This will
+	// allow us to change the name of the connection.
+	ID string `json:"id"`
+
 	// Name is the name of the connection.
 	Name string `json:"name"`
 
@@ -280,16 +306,21 @@ type Connection struct {
 	// OutRate is the rate of the out flow of the connection.
 	// The rate is represented as a number of bytes per second.
 	// This is ignored if the flow is "in".
-	OutRate int `json:"outRate,omitempty"`
+	OutRate int `json:"outRate"`
 
 	// InRate is the rate of the in flow of the connection.
 	// The rate is represented as a number of bytes per second.
 	// This is ignored if the flow is "out".
-	InRate int `json:"inRate,omitempty"`
+	InRate int `json:"inRate"`
 }
 
 // isValid returns an error if the connection is invalid.
 func (c Connection) isValid() error {
+	// Check that the ID is not empty
+	if c.ID == "" {
+		return fmt.Errorf("invalid connection: id is empty")
+	}
+
 	// Check that the name is not empty
 	if c.Name == "" {
 		return fmt.Errorf("invalid connection: name is empty")

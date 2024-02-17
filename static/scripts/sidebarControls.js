@@ -1,5 +1,3 @@
-import * as scene from './scene.js';
-
 export {
     generateAppTitleElement,
     generateColorPickerElement,
@@ -123,14 +121,24 @@ function generateDropdownElement(options, selected, update) {
         update(dropdown.value);
     });
 
+    // If the options are strings, then convert them to objects.
+    if (typeof options[0] == 'string') {
+        options = options.map((option) => {
+            return {value: option, text: option};
+        });
+    }
+
     for (let i = 0; i < options.length; i++) {
-        let option = document.createElement('option');
-        option.value = options[i];
-        option.innerText = options[i];
-        if (selected == options[i]) {
-            option.selected = true;
+        let option = options[i];
+        let optionElement = document.createElement('option');
+
+        optionElement.value = option.value;
+        optionElement.innerText = option.text;
+        if (selected == option.value) {
+            optionElement.selected = true;
         }
-        dropdown.appendChild(option);
+        
+        dropdown.appendChild(optionElement);
     }
     return dropdown;
 }
@@ -287,16 +295,20 @@ function generateEditableListElement(list, update, options=[]) {
 
     let select = document.createElement('select');
     for (let i = 0; i < options.length; i++) {
-        let option = document.createElement('option');
-        option.innerText = options[i];
-        select.appendChild(option);
+        let option = options[i];
+        let optionElement = document.createElement('option');
+        optionElement.innerText = option.text;
+        optionElement.value = option.value;
+        select.appendChild(optionElement);
     }
     select.classList.add('span-2');
 
     let add = document.createElement('button');
+    add.classList.add('small');
     add.innerText = 'Add';
     add.addEventListener('click', () => {
-        let item = select.value;
+        let text = select.options[select.selectedIndex].text;
+        let item = {value: select.value, text: text};
         list.push(item);
         update(list);
         let itemElement = generateEditableListItemElement(item, list, update);
@@ -324,10 +336,11 @@ function generateEditableListItemElement(item, list, update) {
     container.classList.add('grid-3');
 
     let itemElement = document.createElement('p');
-    itemElement.innerText = item;
+    itemElement.innerText = item.text;
     itemElement.classList.add('span-2');
 
     let remove = document.createElement('button');
+    remove.classList.add('small');
     remove.innerText = 'Remove';
     remove.addEventListener('click', () => {
         let index = list.indexOf(item);

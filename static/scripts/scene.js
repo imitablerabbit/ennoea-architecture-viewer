@@ -508,11 +508,11 @@ export function renderGroupsFromData(applicationData) {
 
         let anyVisiable = false;
         for (let j=0; j < components.length; j++) {
-            let component = components[j];
-            let componentMesh = findObjectByName(component, selectableObjects);
+            let componentId = components[j];
+            let componentMesh = findObjectById(componentId, selectableObjects);
             if (componentMesh == null) {
-                console.error("renderGroupsFromData: Could not find component: " + component);
-                alert.error("Error rendering group " + name + ": could not find component: " + component);
+                console.error("renderGroupsFromData: Could not find component: " + componentId);
+                alert.error("Error rendering group " + name + ": could not find component: " + componentId);
                 continue;
             }
             anyVisiable = true;
@@ -570,21 +570,21 @@ export function renderConnectionsFromData(applicationData) {
     }
     for (let i=0; i < applicationData.connections.length; i++) {
         let connection = applicationData.connections[i];
-        let source = connection.source;
-        let target = connection.target;
+        let sourceId = connection.source;
+        let targetId = connection.target;
 
-        let sourceApplication = findApplicationDataByName(source, applicationData);
-        let targetApplication = findApplicationDataByName(target, applicationData);
-        let sourceMesh = findObjectByName(source, selectableObjects);
+        let sourceApplication = findApplicationDataById(sourceId, applicationData);
+        let targetApplication = findApplicationDataById(targetId, applicationData);
+        let sourceMesh = findObjectById(sourceId, selectableObjects);
         if (sourceMesh == null) {
-            console.error("renderConnectionsFromData: Could not find source for connection: " + source + " -> " + target);
-            alert.error("Could not find source for connection: " + source + " -> " + target);
+            console.error("renderConnectionsFromData: Could not find source for connection: " + sourceId + " -> " + targetId);
+            alert.error("Could not find source for connection: " + sourceId + " -> " + targetId);
             continue;
         }
-        let targetMesh = findObjectByName(target, selectableObjects);
+        let targetMesh = findObjectById(targetId, selectableObjects);
         if (targetMesh == null) {
-            console.error("renderConnectionsFromData: Could not find target for connection: " + source + " -> " + target);
-            alert.error("Could not find target for connection: " + source + " -> " + target);
+            console.error("renderConnectionsFromData: Could not find target for connection: " + sourceId + " -> " + targetId);
+            alert.error("Could not find target for connection: " + sourceId + " -> " + targetId);
             continue;
         }
         let objects = [sourceMesh, targetMesh];
@@ -772,6 +772,7 @@ function onClick(event) {
     // object's userData.
     if (selectedObjects.length > 0) {
         let component = selectedObjects[0].userData;
+        let id = component.id;
         let object = component.object;
         let name = component.name;
 
@@ -834,10 +835,10 @@ function onClick(event) {
         translateButton.textContent = "Translate";
         translateButton.addEventListener("click", () => {
             // Find the object in the selectable objects list with the
-            // same name as the selected object. This is because the
+            // same id as the selected object. This is because the
             // scene might have been reset and the selected object is
             // a new object.
-            let object = findObjectByName(name, selectableObjects);
+            let object = findObjectById(id, selectableObjects);
             setTransformControls(architectureController, object, "translate");
         });
         let translateButtonContainer = document.createElement("div");
@@ -849,7 +850,7 @@ function onClick(event) {
         rotateButton.classList.add("button");
         rotateButton.textContent = "Rotate";
         rotateButton.addEventListener("click", () => {
-            let object = findObjectByName(name, selectableObjects);
+            let object = findObjectById(id, selectableObjects);
             setTransformControls(architectureController, object, "rotate");
         });
         let rotateButtonContainer = document.createElement("div");
@@ -861,7 +862,7 @@ function onClick(event) {
         scaleButton.classList.add("button");
         scaleButton.textContent = "Scale";
         scaleButton.addEventListener("click", () => {
-            let object = findObjectByName(name, selectableObjects);
+            let object = findObjectById(id, selectableObjects);
             setTransformControls(architectureController, object, "scale");
         });
         let scaleButtonContainer = document.createElement("div");
@@ -943,17 +944,17 @@ function render() {
 // ------------------------------------------------------------
 
 /**
- * Finds an object by its name in an array of selectable objects.
+ * Finds an object by its id in an array of selectable objects.
  * 
- * @param {string} name - The name of the object to find.
+ * @param {string} id - The id of the object to find.
  * @param {Array} selectableObjects - An array of selectable objects.
- * @returns {Object|null} - The object with the specified name, or null if not found.
+ * @returns {Object|null} - The object with the specified id, or null if not found.
  */
-export function findObjectByName(name, selectableObjects) {
-    console.info("findObjectByName: " + name + " selectableObjects: ", selectableObjects);
+export function findObjectById(id, selectableObjects) {
+    console.info("findObjectById: " + id + " selectableObjects: ", selectableObjects);
     for (let i = 0; i < selectableObjects.length; i++) {
         let object = selectableObjects[i];
-        if (object.userData.name === name) {
+        if (object.userData.id === id) {
             return object;
         }
     }
@@ -961,15 +962,15 @@ export function findObjectByName(name, selectableObjects) {
 }
 
 /**
- * Finds an application data object by its name in the given application data.
- * @param {string} name - The name of the application to search for.
+ * Finds an application data object by its id in the given application data.
+ * @param {string} id - The id of the application to search for.
  * @param {object} applicationData - The application data object to search in.
  * @returns {object|null} - The found application data object, or null if not found.
  */
-export function findApplicationDataByName(name, applicationData) {
+export function findApplicationDataById(id, applicationData) {
     for (let i = 0; i < applicationData.components.length; i++) {
         let application = applicationData.components[i];
-        if (application.name === name) {
+        if (application.id === id) {
             return application;
         }
     }

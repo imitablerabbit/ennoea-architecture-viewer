@@ -23,6 +23,7 @@
     },
     "components": [
         {
+            "id": "d99e9b4a-6c11-40eb-97d0-43b8facb6e91",
             "type": "app",
             "name": "App1",
             "object": {
@@ -47,6 +48,7 @@
             }
         },
         {
+            "id": "24a892f6-b3a6-42ab-b62d-11ed29c67911",
             "type": "app",
             "name": "App2",
             "object": {
@@ -71,6 +73,7 @@
             }
         },
         {
+            "id": "b7fe3bfc-1529-4a2e-b786-b3aeedb3a030",
             "type": "app",
             "name": "Database",
             "object": {
@@ -97,10 +100,11 @@
     ],
     "groups": [
         {
+            "id": "group1",
             "name": "Apps",
             "components": [
-                "App1",
-                "App2"
+                "d99e9b4a-6c11-40eb-97d0-43b8facb6e91",
+                "24a892f6-b3a6-42ab-b62d-11ed29c67911"
             ],
             "boundingBox": {
                 "padding": 1,
@@ -109,9 +113,10 @@
             }
         },
         {
+            "id": "group2",
             "name": "Database",
             "components": [
-                "Database"
+                "b7fe3bfc-1529-4a2e-b786-b3aeedb3a030"
             ],
             "boundingBox": {
                 "padding": 0.6,
@@ -122,16 +127,18 @@
     ],
     "connections": [
         {
+            "id": "connection1",
             "name": "App1-Database",
-            "source": "App1",
-            "target": "Database",
+            "source": "d99e9b4a-6c11-40eb-97d0-43b8facb6e91",
+            "target": "b7fe3bfc-1529-4a2e-b786-b3aeedb3a030",
             "outRate": 1000,
             "inRate": 200
         },
         {
+            "id": "connection2",
             "name": "App2-Database",
-            "source": "App2",
-            "target": "Database",
+            "source": "24a892f6-b3a6-42ab-b62d-11ed29c67911",
+            "target": "b7fe3bfc-1529-4a2e-b786-b3aeedb3a030",
             "outRate": 20000,
             "inRate": 100
         }

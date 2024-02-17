@@ -59,8 +59,6 @@ export class ArchitectureController {
     notifySubscribers() {
         this.subscribers.forEach(subscriber => {
             try {
-                console.log('notify subscriber');
-                console.log(subscriber);
                 subscriber(this.getArchitectureState());
             } catch (error) {
                 console.error(error);

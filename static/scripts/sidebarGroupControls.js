@@ -6,9 +6,7 @@ import {
     generateEditableListElement
 } from './sidebarControls.js';
 
-// Populate the application info section within the sidebar. This should
-// provide buttons to jump the camera to the location of the application
-// in the world.
+// Populate the group info section within the sidebar.
 
 var groupInfoSidebarElement;
 
@@ -17,7 +15,7 @@ var filterInput;
 var filterText = '';
 
 /**
- * Initializes the application info sidebar.
+ * Initializes the group info sidebar.
  * 
  * @param {Object} archController - The architecture controller object.
  * @returns {Promise} A promise that resolves when the initialization is complete.
@@ -88,7 +86,7 @@ export function displayArchitectureData(archController, architectureData) {
             architectureData.groups[i] = newGroup;
             archController.setArchitectureState(architectureData);
         }
-        let sectionElement = generateGroupElement(group, updateGroup);
+        let sectionElement = generateGroupElement(group, architectureData.components, updateGroup);
         groupInfoSidebarElement.appendChild(sectionElement);
     }
 }
@@ -97,10 +95,11 @@ export function displayArchitectureData(archController, architectureData) {
  * Generates a component element for the sidebar group info.
  * 
  * @param {Object} group - The group object.
+ * @param {list} components - The list of components in the architecture.
  * @param {Function} update - The update function to be called when the component is updated.
  * @returns {HTMLElement} - The generated section element.
  */
-function generateGroupElement(group, update) {
+function generateGroupElement(group, components, update) {
     let sectionElement = document.createElement('section');
     sectionElement.classList.add('info-box');
     sectionElement.style.setProperty('--box-color', group.boundingBox.color);
@@ -129,11 +128,20 @@ function generateGroupElement(group, update) {
     let paddingNumberInput = generateNumberInput(group.boundingBox.padding, "", paddingUpdate, 0.1);
     let paddingDataElement = generateAppKVElementDataElement("Padding:", paddingNumberInput);
 
-    let serverListUpdate = function(newServerList) {
-        group.serverList = newServerList;
+    let serverListUpdate = function(newComponentData) {
+        let componentIds = newComponentData.map((component) => component.value);
+        group.components = componentIds;
         update(group);
     }
-    let serverListElement = generateEditableListElement(group.components, serverListUpdate, ["App1", "App2", "Database"]);
+
+    let groupComponents = components.filter((component) => group.components.includes(component.id));
+    let groupList = groupComponents.map((component) => {
+        return {value: component.id, text: component.name};
+    });
+    let componentOptions = components.map((component) => {
+        return {value: component.id, text: component.name};
+    });
+    let serverListElement = generateEditableListElement(groupList, serverListUpdate, componentOptions);
     let serverListDataElement = generateAppKVElementDataElement("Server List:", serverListElement);
     serverListDataElement.classList.add('column');
 

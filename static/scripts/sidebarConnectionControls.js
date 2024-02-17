@@ -80,15 +80,17 @@ export function displayArchitectureData(archController, architectureData) {
     }
 
     console.log(architectureData.connections);
-    let componentList = architectureData.components.map((component) => component.name);
     for (let i = 0; i < architectureData.connections.length; i++) {
         console.log(architectureData.connections[i]);
         let connection = architectureData.connections[i];
-        let source = connection.source;
-        let target = connection.target;
+        let sourceId = connection.source;
+        let targetId = connection.target;
+        let sourceName = architectureData.components.find((component) => component.id === sourceId).name;
+        let targetName = architectureData.components.find((component) => component.id === targetId).name;
         if (filterText != '' &&
-            !source.toLowerCase().includes(filterText.toLowerCase()) &&
-            !target.toLowerCase().includes(filterText.toLowerCase())){
+            !connection.name.toLowerCase().includes(filterText.toLowerCase()) &&
+            !sourceName.toLowerCase().includes(filterText.toLowerCase()) &&
+            !targetName.toLowerCase().includes(filterText.toLowerCase())){
 
             console.log('filtering out connection');
             continue;
@@ -98,7 +100,7 @@ export function displayArchitectureData(archController, architectureData) {
             architectureData.connections[i] = newConnection;
             archController.setArchitectureState(architectureData);
         }
-        let sectionElement = generateConnectionElement(connection, componentList, updateConnection);
+        let sectionElement = generateConnectionElement(connection, architectureData.components, updateConnection);
         connectionsInfoSidebarElement.appendChild(sectionElement);
     }
 }
@@ -107,10 +109,11 @@ export function displayArchitectureData(archController, architectureData) {
  * Generates a component element for the sidebar connection info.
  * 
  * @param {Object} connection - The connection object.
+ * @param {Array} components - The list of components from the architecture.
  * @param {Function} update - The update function to be called when the component is updated.
  * @returns {HTMLElement} - The generated section element.
  */
-function generateConnectionElement(connection, connectionsList, update) {
+function generateConnectionElement(connection, components, update) {
     let sectionElement = document.createElement('section');
     sectionElement.classList.add('info-box');
 
@@ -120,18 +123,21 @@ function generateConnectionElement(connection, connectionsList, update) {
     };
     let titleContainer = generateAppTitleElement(connection.name, titleNameUpdate);
 
-    let sourceUpdate = function(newSource) {
-        connection.source = newSource;
+    let componentOptions = components.map((component) => {
+        return {value: component.id, text: component.name};
+    });
+    let sourceUpdate = function(newSourceId) {
+        connection.source = newSourceId;
         update(connection);
     };
-    let sourceDropdown = generateDropdownElement(connectionsList, connection.source, sourceUpdate);
+    let sourceDropdown = generateDropdownElement(componentOptions, connection.source, sourceUpdate);
     let sourceElement = generateAppKVElementDataElement('Source', sourceDropdown);
 
-    let targetUpdate = function(newTarget) {
-        connection.target = newTarget;
+    let targetUpdate = function(newTargetId) {
+        connection.target = newTargetId;
         update(connection);
     };
-    let targetDropdown = generateDropdownElement(connectionsList, connection.target, targetUpdate);
+    let targetDropdown = generateDropdownElement(componentOptions, connection.target, targetUpdate);
     let targetElement = generateAppKVElementDataElement('Target', targetDropdown);
 
     let flowUpdate = function(newFlow) {
