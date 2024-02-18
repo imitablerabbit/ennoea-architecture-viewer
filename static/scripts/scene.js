@@ -766,6 +766,9 @@ function onPointerMove(event) {
 // on an object. When an object is clicked, a popup is created with the
 // application information stored on the object's userData.
 function onClick(event) {
+    // Do nothing if it was not the left mouse button that was clicked.
+    if (event.button != 0) return;
+
     selectedObjects = [...hoveredObjects];
 
     // Create a popup with the application information stored on the 
