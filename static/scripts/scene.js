@@ -637,16 +637,17 @@ export function renderConnectionsFromData(applicationData) {
             midpoint.y -= gravity;
         }
 
-        let curve = new THREE.QuadraticBezierCurve3(arrowStart, midpoint, arrowEnd);
-        let points = curve.getPoints(50);
-        let geometry = new THREE.BufferGeometry().setFromPoints(points);
-        // let material = new THREE.LineBasicMaterial({
-        //     color: color,
+        // Nudge the curve end back a little bit so that it is not directly
+        // on the end of the arrow. This is because the curve end will be inside
+        // the arrow head and we want the line to be slightly behind
+        // the end of the arrow.
+        let curveDir = new THREE.Vector3();
+        curveDir.subVectors(arrowEnd, arrowStart);
+        curveDir.normalize();
+        let curveEnd = arrowEnd.clone().sub(curveDir.clone().multiplyScalar(0.02));
 
-        //     // Unlikely to take effect.
-        //     // https://threejs.org/docs/?q=LineBasicMaterial#api/en/materials/LineBasicMaterial.linewidth
-        //     linewidth: 10
-        // });
+        let curve = new THREE.QuadraticBezierCurve3(arrowStart, midpoint, curveEnd);
+        let tubeGeometry = new THREE.TubeGeometry(curve, 50, 0.01, 8, false);
 
         let sourceColor = sourceApplication.object.color;
         let targetColor = targetApplication.object.color;
@@ -693,15 +694,36 @@ export function renderConnectionsFromData(applicationData) {
             material.uniforms.time.value += timeDelta;
         }, intervalTime);
 
-        let line = new THREE.Line(geometry, material);
-        scene.add(line);
-        sceneObjects.push(line);
+        let tubeMesh = new THREE.Mesh(tubeGeometry, material);
+        scene.add(tubeMesh);
+        sceneObjects.push(tubeMesh);
 
         // Add the arrow head just before the target.
-        let arrowHeadStart = curve.getPoint(1);
+        let arrowHeadTip = arrowEnd.clone();
         let arrowHeadDirection = curve.getTangent(1);
         arrowHeadDirection.normalize();
-        let arrowHead = new THREE.ArrowHelper(arrowHeadDirection, arrowHeadStart, 0, sourceColor, 0.4, 0.2);
+        
+        let coneGeometry = new THREE.ConeGeometry(0.1, 0.4, 8);
+        let coneMaterial = new THREE.MeshBasicMaterial({ color: sourceColor });
+        let arrowHead = new THREE.Mesh(coneGeometry, coneMaterial);
+
+        // Set the arrow head to point in the direction of the tangent.
+        // We will set the cones rotation to the direction of the tangent
+        // by using axis and angle rotation.
+        let axis = new THREE.Vector3(arrowHeadDirection.z, 0, -arrowHeadDirection.x);
+        let radians = Math.acos(arrowHeadDirection.y);
+        let quaternion = new THREE.Quaternion();
+        quaternion.setFromAxisAngle(axis, radians);
+        arrowHead.setRotationFromQuaternion(quaternion);
+
+        // Nudge the arrow head back a little bit so that it is not
+        // directly on the end of the arrow. This is because the cone
+        // origin is at the center of the cone and we want the tip of
+        // the cone to be at the end of the arrow. The nudge amount is
+        // completely arbitrary and is just a visual preference.
+        let nudge = arrowHeadDirection.clone().multiplyScalar(0.17);
+        arrowHead.position.copy(arrowHeadTip.sub(nudge));
+
         scene.add(arrowHead);
         sceneObjects.push(arrowHead);
     }
