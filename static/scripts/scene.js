@@ -832,9 +832,13 @@ function onClick(event) {
         // Add buttons to the content that will switch the controls to
         // TransformControls so that the user can manipulate the object.
 
+        // Button grid-3 container for the translate, rotate, and scale buttons.
+        let buttonGrid3 = document.createElement("div");
+        buttonGrid3.classList.add("grid-3");
+
         // Translate button
         let translateButton = document.createElement("button");
-        translateButton.classList.add("button");
+        translateButton.classList.add("button", "small");
         translateButton.textContent = "Translate";
         translateButton.addEventListener("click", () => {
             // Find the object in the selectable objects list with the
@@ -850,7 +854,7 @@ function onClick(event) {
 
         // Rotate button
         let rotateButton = document.createElement("button");
-        rotateButton.classList.add("button");
+        rotateButton.classList.add("button", "small");
         rotateButton.textContent = "Rotate";
         rotateButton.addEventListener("click", () => {
             let object = findObjectById(id, selectableObjects);
@@ -862,7 +866,7 @@ function onClick(event) {
 
         // Scale button
         let scaleButton = document.createElement("button");
-        scaleButton.classList.add("button");
+        scaleButton.classList.add("button", "small");
         scaleButton.textContent = "Scale";
         scaleButton.addEventListener("click", () => {
             let object = findObjectById(id, selectableObjects);
@@ -871,14 +875,16 @@ function onClick(event) {
         let scaleButtonContainer = document.createElement("div");
         scaleButtonContainer.classList.add("info-box-row");
         scaleButtonContainer.appendChild(scaleButton);
+        
+        buttonGrid3.appendChild(translateButtonContainer);
+        buttonGrid3.appendChild(rotateButtonContainer);
+        buttonGrid3.appendChild(scaleButtonContainer);
 
         content.appendChild(colorSection);
         content.appendChild(positionSection);
         content.appendChild(rotationSection);
         content.appendChild(scaleSection);
-        content.appendChild(translateButtonContainer);
-        content.appendChild(rotateButtonContainer);
-        content.appendChild(scaleButtonContainer);
+        content.appendChild(buttonGrid3);
 
         let popup = new PopupWindow(document.body, component.name, content);
         let popupElement = popup.getWindowElement();
