@@ -202,6 +202,7 @@ function generateGeometryDropdownElement(geometry, update) {
 function generateJumpToButtonElement(position) {
     let jumpToButtonContainer = document.createElement('div');
     let jumpToButton = document.createElement('button');
+    jumpToButton.classList.add('small');
     jumpToButton.addEventListener('click', () => {
         // TODO: This is a hacky way to jump to the application.
         // We could instead update the camera position and look at
