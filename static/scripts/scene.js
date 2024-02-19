@@ -687,7 +687,7 @@ export function renderConnectionsFromData(applicationData) {
         // arrow pulse. The interval is set to 10ms and the pulse
         // percent is increased by 0.01 every 10ms. This will make the
         // arrow pulse every 1 second.
-        let pulseRate = 1;
+        let pulseRate = 0.5;
         let intervalTime = 10;
         let timeDelta = pulseRate / (1 / (intervalTime / 1000));
         setInterval(() => {
