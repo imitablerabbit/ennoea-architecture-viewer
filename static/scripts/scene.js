@@ -79,7 +79,7 @@ export function load() {
         });
         resolve();
     });
-    
+
     // Load the vertex and fragment shaders from external files.
     let vertexPromise = new Promise((resolve, reject) => {
         let vertexShaderLoader = new THREE.FileLoader(THREE.DefaultLoadingManager);
@@ -120,7 +120,7 @@ export function init(archController) {
 
         console.info("init: Container Sizes: Width: " + width + " Height: " + height);
 
-        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(width, height);
         renderer.outputEncoding = THREE.sRGBEncoding;
@@ -138,7 +138,7 @@ export function init(archController) {
 
         renderPass = new RenderPass(scene, camera);
         composer.addPass(renderPass);
-        
+
         outlinePassHover = new OutlinePass(new THREE.Vector2(width, height), scene, camera);
         outlinePassHover.edgeStrength = 10;
         outlinePassHover.selectedObjects = hoverOutlinedObjects;
@@ -164,7 +164,7 @@ export function init(archController) {
             // Disable orbit controls when transform controls are being used.
             // Obit controls will immediately become usable again when the
             // user stops dragging the object around.
-            orbitControls.enabled = ! event.value;
+            orbitControls.enabled = !event.value;
         });
         scene.add(transformControls); // Add the transform controls to the scene.
 
@@ -289,7 +289,7 @@ export function createSceneFromData(applicationData) {
 
 // Remove all the application meshes from the scene.
 export function clearObjects() {
-    sceneObjects.forEach(function(object) {
+    sceneObjects.forEach(function (object) {
         scene.remove(object);
     });
     sceneObjects = [];
@@ -333,7 +333,7 @@ export function renderApplicationsFromData(applicationData) {
         console.error("renderApplicationsFromData: applicationData.components is undefined, skipping scene applications");
         return;
     }
-    for (let i=0; i < applicationData.components.length; i++) {
+    for (let i = 0; i < applicationData.components.length; i++) {
         let component = applicationData.components[i];
         let visible = component.object.visible;
         if (visible != null && !visible) {
@@ -448,7 +448,7 @@ export function renderApplicationsFromData(applicationData) {
             -0.5 * (textGeo.boundingBox.max.z - textGeo.boundingBox.min.z)
         );
 
-        let textMaterial = new THREE.MeshStandardMaterial({color: color});
+        let textMaterial = new THREE.MeshStandardMaterial({ color: color });
         let textMesh = new THREE.Mesh(textGeo, textMaterial);
         let highestY = getHighestYPoint(mesh);
         textMesh.position.set(posX, highestY + 1, posZ);
@@ -489,7 +489,7 @@ export function renderGroupsFromData(applicationData) {
         console.error("renderGroupsFromData: applicationData.groups is undefined, skipping scene groups");
         return;
     }
-    for (let i=0; i < applicationData.groups.length; i++) {
+    for (let i = 0; i < applicationData.groups.length; i++) {
         let group = applicationData.groups[i];
         let name = group.name;
         let components = group.components;
@@ -507,7 +507,7 @@ export function renderGroupsFromData(applicationData) {
         groupMesh.userData = group;
 
         let anyVisiable = false;
-        for (let j=0; j < components.length; j++) {
+        for (let j = 0; j < components.length; j++) {
             let componentId = components[j];
             let componentMesh = findObjectById(componentId, selectableObjects);
             if (componentMesh == null) {
@@ -568,7 +568,7 @@ export function renderConnectionsFromData(applicationData) {
         console.error("renderConnectionsFromData: applicationData.connections is undefined, skipping scene connections");
         return;
     }
-    for (let i=0; i < applicationData.connections.length; i++) {
+    for (let i = 0; i < applicationData.connections.length; i++) {
         let connection = applicationData.connections[i];
         let sourceId = connection.source;
         let targetId = connection.target;
@@ -620,8 +620,6 @@ export function renderConnectionsFromData(applicationData) {
             arrowStart = intersects[0].point;
         }
 
-        let midpoint = getMidpoint(sourceCenter, targetCenter);
-
         // Add gravity to the midpoint if the source and target are
         // not on the same y plane. We want a slight curve in the
         // arrow. We also want to make sure that the arrow is not
@@ -632,25 +630,10 @@ export function renderConnectionsFromData(applicationData) {
         let sourceHighestY = getHighestYPoint(sourceMesh);
         let targetHighestY = getHighestYPoint(targetMesh);
         let highestY = Math.max(sourceHighestY, targetHighestY);
-        let gravity = 0.5;
-        if (lowestY != highestY) {
-            midpoint.y -= gravity;
+        let applyGravity = false;
+        if (Math.abs(lowestY - highestY) > 0.1) {
+            applyGravity = true;
         }
-
-        // Nudge the curve end back a little bit so that it is not directly
-        // on the end of the arrow. This is because the curve end will be inside
-        // the arrow head and we want the line to be slightly behind
-        // the end of the arrow.
-        let curveDir = new THREE.Vector3();
-        curveDir.subVectors(arrowEnd, arrowStart);
-        curveDir.normalize();
-        let curveEnd = arrowEnd.clone().sub(curveDir.clone().multiplyScalar(0.02));
-
-        let curve = new THREE.QuadraticBezierCurve3(arrowStart, midpoint, curveEnd);
-        let tubeGeometry = new THREE.TubeGeometry(curve, 50, 0.01, 8, false);
-
-        let sourceColor = sourceApplication.object.color;
-        let targetColor = targetApplication.object.color;
 
         let flow = connection.flow;
         let inRate = connection.inRate;
@@ -661,11 +644,18 @@ export function renderConnectionsFromData(applicationData) {
             inRate = 0;
         }
 
+        let sourceColor = sourceApplication.object.color;
+        let targetColor = targetApplication.object.color;
+        let coneMaterial = new THREE.MeshStandardMaterial({
+            color: sourceColor,
+        });
+
         let pulsePercentStart = 0.05;
         let intialTime = Math.random();
-        let material = new THREE.ShaderMaterial( {
-            uniforms: THREE.UniformsUtils.merge( [
-                THREE.UniformsLib[ 'fog' ],
+        let lineMaterial = new THREE.ShaderMaterial({
+            uniforms: THREE.UniformsUtils.merge([
+                THREE.UniformsLib['fog'],
+                THREE.UniformsLib['lights'],
                 {
                     time: { value: intialTime },
                     sourcePosition: { value: sourceCenter },
@@ -676,12 +666,12 @@ export function renderConnectionsFromData(applicationData) {
                     inRate: { value: inRate },
                     outRate: { value: outRate }
                 }
-            ] ),
-            // lights: true,
+            ]),
+            lights: true,
             fog: true,
             vertexShader: vertexShader,
             fragmentShader: fragmentShader
-        } );
+        });
 
         // Set interval to update the time uniform. This will make the
         // arrow pulse. The interval is set to 10ms and the pulse
@@ -691,42 +681,68 @@ export function renderConnectionsFromData(applicationData) {
         let intervalTime = 10;
         let timeDelta = pulseRate / (1 / (intervalTime / 1000));
         setInterval(() => {
-            material.uniforms.time.value += timeDelta;
+            lineMaterial.uniforms.time.value += timeDelta;
         }, intervalTime);
 
-        let tubeMesh = new THREE.Mesh(tubeGeometry, material);
-        scene.add(tubeMesh);
-        sceneObjects.push(tubeMesh);
-
-        // Add the arrow head just before the target.
-        let arrowHeadTip = arrowEnd.clone();
-        let arrowHeadDirection = curve.getTangent(1);
-        arrowHeadDirection.normalize();
-        
-        let coneGeometry = new THREE.ConeGeometry(0.1, 0.4, 8);
-        let coneMaterial = new THREE.MeshBasicMaterial({ color: sourceColor });
-        let arrowHead = new THREE.Mesh(coneGeometry, coneMaterial);
-
-        // Set the arrow head to point in the direction of the tangent.
-        // We will set the cones rotation to the direction of the tangent
-        // by using axis and angle rotation.
-        let axis = new THREE.Vector3(arrowHeadDirection.z, 0, -arrowHeadDirection.x);
-        let radians = Math.acos(arrowHeadDirection.y);
-        let quaternion = new THREE.Quaternion();
-        quaternion.setFromAxisAngle(axis, radians);
-        arrowHead.setRotationFromQuaternion(quaternion);
-
-        // Nudge the arrow head back a little bit so that it is not
-        // directly on the end of the arrow. This is because the cone
-        // origin is at the center of the cone and we want the tip of
-        // the cone to be at the end of the arrow. The nudge amount is
-        // completely arbitrary and is just a visual preference.
-        let nudge = arrowHeadDirection.clone().multiplyScalar(0.17);
-        arrowHead.position.copy(arrowHeadTip.sub(nudge));
-
-        scene.add(arrowHead);
-        sceneObjects.push(arrowHead);
+        let arrow = createArrow(arrowStart, arrowEnd, applyGravity, coneMaterial, lineMaterial);
+        scene.add(arrow);
     }
+}
+
+/**
+ * Create an arrow object defined by a start and end position. The head of the
+ * arrow will be at the end position and the tail of the arrow will be at the
+ * start position. The arrow will be a quadratic bezier curve with a cone at
+ * the end and a line connecting the start and end positions. The line will
+ * be a tube geometry.
+ * 
+ * @param {THREE.Vector3} startPos - The start position of the arrow.
+ * @param {THREE.Vector3} endPos - The end position of the arrow.
+ * @param {boolean} applyGravity - Whether to apply gravity to the arrow line.
+ * @param {THREE.Material} coneMaterial - The material for the arrow cone.
+ * @param {THREE.Material} lineMaterial - The material for the arrow line.
+ */
+function createArrow(startPos, endPos, applyGravity, coneMaterial, lineMaterial) {
+    let coneRadius = 0.1;
+    let coneHeight = 0.4;
+
+    // Add gravity to the midpoint if we need to.
+    let midpoint = getMidpoint(startPos, endPos);
+    let gravity = 0.5;
+    if (applyGravity) {
+        midpoint.y -= gravity;
+    }
+
+    let arrowDir = new THREE.Vector3();
+    arrowDir.subVectors(endPos, startPos);
+    arrowDir.normalize();
+    let arrowCurve = new THREE.QuadraticBezierCurve3(startPos, midpoint, endPos);
+    let arrowHeadDir = arrowCurve.getTangent(1);
+    arrowHeadDir.normalize();
+
+    let lineEnd = endPos.clone();
+    lineEnd.sub(arrowHeadDir.clone().multiplyScalar(coneHeight));
+
+    let coneGeometry = new THREE.ConeGeometry(coneRadius, coneHeight, 8);
+    let arrowHead = new THREE.Mesh(coneGeometry, coneMaterial);
+
+    // Mutate the cone geometry to make the tip of the cone the
+    // origin of the cone.
+    arrowHead.geometry.translate(0, coneHeight / 2, 0);
+    arrowHead.position.copy(lineEnd);
+
+    // Set the arrow head to point in the direction of end of the arrow.
+    arrowHead.geometry.rotateX(Math.PI * 0.5); // Need this to allow for lookAt to work.
+    arrowHead.lookAt(endPos);
+
+    let lineCurve = new THREE.QuadraticBezierCurve3(startPos, midpoint, lineEnd);
+    let tubeGeometry = new THREE.TubeGeometry(lineCurve, 50, 0.01, 8, false);
+    let tubeMesh = new THREE.Mesh(tubeGeometry, lineMaterial);
+
+    let object = new THREE.Object3D();
+    object.add(arrowHead);
+    object.add(tubeMesh);
+    return object;
 }
 
 // ------------------------------------------------------------
@@ -817,7 +833,7 @@ function onClick(event) {
         colorValue.textContent = object.color;
         colorSection.appendChild(colorKey);
         colorSection.appendChild(colorValue);
-        
+
         let positionSection = document.createElement("section");
         positionSection.classList.add("info-box-kv");
         let positionKey = document.createElement("p");
@@ -828,7 +844,7 @@ function onClick(event) {
         positionValue.textContent = object.position.join(", ");
         positionSection.appendChild(positionKey);
         positionSection.appendChild(positionValue);
-        
+
         let rotationSection = document.createElement("section");
         rotationSection.classList.add("info-box-kv");
         let rotationKey = document.createElement("p");
@@ -839,7 +855,7 @@ function onClick(event) {
         rotationValue.textContent = object.rotation.join(", ");
         rotationSection.appendChild(rotationKey);
         rotationSection.appendChild(rotationValue);
-        
+
         let scaleSection = document.createElement("section");
         scaleSection.classList.add("info-box-kv");
         let scaleKey = document.createElement("p");
@@ -897,7 +913,7 @@ function onClick(event) {
         let scaleButtonContainer = document.createElement("div");
         scaleButtonContainer.classList.add("info-box-row");
         scaleButtonContainer.appendChild(scaleButton);
-        
+
         buttonGrid3.appendChild(translateButtonContainer);
         buttonGrid3.appendChild(rotateButtonContainer);
         buttonGrid3.appendChild(scaleButtonContainer);
@@ -944,7 +960,7 @@ function windowResize() {
  * rendering the scene.
  */
 function animate() {
-    requestAnimationFrame( animate );
+    requestAnimationFrame(animate);
     render();
 }
 
@@ -1155,7 +1171,7 @@ export function getTextRotate() {
 function rotateText() {
     for (let i = 0; i < textObjects.length; i++) {
         let textObject = textObjects[i];
-        
+
         // Create a look at vector that is the same as the camera
         // position but with the y value of the text object.
         let cameraPosition = camera.position.clone();
@@ -1175,7 +1191,7 @@ function rotateText() {
  * @param {Object3D} object - The object to attach the transform controls to.
  * @param {string} [mode="translate"] - The mode of the transform controls (translate, rotate, or scale).
  */
-export function setTransformControls(archController, object, mode="translate") {
+export function setTransformControls(archController, object, mode = "translate") {
     // Remove any existing transform controls. This is to prevent
     // multiple transform controls from being attached to the same
     // object.
@@ -1222,13 +1238,13 @@ export function setTransformControls(archController, object, mode="translate") {
                 break;
             }
         }
-    };    
+    };
 
     // Add an 'esc' key handler to cancel the transform controls.
     let escKeyHandler = (event) => {
         if (event.key === "Escape") {
             removeTransformControls();
-            
+
             // Stop other 'esc' key handlers from firing.
             event.stopImmediatePropagation();
         }
