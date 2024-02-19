@@ -655,7 +655,6 @@ export function renderConnectionsFromData(applicationData) {
         let lineMaterial = new THREE.ShaderMaterial({
             uniforms: THREE.UniformsUtils.merge([
                 THREE.UniformsLib['fog'],
-                THREE.UniformsLib['lights'],
                 {
                     time: { value: intialTime },
                     sourcePosition: { value: sourceCenter },
@@ -667,7 +666,6 @@ export function renderConnectionsFromData(applicationData) {
                     outRate: { value: outRate }
                 }
             ]),
-            lights: true,
             fog: true,
             vertexShader: vertexShader,
             fragmentShader: fragmentShader
