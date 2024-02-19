@@ -131,6 +131,7 @@
             "name": "App1-Database",
             "source": "d99e9b4a-6c11-40eb-97d0-43b8facb6e91",
             "target": "b7fe3bfc-1529-4a2e-b786-b3aeedb3a030",
+            "flow": "bi",
             "outRate": 1000,
             "inRate": 200
         },
@@ -139,6 +140,7 @@
             "name": "App2-Database",
             "source": "24a892f6-b3a6-42ab-b62d-11ed29c67911",
             "target": "b7fe3bfc-1529-4a2e-b786-b3aeedb3a030",
+            "flow": "bi",
             "outRate": 20000,
             "inRate": 100
         }
