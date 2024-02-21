@@ -684,6 +684,7 @@ export function renderConnectionsFromData(applicationData) {
 
         let arrow = createArrow(arrowStart, arrowEnd, applyGravity, coneMaterial, lineMaterial);
         scene.add(arrow);
+        sceneObjects.push(arrow);
     }
 }
 
