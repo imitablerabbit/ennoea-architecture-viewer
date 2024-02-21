@@ -1,0 +1,44 @@
+# TODO
+
+- [x] Change the example data stored on the server to be ones which have different architectures.
+- [x] Implement the saving feature to save the data to the server.
+- [x] Add a new input form to the dialog to allow the user to enter the name and description of the architecture. Then save this as a new architecture.
+- [x] Fix styling of the new architecture dialog.
+- [x] Fix scrolling issues in the sidebar
+- [x] Fix editing of the applicationInfo in the sidebar sending NaN values.
+- [x] Raycast out from the applications to determine the intersection point for the connections
+- [x] Render groups as bounding boxes.
+- [x] Add TransformControls to the scene objects.
+- [x] Stop the camera from updating when we get an update from the controller.
+- [x] Change the 'Esc' handler to be an event stack instead of a queue.
+- [x] Only allow one set of handlers to be active for the transform controls at a time.
+- [x] Fix rotation not setting the data to degress instead of radians.
+- [x] Fix issue with second interaction with the transform controls not working. The scene is not being rerendered.
+- [x] Randomise the start time of the pulse animation.
+- [x] Prevent user from highlighting text when dragging the mouse in a popup window.
+- [x] Fix the saving of groups to the server as the scene can render everything with just the color and names in the group.
+- [x] Fix the scene controls.
+- [x] Add groups info to the sidebar.
+- [x] Add ability to update the name of applications and groups.
+- [x] Add servers to the groups list.
+- [x] Add max height to the groups section like the applications.
+- [x] Add connections info to the sidebar.
+- [x] Add a way to visualise the in, out and bi connections in the scene.
+- [x] Add a way to visualise the rate of data flow.
+- [x] Stop the group from rendering if all of the applications inside it are invisible.
+- [x] Fix the groups styling so that the input fields are not so large.
+- [x] Use ids to keep track of the applications inside of connections and groups.
+- [x] Show the name instead of the id in the group and connections.
+- [x] Update the select options when the user changes the name of an application.
+- [x] Only allow applications to be clicked with the left click.
+- [x] Chnage the options to be the actual application names.
+- [x] Add a new flag for the direction of data flow. The arrow can represent which application connected in, the pulse can show the direction of data flow.
+- [x] Make the connections and actual tube geometry rather than a line.
+- [x] Correct the arrows so that the arrow starts at the end of the line. Maybe create my own arrow object class.
+- [x] Fix arrows being duplicated when the object is moved. Seems like the arrow is no longer being removed from the scene.
+- [ ] Add a packet size to the connections. Change the thickness of the tube to represent the packet size.
+- [ ] Change the pulse animation to be at different rates for different connections and rates. At the moment it is one pulse per second.
+- [ ] Add description to applications and groups.
+- [ ] Add method of adding new applications.
+- [ ] Save the camera lookAt position. Might need to use getWorldDirection() + camera.position to get the lookAt vector. We can then use this to set the controls.target.
+- [ ] Add a jump to button on the popup window to jump to the application in the sidebar.

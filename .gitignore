@@ -19,6 +19,4 @@ build
 
 .vscode
 
-openai-secret.*
-
-todo.md
+*secret*
