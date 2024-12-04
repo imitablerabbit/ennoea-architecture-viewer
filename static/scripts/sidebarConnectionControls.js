@@ -163,12 +163,28 @@ function generateConnectionElement(connection, components, update) {
     let outRateElement = generateAppKVElementDataElement('Out Rate', outRateInput);
     outRateElement.setAttribute('title', 'Value is ignored if the "flow" is set to "in"');
 
+    let inPacketSizeUpdate = function(newInPacketSize) {
+        connection.inPacketSize = newInPacketSize;
+        update(connection);
+    };
+    let inPacketSizeInput = generateNumberInput(connection.inPacketSize, "", inPacketSizeUpdate, 10, 0);
+    let inPacketSizeElement = generateAppKVElementDataElement('In Packet Size', inPacketSizeInput);
+
+    let outPacketSizeUpdate = function(newOutPacketSize) {
+        connection.outPacketSize = newOutPacketSize;
+        update(connection);
+    }
+    let outPacketSizeInput = generateNumberInput(connection.outPacketSize, "", outPacketSizeUpdate, 10, 0);
+    let outPacketSizeElement = generateAppKVElementDataElement('Out Packet Size', outPacketSizeInput);
+
     sectionElement.appendChild(titleContainer);
     sectionElement.appendChild(sourceElement);
     sectionElement.appendChild(targetElement);
     sectionElement.appendChild(flowElement);
     sectionElement.appendChild(inRateElement);
     sectionElement.appendChild(outRateElement);
+    sectionElement.appendChild(inPacketSizeElement);
+    sectionElement.appendChild(outPacketSizeElement);
 
     return sectionElement;
 }

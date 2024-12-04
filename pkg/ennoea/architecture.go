@@ -312,6 +312,16 @@ type Connection struct {
 	// The rate is represented as a number of bytes per second.
 	// This is ignored if the flow is "out".
 	InRate int `json:"inRate"`
+
+	// OutPacketSize is the size of the out packets of the connection.
+	// The size is represented as a number of bytes per packet. It is
+	// ignored if the flow is "in".
+	OutPacketSize int `json:"outPacketSize"`
+
+	// InPacketSize is the size of the in packets of the connection.
+	// The size is represented as a number of bytes per packet. It is
+	// ignored if the flow is "out".
+	InPacketSize int `json:"inPacketSize"`
 }
 
 // isValid returns an error if the connection is invalid.
@@ -352,6 +362,16 @@ func (c Connection) isValid() error {
 	// Check that the in rate is valid if it is defined
 	if c.InRate < 0 {
 		return fmt.Errorf("invalid connection: in rate is negative")
+	}
+
+	// Check that the out packet size is valid if it is defined
+	if c.OutPacketSize < 0 {
+		return fmt.Errorf("invalid connection: out packet size is negative")
+	}
+
+	// Check that the in packet size is valid if it is defined
+	if c.InPacketSize < 0 {
+		return fmt.Errorf("invalid connection: in packet size is negative")
 	}
 
 	return nil

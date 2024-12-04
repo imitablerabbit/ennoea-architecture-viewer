@@ -17,9 +17,11 @@ uniform float pulsePercent;
 
 // The rate at which the pulses move from the target to the source.
 uniform float inRate;
-
-// The rate at which the pulses move from the source to the target.
 uniform float outRate;
+
+// The size of the packets that are sent.
+uniform float inPacketSize;
+uniform float outPacketSize;
 
 // Pass the vertex position to the fragment shader.
 varying vec3 vPosition;
@@ -32,7 +34,7 @@ bool isPartOfPulse(float distanceFromComponent, float pulsePoint, float linePerc
 
 // Apply the pulse to the vertex. If the vertex is part of the pulse, change the
 // scale it out along the normal.
-vec3 applyPulse(vec3 pos, float distanceFromComponent, float t) {
+vec3 applyPulse(vec3 pos, float distanceFromComponent, float packetScaleAmount, float t) {
 
     // Work out the distance between the source and target.
     float lineLength = distance(sourcePosition, targetPosition);
@@ -47,7 +49,8 @@ vec3 applyPulse(vec3 pos, float distanceFromComponent, float t) {
     // The amount that the vertex is scaled is based on the distance from the
     // pulse point.
     if (isPartOfPulse(distanceFromComponent, pulsePoint, linePercent)) {
-        vec3 maxScale = normal * 0.05;
+        float basicScaleAmount = 0.04;
+        vec3 maxScale = normal * basicScaleAmount * packetScaleAmount;
 
         // The scale is based on the distance from the pulse point.
         float scaleAmount = 1.0 - (abs(pulsePoint - distanceFromComponent) / linePercent);
@@ -90,6 +93,17 @@ void main() {
     inRateNormal += 1.0;
     outRateNormal += 1.0;
 
+    // Determine the amount that we should scale using the packet size.
+    float packetMax = 10000.0;
+    float packetScaleMax = 3.0;
+    float packetScaleChange = 4.0;
+    float inPacketSizeNormal = inPacketSize / packetMax;
+    float outPacketSizeNormal = outPacketSize / packetMax;
+    inPacketSizeNormal * packetScaleChange;
+    outPacketSizeNormal * packetScaleChange;
+    inPacketSizeNormal = clamp(inPacketSizeNormal, 1.0, packetScaleMax);
+    outPacketSizeNormal = clamp(outPacketSizeNormal, 1.0, packetScaleMax);
+
     // Determine if the pulse should be applied for each direction.
     bool shouldInPulse = inRate > 0.0;
     bool shouldOutPulse = outRate > 0.0;
@@ -97,10 +111,10 @@ void main() {
     // Apply the pulse to the color.
     vec3 newPosition = position;
     if (shouldInPulse) {
-        newPosition = applyPulse(newPosition, distanceFromTarget, t * inRateNormal);
+        newPosition = applyPulse(newPosition, distanceFromTarget, inPacketSizeNormal, t * inRateNormal);
     }
     if (shouldOutPulse) {
-        newPosition = applyPulse(newPosition, distanceFromSource, t * outRateNormal);
+        newPosition = applyPulse(newPosition, distanceFromSource, outPacketSizeNormal, t * outRateNormal);
     }
 
     // Pass the position to the next stage.

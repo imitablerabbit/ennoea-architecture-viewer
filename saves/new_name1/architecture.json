@@ -133,7 +133,9 @@
             "target": "b7fe3bfc-1529-4a2e-b786-b3aeedb3a030",
             "flow": "bi",
             "outRate": 1000,
-            "inRate": 200
+            "inRate": 200,
+            "outPacketSize": 1024,
+            "inPacketSize": 512
         },
         {
             "id": "connection2",
@@ -142,7 +144,9 @@
             "target": "b7fe3bfc-1529-4a2e-b786-b3aeedb3a030",
             "flow": "bi",
             "outRate": 20000,
-            "inRate": 100
+            "inRate": 100,
+            "outPacketSize": 5000,
+            "inPacketSize": 500
         }
     ]
 }

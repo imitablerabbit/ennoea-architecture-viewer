@@ -638,10 +638,14 @@ export function renderConnectionsFromData(applicationData) {
         let flow = connection.flow;
         let inRate = connection.inRate;
         let outRate = connection.outRate;
+        let inPacketSize = connection.inPacketSize;
+        let outPacketSize = connection.outPacketSize;
         if (flow == "in") {
-            outRate = 0;
+            outRate = 0.0;
+            outPacketSize = 0.0;
         } else if (flow == "out") {
-            inRate = 0;
+            inRate = 0.0;
+            outPacketSize = 0.0;
         }
 
         let sourceColor = sourceApplication.object.color;
@@ -663,7 +667,9 @@ export function renderConnectionsFromData(applicationData) {
                     targetColor: { value: new THREE.Color(targetColor) },
                     pulsePercent: { value: pulsePercentStart },
                     inRate: { value: inRate },
-                    outRate: { value: outRate }
+                    outRate: { value: outRate },
+                    inPacketSize: { value: inPacketSize },
+                    outPacketSize: { value: outPacketSize }
                 }
             ]),
             fog: true,
@@ -997,7 +1003,6 @@ function render() {
  * @returns {Object|null} - The object with the specified id, or null if not found.
  */
 export function findObjectById(id, selectableObjects) {
-    console.info("findObjectById: " + id + " selectableObjects: ", selectableObjects);
     for (let i = 0; i < selectableObjects.length; i++) {
         let object = selectableObjects[i];
         if (object.userData.id === id) {
