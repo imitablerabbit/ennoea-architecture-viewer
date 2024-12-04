@@ -32,8 +32,8 @@ bool isPartOfPulse(float distanceFromComponent, float pulsePoint, float linePerc
            distanceFromComponent <= pulsePoint + linePercent;
 }
 
-// Apply the pulse to the vertex. If the vertex is part of the pulse, change the
-// scale it out along the normal.
+// Apply the pulse to the vertex. If the vertex is part of the pulse, scale the vertex
+// out along the normal direction.
 vec3 applyPulse(vec3 pos, float distanceFromComponent, float packetScaleAmount, float t) {
 
     // Work out the distance between the source and target.
@@ -99,8 +99,8 @@ void main() {
     float packetScaleChange = 4.0;
     float inPacketSizeNormal = inPacketSize / packetMax;
     float outPacketSizeNormal = outPacketSize / packetMax;
-    inPacketSizeNormal * packetScaleChange;
-    outPacketSizeNormal * packetScaleChange;
+    inPacketSizeNormal *= packetScaleChange;
+    outPacketSizeNormal *= packetScaleChange;
     inPacketSizeNormal = clamp(inPacketSizeNormal, 1.0, packetScaleMax);
     outPacketSizeNormal = clamp(outPacketSizeNormal, 1.0, packetScaleMax);
 
