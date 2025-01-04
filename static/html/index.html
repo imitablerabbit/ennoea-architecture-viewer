@@ -26,11 +26,11 @@
                 <div id="sidebar-container">
 
                     <!-- File section -->
-                    <article id="file" class="collapsable">
+                    <article id="file" class="collapsable active">
                         <button id="file-collapse-button" class="collapsable-toggle">
                             <p class="collapsable-toggle-text">&lt;</p>
                         </button>
-                        <label for="file-collapse-button" class="title">File:</label>
+                        <label for="file-collapse-button" class="title">File</label>
                         <div class="collapsable-container">
 
                             <!-- Add file name and description -->
@@ -67,7 +67,7 @@
                             
                             <div class="info-box-list">
                                 <div class="info-box">
-                                    <h2 class="title-container">Camera:</h2>
+                                    <h2 class="title-container">Camera</h2>
                                     <div class="info-box-kv">
                                         <p class="key">Position:</p>
                                         <div class="value vector-input-container">
@@ -87,12 +87,12 @@
                                     </div>
 
                                     <div class="info-box-row">
-                                        <button id="scene-camera-save">Set to Scene Position</button>
+                                        <button id="scene-camera-save" class="small">Set to Scene Position</button>
                                     </div>
                                 </div>
 
                                 <div class="info-box">
-                                    <h2 class="title-container">Background:</h2>
+                                    <h2 class="title-container">Background</h2>
                                     <div class="info-box-kv">
                                         <p class="key">Fog:</p>
                                         <div class="value vector-input-container">
@@ -109,7 +109,7 @@
                                 </div>
 
                                 <div class="info-box">
-                                    <h2 class="title-container">App Names:</h2>
+                                    <h2 class="title-container">App Names</h2>
                                     <div class="info-box-kv">
                                         <label class="key" for="scene-text-scale">Scale:</label>
                                         <input class="value" type="number" id="scene-text-scale" value="1" min="0" step="0.1">
@@ -140,6 +140,46 @@
 
                                 <!-- Application info boxes will be added to this via sidebarApplicationInfo.js -->
                                 <section id="application-info-list" class="info-box-list"></section>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Groups section -->
+                    <article id="groups" class="collapsable">
+                        <button id="groups-collapse-button" class="collapsable-toggle">
+                            <p class="collapsable-toggle-text">&lt;</p>
+                        </button>
+                        <label class="title" for="groups-collapse-button">Groups:</label>
+                        <div class="collapsable-container">
+                            <div class="column">
+                                <!-- Filter input box for groups -->
+                                <div id="group-filter">
+                                    <label for="group-filter-input">Filter:</label>
+                                    <input type="search" id="group-filter-input" placeholder="">
+                                </div>
+
+                                <!-- Group info boxes will be added to this via sidebarGroupInfo.js -->
+                                <section id="group-info-list" class="info-box-list"></section>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Connections section -->
+                    <article id="connections" class="collapsable">
+                        <button id="connections-collapse-button" class="collapsable-toggle">
+                            <p class="collapsable-toggle-text">&lt;</p>
+                        </button>
+                        <label class="title" for="connections-collapse-button">Connections:</label>
+                        <div class="collapsable-container">
+                            <div class="column">
+                                <!-- Filter input box for connections -->
+                                <div id="connection-filter">
+                                    <label for="connection-filter-input">Filter:</label>
+                                    <input type="search" id="connection-filter-input" placeholder="">
+                                </div>
+
+                                <!-- Connection info boxes will be added to this via sidebarConnectionInfo.js -->
+                                <section id="connection-info-list" class="info-box-list"></section>
                             </div>
                         </div>
                     </article>

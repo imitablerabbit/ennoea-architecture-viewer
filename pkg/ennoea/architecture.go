@@ -190,6 +190,12 @@ func (t Text) isValid() error {
 
 // Application represents the application configuration.
 type Component struct {
+	// ID is the unique identifier of the component. The ID is
+	// used to find the component in the 3D world and in the UI.
+	// This will allow us to change the name of the component
+	// without breaking the connections.
+	ID string `json:"id"`
+
 	// Type is the type of the component. The type must be either
 	// "app" or "server".
 	Type string `json:"type"`
@@ -203,6 +209,11 @@ type Component struct {
 
 // isValid returns an error if the component is invalid.
 func (c Component) isValid() error {
+	// Check that the ID is not empty
+	if c.ID == "" {
+		return fmt.Errorf("invalid component: id is empty")
+	}
+
 	// Check that the type is not empty or invalid.
 	if c.Type == "" {
 		return fmt.Errorf("invalid component: type is empty")
@@ -226,12 +237,13 @@ func (c Component) isValid() error {
 
 // Group represents the group configuration.
 type Group struct {
+	// ID is the unique identifier of the group. The ID is used to
+	// find the group in the 3D world and in the UI. This will allow
+	// us to change the name of the group.
+	ID string `json:"id"`
+
 	// Name is the name of the group.
 	Name string `json:"name"`
-
-	// Color is the color of the group. The color is represented
-	// as a hexadecimal string.
-	Color string `json:"color"`
 
 	// Components is a list of the names of the components in the group.
 	// The components must be defined in the components section.
@@ -243,14 +255,14 @@ type Group struct {
 
 // isValid returns an error if the group is invalid.
 func (g Group) isValid() error {
+	// Check that the ID is not empty
+	if g.ID == "" {
+		return fmt.Errorf("invalid group: id is empty")
+	}
+
 	// Check that the name is not empty
 	if g.Name == "" {
 		return fmt.Errorf("invalid group: name is empty")
-	}
-
-	// Check that the color is valid
-	if err := isValidColor(g.Color); err != nil {
-		return fmt.Errorf("invalid group: %w", err)
 	}
 
 	// Check that the components are valid
@@ -270,15 +282,60 @@ func (g Group) isValid() error {
 
 // Connection represents the connection configuration.
 type Connection struct {
+	// ID is the unique identifier of the connection. The ID is used
+	// to find the connection in the 3D world and in the UI. This will
+	// allow us to change the name of the connection.
+	ID string `json:"id"`
+
+	// Name is the name of the connection.
+	Name string `json:"name"`
+
 	// Source is the name of the source component.
 	Source string `json:"source"`
 
 	// Target is the name of the target component.
 	Target string `json:"target"`
+
+	// Flow is the flow of the connection. The flow must be either
+	// "in", "out", or "bi". If the flow is "in", the connection
+	// will only show the in flow rate. If the flow is "out", the
+	// connection will only show the out flow rate. If the flow is
+	// "bi", the connection will show both the in and out flow rates.
+	Flow string `json:"flow"`
+
+	// OutRate is the rate of the out flow of the connection.
+	// The rate is represented as a number of bytes per second.
+	// This is ignored if the flow is "in".
+	OutRate int `json:"outRate"`
+
+	// InRate is the rate of the in flow of the connection.
+	// The rate is represented as a number of bytes per second.
+	// This is ignored if the flow is "out".
+	InRate int `json:"inRate"`
+
+	// OutPacketSize is the size of the out packets of the connection.
+	// The size is represented as a number of bytes per packet. It is
+	// ignored if the flow is "in".
+	OutPacketSize int `json:"outPacketSize"`
+
+	// InPacketSize is the size of the in packets of the connection.
+	// The size is represented as a number of bytes per packet. It is
+	// ignored if the flow is "out".
+	InPacketSize int `json:"inPacketSize"`
 }
 
 // isValid returns an error if the connection is invalid.
 func (c Connection) isValid() error {
+	// Check that the ID is not empty
+	if c.ID == "" {
+		return fmt.Errorf("invalid connection: id is empty")
+	}
+
+	// Check that the name is not empty
+	if c.Name == "" {
+		return fmt.Errorf("invalid connection: name is empty")
+	}
+
 	// Check that the source is not empty
 	if c.Source == "" {
 		return fmt.Errorf("invalid connection: source is empty")
@@ -287,6 +344,34 @@ func (c Connection) isValid() error {
 	// Check that the target is not empty
 	if c.Target == "" {
 		return fmt.Errorf("invalid connection: target is empty")
+	}
+
+	// Check that the flow is not empty or invalid
+	if c.Flow == "" {
+		return fmt.Errorf("invalid connection: flow is empty")
+	}
+	if c.Flow != "in" && c.Flow != "out" && c.Flow != "bi" {
+		return fmt.Errorf("invalid connection: invalid flow: %s", c.Flow)
+	}
+
+	// Check that the out rate is valid if it is defined
+	if c.OutRate < 0 {
+		return fmt.Errorf("invalid connection: out rate is negative")
+	}
+
+	// Check that the in rate is valid if it is defined
+	if c.InRate < 0 {
+		return fmt.Errorf("invalid connection: in rate is negative")
+	}
+
+	// Check that the out packet size is valid if it is defined
+	if c.OutPacketSize < 0 {
+		return fmt.Errorf("invalid connection: out packet size is negative")
+	}
+
+	// Check that the in packet size is valid if it is defined
+	if c.InPacketSize < 0 {
+		return fmt.Errorf("invalid connection: in packet size is negative")
 	}
 
 	return nil
@@ -460,32 +545,14 @@ func parseHexColor(color string) ([3]int, error) {
 
 // BoundingBox represents a bounding box in the Ennoea Architecture Viewer.
 type BoundingBox struct {
-	// Position represents the position of the bounding box in the 3D world.
-	// The position is represented as a 3D vector in the x, y, z axis.
-	// By default, the position is [0, 0, 0].
-	Position [3]float64 `json:"position"`
-
-	// Rotation represents the rotation of the bounding box in the 3D world.
-	// The rotation is represented as degrees in the x, y, and z directions.
-	// By default, the rotation is [0, 0, 0].
-	Rotation [3]float64 `json:"rotation"`
-
-	// Scale represents the scale of the bounding box in the 3D world.
-	// By default, the scale is [1, 1, 1].
-	Scale [3]float64 `json:"scale"`
+	// Padding represents the padding of the bounding box in the 3D world.
+	// The padding is a single value that is applied to all sides of the
+	// bounding box.
+	Padding float64 `json:"padding"`
 
 	// Color represents the color of the bounding box in the 3D world.
 	// The color is represented as a hexadecimal string.
 	Color string `json:"color"`
-
-	// Wireframe determines whether or not the bounding box is a wireframe.
-	// By default, the bounding box is not a wireframe.
-	Wireframe bool `json:"wireframe"`
-
-	// Opacity represents the opacity of the bounding box in the 3D world.
-	// The opacity is represented as a float between 0 and 1.
-	// By default, the opacity is 1.
-	Opacity float64 `json:"opacity"`
 
 	// Visible determines whether or not the bounding box is visible in the 3D world.
 	// By default, the bounding box is visible.
@@ -494,29 +561,14 @@ type BoundingBox struct {
 
 // isValid returns an error if the bounding box is invalid.
 func (b BoundingBox) isValid() error {
-	// Check that the position is valid
-	if err := isValidPosition(b.Position); err != nil {
-		return fmt.Errorf("invalid bounding box: %w", err)
-	}
-
-	// Check that the rotation is valid
-	if err := isValidRotation(b.Rotation); err != nil {
-		return fmt.Errorf("invalid bounding box: %w", err)
-	}
-
-	// Check that the scale is valid
-	if err := isValidScale(b.Scale); err != nil {
-		return fmt.Errorf("invalid bounding box: %w", err)
+	// Check that the padding is valid
+	if b.Padding < 0 {
+		return fmt.Errorf("invalid bounding box: padding is negative")
 	}
 
 	// Check that the color is valid
 	if err := isValidColor(b.Color); err != nil {
 		return fmt.Errorf("invalid bounding box: %w", err)
-	}
-
-	// Check that the opacity is valid
-	if b.Opacity < 0 || b.Opacity > 1 {
-		return fmt.Errorf("invalid bounding box: opacity is not between 0 and 1")
 	}
 
 	return nil

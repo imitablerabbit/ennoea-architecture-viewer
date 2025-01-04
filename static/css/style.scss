@@ -141,7 +141,7 @@ body {
         overflow-x: visible;
 
         & > article {
-            padding: 30px 30px;
+            padding: 20px;
             position: relative;
             border-bottom: dashed thin white;
             flex-grow: 0;
@@ -189,6 +189,15 @@ body {
     }
 }
 
+#groups {
+    #group-info-list {
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
+        max-height: 800px;
+    }
+}
+
 .collapsable {
     overflow: hidden;
     position: relative;
@@ -196,6 +205,10 @@ body {
     padding: 0px;
     display: flex;
     flex-direction: column;
+
+    &.active {
+        height: auto;
+    }
 }
 
 .collapsable-container {
@@ -221,7 +234,7 @@ body {
     justify-content: center;
     position: absolute;
     right: 10px;
-    top: 24px;
+    top: 14px;
 
     .collapsable-toggle-text {
         padding: 0px;
@@ -364,22 +377,43 @@ body {
     }
 }
 
+.editable-list-container {
+    width: 100%;
+}
+
 .column {
     display: flex;
     flex-direction: column;
     gap: 10px;
-
-    input,
-    select,
-    textarea {
-        width: 100%;
-    };
 }
 
 .grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.grid-2,
+.grid-3 {
+    & > * {
+        height: fit-content;
+        margin: auto;
+        width: 100%;
+    }
+}
+
+.span-2 {
+    grid-column: span 2;
+}
+
+.span-3 {
+    grid-column: span 3;
 }
 
 .undefined {
@@ -623,6 +657,10 @@ button {
             background-color: lighten($errorFGColor, 10%);
         }
     }
+
+    &.small {
+        padding: 5px;
+    }
 }
 
 
@@ -654,6 +692,9 @@ input[type="checkbox"] {
 textarea {
     min-height: 200px;
     font-family: inherit;
+}
+select {
+    min-width: 100px;
 }
 
 label:hover {

@@ -9,8 +9,21 @@ var descriptionElement
  */
 export function init(archController) {
     return new Promise((resolve, reject) => {
+        if (archController === undefined) {
+            reject({error: 'archController is undefined'});
+            return;
+        }
+
         nameElement = document.getElementById('file-info-name-text');
+        if (nameElement === null) {
+            reject({error: 'file-info-name-text not found'});
+            return;
+        }
         descriptionElement = document.getElementById('file-info-description-text');
+        if (descriptionElement === null) {
+            reject({error: 'file-info-description-text not found'});
+            return;
+        }
 
         // Subscribe to the archController for notifications
         archController.subscribe((applicationData) => {

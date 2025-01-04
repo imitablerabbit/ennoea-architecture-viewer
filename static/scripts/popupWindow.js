@@ -1,3 +1,5 @@
+import * as eventStack from './eventStack.js';
+
 // Create a small moveable dialog box with a title and content. The dialog box
 // can be moved by dragging the title bar. The dialog box can be closed by
 // clicking the close button. The dialog box cannot be moved outside the bounds
@@ -60,7 +62,27 @@ export class PopupWindow {
 
     // Add event listeners to the dialog box.
     addEventListeners() {
-        this.windowElement.addEventListener('mousedown', (event) => {
+        // Add an 'esc' key listener to close the dialog box.
+        let escHandler = (event) => {
+            if (event.key === 'Escape') {
+                this.destroy();
+                eventStack.unsubscribe('keydown', escHandler);
+                event.stopImmediatePropagation();
+            }
+        }
+        eventStack.subscribe('keydown', escHandler);
+
+        this.closeButtonElement.addEventListener('mouseup', (event) => {
+            // This is done on the mouseup event instead of the click event
+            // because the we want to workaround the mouseup event adding the
+            // element to the top of the parent element.
+            this.destroy();
+
+            // Remove the 'esc' key listener.
+            eventStack.unsubscribe('keydown', escHandler);
+        });
+
+        this.titleBarElement.addEventListener('mousedown', (event) => {
             this.bringToFront();
         });
 
@@ -68,13 +90,18 @@ export class PopupWindow {
             this.dragging = true;
             this.offsetX = event.clientX - this.windowElement.offsetLeft;
             this.offsetY = event.clientY - this.windowElement.offsetTop;
+
+            // Prevent the default behavior of the mouse down event so that
+            // the dialog box doesn't lose focus. This stops any text from
+            // being selected when the mouse is dragged.
+            event.preventDefault();
         });
 
         this.titleBarElement.addEventListener('mouseup', (event) => {
             this.dragging = false;
         });
 
-        this.titleBarElement.addEventListener('mousemove', (event) => {
+        document.addEventListener('mousemove', (event) => {
             if (this.dragging) {
                 let x = event.clientX - this.offsetX;
                 let y = event.clientY - this.offsetY;
@@ -96,13 +123,6 @@ export class PopupWindow {
                 this.windowElement.style.left = x + 'px';
                 this.windowElement.style.top = y + 'px';
             }
-        });
-
-        this.closeButtonElement.addEventListener('mouseup', (event) => {
-            // This is done on the mouseup event instead of the click event
-            // because the we want to workaround the mouseup event adding the
-            // element to the top of the parent element.
-            this.destroy();
         });
     }
 

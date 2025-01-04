@@ -7,15 +7,29 @@ var saveServerButton;
 // when the sidebar has been initialized.
 export function init(archController) {
     return new Promise((resolve, reject) => {
-        // Save to server
+        if (archController === undefined) {
+            reject({error: 'archController is undefined'});
+            return;
+        }
+
         saveServerButton = document.getElementById('save-layout-server');
+        if (!saveServerButton) {
+            reject({error: 'Failed to find element with id "save-layout-server"'});
+            return;
+        }
+        saveFileButton = document.getElementById('save-layout-file');
+        if (!saveFileButton) {
+            reject({error: 'Failed to find element with id "save-layout-file"'});
+            return;
+        }
+
+        // Save to server
         saveServerButton.addEventListener('click', () => {
             let applicationData = archController.getArchitectureState();
             saveToServer(applicationData);
         });
 
         // Save to file
-        saveFileButton = document.getElementById('save-layout-file');
         saveFileButton.addEventListener('click', () => {
             let applicationData = archController.getArchitectureState();
             saveToFile("layout.json", applicationData)

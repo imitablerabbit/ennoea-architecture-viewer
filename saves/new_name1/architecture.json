@@ -7,9 +7,9 @@
     "scene": {
         "camera": {
             "position": [
-                -4.882552574784174,
-                4.2409059015089285,
-                9.430461256323017
+                6.872790530661091,
+                6.4367245173886065,
+                4.828356347216012
             ]
         },
         "fog": {
@@ -17,20 +17,21 @@
             "far": 100
         },
         "text": {
-            "scale": 0.6,
+            "scale": 0.4,
             "rotate": true
         }
     },
     "components": [
         {
+            "id": "d99e9b4a-6c11-40eb-97d0-43b8facb6e91",
             "type": "app",
             "name": "App1",
             "object": {
                 "visible": true,
                 "position": [
-                    0,
-                    0,
-                    0
+                    0.03,
+                    -0.17,
+                    -5.06
                 ],
                 "rotation": [
                     0,
@@ -47,6 +48,7 @@
             }
         },
         {
+            "id": "24a892f6-b3a6-42ab-b62d-11ed29c67911",
             "type": "app",
             "name": "App2",
             "object": {
@@ -71,6 +73,7 @@
             }
         },
         {
+            "id": "b7fe3bfc-1529-4a2e-b786-b3aeedb3a030",
             "type": "app",
             "name": "Database",
             "object": {
@@ -97,29 +100,53 @@
     ],
     "groups": [
         {
+            "id": "group1",
             "name": "Apps",
-            "color": "#ff3333",
             "components": [
-                "App1",
-                "App2"
-            ]
+                "d99e9b4a-6c11-40eb-97d0-43b8facb6e91",
+                "24a892f6-b3a6-42ab-b62d-11ed29c67911"
+            ],
+            "boundingBox": {
+                "padding": 1,
+                "color": "#e25c22",
+                "visible": true
+            }
         },
         {
+            "id": "group2",
             "name": "Database",
-            "color": "#00ff00",
             "components": [
-                "Database"
-            ]
+                "b7fe3bfc-1529-4a2e-b786-b3aeedb3a030"
+            ],
+            "boundingBox": {
+                "padding": 0.6,
+                "color": "#b5fb32",
+                "visible": true
+            }
         }
     ],
     "connections": [
         {
-            "source": "App1",
-            "target": "Database"
+            "id": "connection1",
+            "name": "App1-Database",
+            "source": "d99e9b4a-6c11-40eb-97d0-43b8facb6e91",
+            "target": "b7fe3bfc-1529-4a2e-b786-b3aeedb3a030",
+            "flow": "bi",
+            "outRate": 1000,
+            "inRate": 200,
+            "outPacketSize": 1024,
+            "inPacketSize": 512
         },
         {
-            "source": "App2",
-            "target": "Database"
+            "id": "connection2",
+            "name": "App2-Database",
+            "source": "24a892f6-b3a6-42ab-b62d-11ed29c67911",
+            "target": "b7fe3bfc-1529-4a2e-b786-b3aeedb3a030",
+            "flow": "bi",
+            "outRate": 20000,
+            "inRate": 100,
+            "outPacketSize": 5000,
+            "inPacketSize": 500
         }
     ]
 }

@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import gsap from 'gsap';
 
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -14,6 +15,7 @@ import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { PopupWindow } from './popupWindow.js';
 import * as alert from './alert.js';
 
+import * as eventStack from './eventStack.js';
 
 // Canvas dimensions and positions
 var width, height;
@@ -21,11 +23,19 @@ var xPos, yPos;
 var container;
 
 // three.js scene and higher level controls.
-var renderer, scene, camera;
+var renderer, scene
 var composer, renderPass;
-var controls;
-var cameraLookAtPosition = new THREE.Vector3(0, 0, 0);
 var sceneObjects = [];
+
+// Camera position and controls.
+var camera;
+var orbitControls;
+var cameraLookAtPosition = new THREE.Vector3(0, 0, 0);
+
+// Transform controls.
+var transformControls;
+var transformEscHandler, transformMouseHandler;
+var transformObjectName = null;
 
 // General Scene elements.
 var ambientLight;
@@ -55,6 +65,10 @@ var textRotate = false;
 var vertexShader;
 var fragmentShader;
 
+// Controllers
+var architectureController;
+var previousApplicationData;
+
 // Load the external files for the scene. Returns a promise that resolves
 // when all the files have been loaded.
 export function load() {
@@ -65,12 +79,12 @@ export function load() {
         });
         resolve();
     });
-    
+
     // Load the vertex and fragment shaders from external files.
     let vertexPromise = new Promise((resolve, reject) => {
         let vertexShaderLoader = new THREE.FileLoader(THREE.DefaultLoadingManager);
         vertexShaderLoader.load('static/shaders/vertex.vert', function (data) {
-            console.log("vertex shader loaded:", data);
+            console.info("vertex shader loaded:", data);
             vertexShader = data;
         });
         resolve();
@@ -79,7 +93,7 @@ export function load() {
     let fragmentPromise = new Promise((resolve, reject) => {
         let fragmentShaderLoader = new THREE.FileLoader(THREE.DefaultLoadingManager);
         fragmentShaderLoader.load('static/shaders/fragment.frag', function (data) {
-            console.log("fragment shader loaded:", data);
+            console.info("fragment shader loaded:", data);
             fragmentShader = data;
         });
         resolve();
@@ -102,9 +116,11 @@ export function init(archController) {
         xPos = window.innerWidth - width;
         yPos = window.innerHeight - height;
 
-        console.log("init: Container Sizes: Width: " + width + " Height: " + height);
+        architectureController = archController;
 
-        renderer = new THREE.WebGLRenderer({antialias: true});
+        console.info("init: Container Sizes: Width: " + width + " Height: " + height);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(width, height);
         renderer.outputEncoding = THREE.sRGBEncoding;
@@ -122,7 +138,7 @@ export function init(archController) {
 
         renderPass = new RenderPass(scene, camera);
         composer.addPass(renderPass);
-        
+
         outlinePassHover = new OutlinePass(new THREE.Vector2(width, height), scene, camera);
         outlinePassHover.edgeStrength = 10;
         outlinePassHover.selectedObjects = hoverOutlinedObjects;
@@ -134,13 +150,23 @@ export function init(archController) {
         outlinePassSelected.visibleEdgeColor = new THREE.Color(1, 0, 0);
         composer.addPass(outlinePassSelected);
 
-        controls = new OrbitControls(camera, renderer.domElement, scene);
-        controls.addEventListener('change', () => {
+        orbitControls = new OrbitControls(camera, renderer.domElement, scene);
+        transformControls = new TransformControls(camera, renderer.domElement);
+        let controlsChange = () => {
             if (textRotate) {
                 rotateText();
             }
             render();
+        };
+        orbitControls.addEventListener('change', controlsChange);
+        transformControls.addEventListener('change', controlsChange);
+        transformControls.addEventListener('dragging-changed', (event) => {
+            // Disable orbit controls when transform controls are being used.
+            // Obit controls will immediately become usable again when the
+            // user stops dragging the object around.
+            orbitControls.enabled = !event.value;
         });
+        scene.add(transformControls); // Add the transform controls to the scene.
 
         ambientLight = new THREE.AmbientLight(0xffffff, 1);
         scene.add(ambientLight);
@@ -152,11 +178,12 @@ export function init(archController) {
         window.onresize = windowResize;
 
         archController.subscribe((applicationData) => {
-            reset(applicationData);
+            reset(previousApplicationData, applicationData);
+            previousApplicationData = applicationData;
         });
 
         resolve();
-    });    
+    });
 }
 
 // Start the animation loop. This should be called after the scene has
@@ -165,17 +192,85 @@ export function start() {
     animate();
 }
 
-// Reset the scene based on the new application data.
-export function reset(applicationData) {
-    clearObjects();
-    createSceneFromData(applicationData);
-    createApplicationsFromData(applicationData);
+/**
+ * Resets the scene and applications based on the previous and current application data.
+ * 
+ * @param {object} previousApplicationData - The previous application data.
+ * @param {object} applicationData - The current application data.
+ */
+export function reset(previousApplicationData, applicationData) {
+    console.info("reset: previousApplicationData: ", previousApplicationData);
+    console.info("reset: applicationData: ", applicationData);
+    resetScene(previousApplicationData, applicationData);
+    resetApplications(previousApplicationData, applicationData);
 }
 
-// Reset only the application meshes in the scene. This will
-// not reset the scene level data. This is used when we do not
-// want to reset the camera position or the fog.
-export function resetApplications(applicationData) {
+/**
+ * Resets the scene based on the provided application data.
+ * 
+ * @param {object} previousApplicationData - The previous application data.
+ * @param {object} applicationData - The current application data.
+ * @returns {void}
+ */
+export function resetScene(previousApplicationData, applicationData) {
+    if (applicationData === undefined) {
+        console.error("reset: applicationData is undefined, skipping scene reset");
+        return;
+    }
+    if (applicationData.scene === undefined) {
+        console.error("reset: applicationData.scene is undefined, skipping scene reset");
+        return;
+    }
+    if (previousApplicationData != undefined) {
+        let prevJSON = JSON.stringify(previousApplicationData.scene);
+        let currJSON = JSON.stringify(applicationData.scene);
+        if (prevJSON == currJSON) {
+            console.info("reset: applicationData.scene is the same as previousApplicationData.scene, skipping scene reset");
+            return;
+        }
+    }
+    createSceneFromData(applicationData);
+}
+
+/**
+ * Resets the applications in the scene based on the provided application data.
+ * If the application data does not contain any components, the application reset is skipped.
+ * If the application data is the same as the previous application data, the application reset is skipped.
+ * Otherwise, the scene is cleared and new applications are created based on the application data.
+ * 
+ * @param {object} previousApplicationData - The previous application data.
+ * @param {object} applicationData - The new application data.
+ */
+export function resetApplications(previousApplicationData, applicationData) {
+    if (applicationData.components === undefined) {
+        // This should be an empty list of components.
+        console.error("resetApplications: applicationData.components is undefined, skipping application reset");
+        return;
+    }
+    if (previousApplicationData != undefined) {
+        // Check if the scene.text is the same as previousApplicationData.scene.text.
+        // This is something that is rendered when rendering the applications.
+        let prevJSONText = JSON.stringify(previousApplicationData.scene.text);
+        let currJSONText = JSON.stringify(applicationData.scene.text);
+
+        // Check if the components, connections, and groups are the same.
+        let prevJSONComp = JSON.stringify(previousApplicationData.components);
+        let currJSONComp = JSON.stringify(applicationData.components);
+
+        let prevJSONConn = JSON.stringify(previousApplicationData.connections);
+        let currJSONConn = JSON.stringify(applicationData.connections);
+
+        let prevJSONGroup = JSON.stringify(previousApplicationData.groups);
+        let currJSONGroup = JSON.stringify(applicationData.groups);
+
+        if (prevJSONText == currJSONText &&
+            prevJSONComp == currJSONComp &&
+            prevJSONConn == currJSONConn &&
+            prevJSONGroup == currJSONGroup) {
+            console.info("resetApplications: scene.text, applicationData.components, applicationData.connections, and applicationData.groups are the same as previousApplicationData, skipping application reset");
+            return;
+        }
+    }
     clearObjects();
     createApplicationsFromData(applicationData);
 }
@@ -194,7 +289,7 @@ export function createSceneFromData(applicationData) {
 
 // Remove all the application meshes from the scene.
 export function clearObjects() {
-    sceneObjects.forEach(function(object) {
+    sceneObjects.forEach(function (object) {
         scene.remove(object);
     });
     sceneObjects = [];
@@ -238,7 +333,7 @@ export function renderApplicationsFromData(applicationData) {
         console.error("renderApplicationsFromData: applicationData.components is undefined, skipping scene applications");
         return;
     }
-    for (let i=0; i < applicationData.components.length; i++) {
+    for (let i = 0; i < applicationData.components.length; i++) {
         let component = applicationData.components[i];
         let visible = component.object.visible;
         if (visible != null && !visible) {
@@ -353,7 +448,7 @@ export function renderApplicationsFromData(applicationData) {
             -0.5 * (textGeo.boundingBox.max.z - textGeo.boundingBox.min.z)
         );
 
-        let textMaterial = new THREE.MeshStandardMaterial({color: color});
+        let textMaterial = new THREE.MeshStandardMaterial({ color: color });
         let textMesh = new THREE.Mesh(textGeo, textMaterial);
         let highestY = getHighestYPoint(mesh);
         textMesh.position.set(posX, highestY + 1, posZ);
@@ -370,6 +465,12 @@ export function renderApplicationsFromData(applicationData) {
         scene.add(textMesh);
         sceneObjects.push(textMesh);
         textObjects.push(textMesh);
+
+        // Attach the object to the transform controls if the object
+        // was previously being transformed.
+        if (transformObjectName != null && transformObjectName == component.name) {
+            setTransformControls(architectureController, mesh, transformControls.getMode());
+        }
     }
 }
 
@@ -388,28 +489,43 @@ export function renderGroupsFromData(applicationData) {
         console.error("renderGroupsFromData: applicationData.groups is undefined, skipping scene groups");
         return;
     }
-    for (let i=0; i < applicationData.groups.length; i++) {
+    for (let i = 0; i < applicationData.groups.length; i++) {
         let group = applicationData.groups[i];
         let name = group.name;
-        let color = group.color;
         let components = group.components;
+        let boundingBox = group.boundingBox;
+        let padding = boundingBox.padding;
+        let color = boundingBox.color;
+        let visible = boundingBox.visible;
+        if (visible != null && !visible) {
+            console.info("renderGroupsFromData: Skipping invisible group: " + name);
+            continue;
+        }
 
         let groupMesh = new THREE.Group();
         groupMesh.name = name;
         groupMesh.userData = group;
-        scene.add(groupMesh);
-        sceneObjects.push(groupMesh);
 
-        for (let j=0; j < components.length; j++) {
-            let component = components[j];
-            let componentMesh = findObjectByName(component, selectableObjects);
+        let anyVisiable = false;
+        for (let j = 0; j < components.length; j++) {
+            let componentId = components[j];
+            let componentMesh = findObjectById(componentId, selectableObjects);
             if (componentMesh == null) {
-                console.error("renderGroupsFromData: Could not find component: " + component);
-                alert.error("Error rendering group " + name + ": could not find component: " + component);
+                console.error("renderGroupsFromData: Could not find component: " + componentId);
+                alert.error("Error rendering group " + name + ": could not find component: " + componentId);
                 continue;
             }
+            anyVisiable = true;
             groupMesh.add(componentMesh);
         }
+
+        if (!anyVisiable) {
+            console.info("renderGroupsFromData: Skipping group " + name + " because it does not contain any visible components");
+            continue;
+        }
+
+        scene.add(groupMesh);
+        sceneObjects.push(groupMesh);
 
         // Create a bounding box for the group.
         let box = new THREE.Box3().setFromObject(groupMesh);
@@ -422,10 +538,9 @@ export function renderGroupsFromData(applicationData) {
         // to each side of the box. We do not want to multiply the
         // size of the box as it could be rectangular and we want
         // to keep the aspect ratio.
-        let padding = 0.5;
-        boxSize.x += padding * 2;
-        boxSize.y += padding * 2;
-        boxSize.z += padding * 2;
+        boxSize.x += padding;
+        boxSize.y += padding;
+        boxSize.z += padding;
 
         // Create a bounding box wireframe for the group.
         let boxGeometry = new THREE.BoxGeometry(boxSize.x, boxSize.y, boxSize.z);
@@ -438,7 +553,6 @@ export function renderGroupsFromData(applicationData) {
         sceneObjects.push(boxMesh);
     }
 }
-
 
 /**
  * Renders connections from application data.
@@ -454,23 +568,23 @@ export function renderConnectionsFromData(applicationData) {
         console.error("renderConnectionsFromData: applicationData.connections is undefined, skipping scene connections");
         return;
     }
-    for (let i=0; i < applicationData.connections.length; i++) {
+    for (let i = 0; i < applicationData.connections.length; i++) {
         let connection = applicationData.connections[i];
-        let source = connection.source;
-        let target = connection.target;
+        let sourceId = connection.source;
+        let targetId = connection.target;
 
-        let sourceApplication = findApplicationDataByName(source, applicationData);
-        let targetApplication = findApplicationDataByName(target, applicationData);
-        let sourceMesh = findObjectByName(source, selectableObjects);
+        let sourceApplication = findApplicationDataById(sourceId, applicationData);
+        let targetApplication = findApplicationDataById(targetId, applicationData);
+        let sourceMesh = findObjectById(sourceId, selectableObjects);
         if (sourceMesh == null) {
-            console.error("renderConnectionsFromData: Could not find source for connection: " + source + " -> " + target);
-            alert.error("Could not find source for connection: " + source + " -> " + target);
+            console.error("renderConnectionsFromData: Could not find source for connection: " + sourceId + " -> " + targetId);
+            alert.error("Could not find source for connection: " + sourceId + " -> " + targetId);
             continue;
         }
-        let targetMesh = findObjectByName(target, selectableObjects);
+        let targetMesh = findObjectById(targetId, selectableObjects);
         if (targetMesh == null) {
-            console.error("renderConnectionsFromData: Could not find target for connection: " + source + " -> " + target);
-            alert.error("Could not find target for connection: " + source + " -> " + target);
+            console.error("renderConnectionsFromData: Could not find target for connection: " + sourceId + " -> " + targetId);
+            alert.error("Could not find target for connection: " + sourceId + " -> " + targetId);
             continue;
         }
         let objects = [sourceMesh, targetMesh];
@@ -506,73 +620,139 @@ export function renderConnectionsFromData(applicationData) {
             arrowStart = intersects[0].point;
         }
 
-        let midpoint = getMidpoint(sourceCenter, targetCenter);
-        midpoint.addVectors(new THREE.Vector3(0, -2, 0), midpoint);
-        let curve = new THREE.QuadraticBezierCurve3(arrowStart, midpoint, arrowEnd);
-        let points = curve.getPoints(50);
-        let geometry = new THREE.BufferGeometry().setFromPoints(points);
-        // let material = new THREE.LineBasicMaterial({
-        //     color: color,
+        // Add gravity to the midpoint if the source and target are
+        // not on the same y plane. We want a slight curve in the
+        // arrow. We also want to make sure that the arrow is not
+        // pointing up or down.
+        let sourceLowestY = getLowestYPoint(sourceMesh);
+        let targetLowestY = getLowestYPoint(targetMesh);
+        let lowestY = Math.min(sourceLowestY, targetLowestY);
+        let sourceHighestY = getHighestYPoint(sourceMesh);
+        let targetHighestY = getHighestYPoint(targetMesh);
+        let highestY = Math.max(sourceHighestY, targetHighestY);
+        let applyGravity = false;
+        if (Math.abs(lowestY - highestY) > 0.1) {
+            applyGravity = true;
+        }
 
-        //     // Unlikely to take effect.
-        //     // https://threejs.org/docs/?q=LineBasicMaterial#api/en/materials/LineBasicMaterial.linewidth
-        //     linewidth: 10
-        // });
+        let flow = connection.flow;
+        let inRate = connection.inRate;
+        let outRate = connection.outRate;
+        let inPacketSize = connection.inPacketSize;
+        let outPacketSize = connection.outPacketSize;
+        if (flow == "in") {
+            outRate = 0.0;
+            outPacketSize = 0.0;
+        } else if (flow == "out") {
+            inRate = 0.0;
+            outPacketSize = 0.0;
+        }
 
         let sourceColor = sourceApplication.object.color;
         let targetColor = targetApplication.object.color;
+        let coneMaterial = new THREE.MeshStandardMaterial({
+            color: sourceColor,
+        });
 
-        let colorPercentStart = 0.05;
-        let material = new THREE.ShaderMaterial( {
-            uniforms: THREE.UniformsUtils.merge( [
-                THREE.UniformsLib[ 'fog' ],
+        let pulsePercentStart = 0.05;
+        let intialTime = Math.random();
+        let lineMaterial = new THREE.ShaderMaterial({
+            uniforms: THREE.UniformsUtils.merge([
+                THREE.UniformsLib['fog'],
                 {
-                    time: { value: 1.0 },
+                    time: { value: intialTime },
                     sourcePosition: { value: sourceCenter },
                     targetPosition: { value: targetCenter },
                     sourceColor: { value: new THREE.Color(sourceColor) },
                     targetColor: { value: new THREE.Color(targetColor) },
-                    colorPercent: { value: colorPercentStart }
+                    pulsePercent: { value: pulsePercentStart },
+                    inRate: { value: inRate },
+                    outRate: { value: outRate },
+                    inPacketSize: { value: inPacketSize },
+                    outPacketSize: { value: outPacketSize }
                 }
-            ] ),
-            // lights: true,
+            ]),
             fog: true,
             vertexShader: vertexShader,
             fragmentShader: fragmentShader
-        } );
+        });
 
-        // Set interval to update the time uniform.
-        let colorPercentIncrement = 0.001;
-        let colorPercentFluctuation = colorPercentStart / 3;
-        let colorPercentMin = colorPercentStart - colorPercentFluctuation;
-        let colorPercentMax = colorPercentStart + colorPercentFluctuation;
+        // Set interval to update the time uniform. This will make the
+        // arrow pulse. The interval is set to 10ms and the pulse
+        // percent is increased by 0.01 every 10ms. This will make the
+        // arrow pulse every 1 second.
+        let pulseRate = 0.5;
+        let intervalTime = 10;
+        let timeDelta = pulseRate / (1 / (intervalTime / 1000));
         setInterval(() => {
-            material.uniforms.time.value += 0.005;
+            lineMaterial.uniforms.time.value += timeDelta;
+        }, intervalTime);
 
-            // // Pulse the size of the color change up and down.
-            // let colorPercent = material.uniforms.colorPercent.value;
-            // colorPercent += colorPercentIncrement;
-            // if (colorPercent > colorPercentMax) {
-            //     colorPercentIncrement = -colorPercentIncrement;
-            // } else if (colorPercent < colorPercentMin) {
-            //     colorPercentIncrement = -colorPercentIncrement;
-            // }
-
-            // material.uniforms.colorPercent.value = colorPercent;
-        }, 10);
-
-        let line = new THREE.Line(geometry, material);
-        scene.add(line);
-        sceneObjects.push(line);
-
-        // Add the arrow head just before the target.
-        let arrowHead = new THREE.ArrowHelper(curve.getTangent(1), arrowEnd, 0, sourceColor, 0.4, 0.2);
-        scene.add(arrowHead);
-        sceneObjects.push(arrowHead);
+        let arrow = createArrow(arrowStart, arrowEnd, applyGravity, coneMaterial, lineMaterial);
+        scene.add(arrow);
+        sceneObjects.push(arrow);
     }
 }
 
+/**
+ * Create an arrow object defined by a start and end position. The head of the
+ * arrow will be at the end position and the tail of the arrow will be at the
+ * start position. The arrow will be a quadratic bezier curve with a cone at
+ * the end and a line connecting the start and end positions. The line will
+ * be a tube geometry.
+ * 
+ * @param {THREE.Vector3} startPos - The start position of the arrow.
+ * @param {THREE.Vector3} endPos - The end position of the arrow.
+ * @param {boolean} applyGravity - Whether to apply gravity to the arrow line.
+ * @param {THREE.Material} coneMaterial - The material for the arrow cone.
+ * @param {THREE.Material} lineMaterial - The material for the arrow line.
+ */
+function createArrow(startPos, endPos, applyGravity, coneMaterial, lineMaterial) {
+    let coneRadius = 0.1;
+    let coneHeight = 0.4;
+
+    // Add gravity to the midpoint if we need to.
+    let midpoint = getMidpoint(startPos, endPos);
+    let gravity = 0.5;
+    if (applyGravity) {
+        midpoint.y -= gravity;
+    }
+
+    let arrowDir = new THREE.Vector3();
+    arrowDir.subVectors(endPos, startPos);
+    arrowDir.normalize();
+    let arrowCurve = new THREE.QuadraticBezierCurve3(startPos, midpoint, endPos);
+    let arrowHeadDir = arrowCurve.getTangent(1);
+    arrowHeadDir.normalize();
+
+    let lineEnd = endPos.clone();
+    lineEnd.sub(arrowHeadDir.clone().multiplyScalar(coneHeight));
+
+    let coneGeometry = new THREE.ConeGeometry(coneRadius, coneHeight, 8);
+    let arrowHead = new THREE.Mesh(coneGeometry, coneMaterial);
+
+    // Mutate the cone geometry to make the tip of the cone the
+    // origin of the cone.
+    arrowHead.geometry.translate(0, coneHeight / 2, 0);
+    arrowHead.position.copy(lineEnd);
+
+    // Set the arrow head to point in the direction of end of the arrow.
+    arrowHead.geometry.rotateX(Math.PI * 0.5); // Need this to allow for lookAt to work.
+    arrowHead.lookAt(endPos);
+
+    let lineCurve = new THREE.QuadraticBezierCurve3(startPos, midpoint, lineEnd);
+    let tubeGeometry = new THREE.TubeGeometry(lineCurve, 50, 0.01, 8, false);
+    let tubeMesh = new THREE.Mesh(tubeGeometry, lineMaterial);
+
+    let object = new THREE.Object3D();
+    object.add(arrowHead);
+    object.add(tubeMesh);
+    return object;
+}
+
+// ------------------------------------------------------------
 // Vertex helper functions.
+// ------------------------------------------------------------
 
 // Get the center of a mesh in world space.
 function getMeshCenter(mesh) {
@@ -602,7 +782,9 @@ function getHighestYPoint(mesh) {
     return box.max.y;
 }
 
+// ------------------------------------------------------------
 // Event handlers
+// ------------------------------------------------------------
 
 // Handle mouse movement. This is used to detect when the mouse is hovering
 // over an object.
@@ -627,24 +809,126 @@ function onPointerMove(event) {
 // on an object. When an object is clicked, a popup is created with the
 // application information stored on the object's userData.
 function onClick(event) {
+    // Do nothing if it was not the left mouse button that was clicked.
+    if (event.button != 0) return;
+
     selectedObjects = [...hoveredObjects];
 
     // Create a popup with the application information stored on the 
     // object's userData.
     if (selectedObjects.length > 0) {
         let component = selectedObjects[0].userData;
-        console.log("onClick", component);
+        let id = component.id;
         let object = component.object;
+        let name = component.name;
+
         let content = document.createElement("article");
         content.classList.add("info-box");
         content.classList.add("start-dark");
         content.classList.add("no-border");
-        content.innerHTML = `
-            <section class="info-box-kv"><p class="key">Color:</p><p class="value" style="color: ${object.color}">${object.color}</p></section>
-            <section class="info-box-kv"><p class="key">Position:</p><p class="value">${object.position}</p></section>
-            <section class="info-box-kv"><p class="key">Rotation:</p><p class="value">${object.rotation}</p></section>
-            <section class="info-box-kv"><p class="key">Scale:</p><p class="value">${object.scale}</p></section>
-        `;
+
+        let colorSection = document.createElement("section");
+        colorSection.classList.add("info-box-kv");
+        let colorKey = document.createElement("p");
+        colorKey.classList.add("key");
+        colorKey.textContent = "Color:";
+        let colorValue = document.createElement("p");
+        colorValue.classList.add("value");
+        colorValue.style.color = object.color;
+        colorValue.textContent = object.color;
+        colorSection.appendChild(colorKey);
+        colorSection.appendChild(colorValue);
+
+        let positionSection = document.createElement("section");
+        positionSection.classList.add("info-box-kv");
+        let positionKey = document.createElement("p");
+        positionKey.classList.add("key");
+        positionKey.textContent = "Position:";
+        let positionValue = document.createElement("p");
+        positionValue.classList.add("value");
+        positionValue.textContent = object.position.join(", ");
+        positionSection.appendChild(positionKey);
+        positionSection.appendChild(positionValue);
+
+        let rotationSection = document.createElement("section");
+        rotationSection.classList.add("info-box-kv");
+        let rotationKey = document.createElement("p");
+        rotationKey.classList.add("key");
+        rotationKey.textContent = "Rotation:";
+        let rotationValue = document.createElement("p");
+        rotationValue.classList.add("value");
+        rotationValue.textContent = object.rotation.join(", ");
+        rotationSection.appendChild(rotationKey);
+        rotationSection.appendChild(rotationValue);
+
+        let scaleSection = document.createElement("section");
+        scaleSection.classList.add("info-box-kv");
+        let scaleKey = document.createElement("p");
+        scaleKey.classList.add("key");
+        scaleKey.textContent = "Scale:";
+        let scaleValue = document.createElement("p");
+        scaleValue.classList.add("value");
+        scaleValue.textContent = object.scale.join(", ");
+        scaleSection.appendChild(scaleKey);
+        scaleSection.appendChild(scaleValue);
+
+        // Add buttons to the content that will switch the controls to
+        // TransformControls so that the user can manipulate the object.
+
+        // Button grid-3 container for the translate, rotate, and scale buttons.
+        let buttonGrid3 = document.createElement("div");
+        buttonGrid3.classList.add("grid-3");
+
+        // Translate button
+        let translateButton = document.createElement("button");
+        translateButton.classList.add("button", "small");
+        translateButton.textContent = "Translate";
+        translateButton.addEventListener("click", () => {
+            // Find the object in the selectable objects list with the
+            // same id as the selected object. This is because the
+            // scene might have been reset and the selected object is
+            // a new object.
+            let object = findObjectById(id, selectableObjects);
+            setTransformControls(architectureController, object, "translate");
+        });
+        let translateButtonContainer = document.createElement("div");
+        translateButtonContainer.classList.add("info-box-row");
+        translateButtonContainer.appendChild(translateButton);
+
+        // Rotate button
+        let rotateButton = document.createElement("button");
+        rotateButton.classList.add("button", "small");
+        rotateButton.textContent = "Rotate";
+        rotateButton.addEventListener("click", () => {
+            let object = findObjectById(id, selectableObjects);
+            setTransformControls(architectureController, object, "rotate");
+        });
+        let rotateButtonContainer = document.createElement("div");
+        rotateButtonContainer.classList.add("info-box-row");
+        rotateButtonContainer.appendChild(rotateButton);
+
+        // Scale button
+        let scaleButton = document.createElement("button");
+        scaleButton.classList.add("button", "small");
+        scaleButton.textContent = "Scale";
+        scaleButton.addEventListener("click", () => {
+            let object = findObjectById(id, selectableObjects);
+            setTransformControls(architectureController, object, "scale");
+        });
+        let scaleButtonContainer = document.createElement("div");
+        scaleButtonContainer.classList.add("info-box-row");
+        scaleButtonContainer.appendChild(scaleButton);
+
+        buttonGrid3.appendChild(translateButtonContainer);
+        buttonGrid3.appendChild(rotateButtonContainer);
+        buttonGrid3.appendChild(scaleButtonContainer);
+
+        content.appendChild(colorSection);
+        content.appendChild(positionSection);
+        content.appendChild(rotationSection);
+        content.appendChild(scaleSection);
+        content.appendChild(buttonGrid3);
+
         let popup = new PopupWindow(document.body, component.name, content);
         let popupElement = popup.getWindowElement();
         let popupWidth = popupElement.offsetWidth;
@@ -655,7 +939,6 @@ function onClick(event) {
         popup.setPosition(popupX, popupY);
         popup.show();
     }
-
 }
 
 // Handle window resizing. This is used to update the camera and renderer
@@ -669,21 +952,30 @@ function windowResize() {
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
     composer.setSize(width, height);
-    controls.update();
+    orbitControls.update();
 }
 
+// ------------------------------------------------------------
 // Scene rendering.
+// ------------------------------------------------------------
 
-// Render the scene. This is going to be called every frame via requestAnimationFrame.
-// This is the main loop for the rendering.
+
+/**
+ * Animates the scene by requesting the next animation frame and
+ * rendering the scene.
+ */
 function animate() {
-    requestAnimationFrame( animate );
+    requestAnimationFrame(animate);
     render();
 }
 
-// Render the scene. We are using a composer to render the scene with
-// the outline pass. Carefully organise the objects to be outlined so that
-// we do not have the same object outlined twice.
+/**
+ * Renders the scene with outlined objects based on the current
+ * hover and selection states.
+ * 
+ * Carefully organise the objects to be outlined so that we
+ * do not have the same object outlined twice.
+ */
 function render() {
     hoverOutlinedObjects = [...hoveredObjects];
     selectedOutlinedObjects = [];
@@ -699,34 +991,52 @@ function render() {
     composer.render();
 }
 
+// ------------------------------------------------------------
 // Helper functions for finding objects and application data.
+// ------------------------------------------------------------
 
-// Find the object with the given name.
-export function findObjectByName(name, selectableObjects) {
-    console.log("findObjectByName: " + name + " selectableObjects: ", selectableObjects);
+/**
+ * Finds an object by its id in an array of selectable objects.
+ * 
+ * @param {string} id - The id of the object to find.
+ * @param {Array} selectableObjects - An array of selectable objects.
+ * @returns {Object|null} - The object with the specified id, or null if not found.
+ */
+export function findObjectById(id, selectableObjects) {
     for (let i = 0; i < selectableObjects.length; i++) {
         let object = selectableObjects[i];
-        if (object.userData.name === name) {
+        if (object.userData.id === id) {
             return object;
         }
     }
     return null;
 }
 
-// Find application data with the given name.
-export function findApplicationDataByName(name, applicationData) {
+/**
+ * Finds an application data object by its id in the given application data.
+ * @param {string} id - The id of the application to search for.
+ * @param {object} applicationData - The application data object to search in.
+ * @returns {object|null} - The found application data object, or null if not found.
+ */
+export function findApplicationDataById(id, applicationData) {
     for (let i = 0; i < applicationData.components.length; i++) {
         let application = applicationData.components[i];
-        if (application.name === name) {
+        if (application.id === id) {
             return application;
         }
     }
     return null;
 }
 
+// ------------------------------------------------------------
 // Scene manipulation functions.
+// ------------------------------------------------------------
 
-// Set the camera position. position is an array of 3 numbers.
+/**
+ * Sets the position of the camera.
+ * 
+ * @param {number[]} position - The position to set the camera to. Should be a 3-element array [x, y, z].
+ */
 export function setCameraPosition(position) {
     if (position === null) {
         console.error("setCameraPosition: position is null: ", position);
@@ -747,17 +1057,24 @@ export function setCameraPosition(position) {
         z: position[2],
         duration: 1,
         onUpdate: () => {
-            controls.update();
+            orbitControls.update();
         }
     });
 }
 
-// Get the camera position.
+/**
+ * Retrieves the position of the camera.
+ * @returns {number[]} An array containing the x, y, and z coordinates of the camera position.
+ */
 export function getCameraPosition() {
     return [camera.position.x, camera.position.y, camera.position.z];
 }
 
-// Set the camera look at position. position is an array of 3 numbers.
+/**
+ * Sets the camera's look-at position.
+ * 
+ * @param {number[]} position - The position to set the camera's look-at point to. Should be a 3-element array.
+ */
 export function setCameraLookAt(position) {
     if (position === null) {
         console.error("setCameraLookAt: position is null: ", position);
@@ -777,38 +1094,58 @@ export function setCameraLookAt(position) {
         y: position[1],
         z: position[2],
         duration: 1,
-        onUpdate: () => controls.update()
+        onUpdate: () => orbitControls.update()
     });
-    controls.target = cameraLookAtPosition;
+    orbitControls.target = cameraLookAtPosition;
 }
 
-// Set the fog planes in the scene.
+/**
+ * Sets the fog properties of the scene.
+ * @param {number} near - The near distance of the fog.
+ * @param {number} far - The far distance of the fog.
+ */
 export function setFog(near, far) {
     scene.fog.near = near;
     scene.fog.far = far;
 
 }
 
-// Get the fog planes in the scene.
+/**
+ * Retrieves the value of the 'near' property of the fog in the scene.
+ * @returns {number} The value of the 'near' property.
+ */
 export function getFogNear() {
     return scene.fog.near;
 }
+
+/**
+ * Retrieves the value of the 'far' property of the fog in the scene.
+ * @returns {number} The value of the 'far' property of the fog.
+ */
 export function getFogFar() {
     return scene.fog.far;
 }
 
-// Set the text scale in the scene. Text us scaled uniformly in all
-// directions.
+/**
+ * Sets the text scale for the scene.
+ * @param {number} scale - The scale value to set.
+ */
 export function setTextScale(scale) {
     textScale = scale;
-    
 }
+
+/**
+ * Retrieves the text scale value.
+ * @returns {number} The text scale value.
+ */
 export function getTextScale() {
     return textScale;
 }
 
-// Set the text rotation in the scene. This determines
-// whether the text should be rotated to face the camera.
+/**
+ * Sets the rotation of the text objects in the scene.
+ * @param {number} rotation - The rotation value in radians.
+ */
 export function setTextRotate(rotation) {
     textRotate = rotation;
 
@@ -823,19 +1160,118 @@ export function setTextRotate(rotation) {
 
     rotateText();
 }
+
+/**
+ * Retrieves the value of the text rotation.
+ * @returns {number} The value of the text rotation.
+ */
 export function getTextRotate() {
     return textRotate;
 }
 
-// Rotate the text to face the camera.
+/**
+ * Rotates the text objects to face the camera.
+ */
 function rotateText() {
     for (let i = 0; i < textObjects.length; i++) {
         let textObject = textObjects[i];
-        
+
         // Create a look at vector that is the same as the camera
         // position but with the y value of the text object.
         let cameraPosition = camera.position.clone();
         cameraPosition.y = textObject.position.y;
         textObject.lookAt(cameraPosition);
     }
+}
+
+// ------------------------------------------------------------
+// Controls functions
+// ------------------------------------------------------------
+
+/**
+ * Sets up transform controls for an object in the scene.
+ * 
+ * @param {Object} archController - The architecture controller object.
+ * @param {Object3D} object - The object to attach the transform controls to.
+ * @param {string} [mode="translate"] - The mode of the transform controls (translate, rotate, or scale).
+ */
+export function setTransformControls(archController, object, mode = "translate") {
+    // Remove any existing transform controls. This is to prevent
+    // multiple transform controls from being attached to the same
+    // object.
+    removeTransformControls();
+
+    // A mouse up handler for when the user is done transforming the object.
+    // We will fetch the architecture data and update the object with the
+    // new position, rotation and scale. We will have to find the object
+    // in the architecture data by name.
+    let mouseUpHandler = () => {
+        let component = object.userData;
+        let objectName = component.name;
+        let objectPosition = object.position;
+        let objectRotation = object.rotation;
+        let objectScale = object.scale;
+        let position = [objectPosition.x, objectPosition.y, objectPosition.z];
+        let rotation = [objectRotation.x, objectRotation.y, objectRotation.z];
+        let scale = [objectScale.x, objectScale.y, objectScale.z];
+
+        // Convert the rotation from radians to degrees.
+        rotation = rotation.map((value) => {
+            return value * 180 / Math.PI;
+        });
+
+        // Round the position, rotation and scale to 2 decimal places.
+        let roundTo = 2;
+        let roundMap = (value) => {
+            return Math.round(value * Math.pow(10, roundTo)) / Math.pow(10, roundTo);
+        }
+        position = position.map(roundMap);
+        rotation = rotation.map(roundMap);
+        scale = scale.map(roundMap);
+
+        let archData = archController.getArchitectureState();
+        let components = archData.components;
+        for (let i = 0; i < components.length; i++) {
+            let component = components[i];
+            if (component.name === objectName) {
+
+                component.object.position = position;
+                component.object.rotation = rotation;
+                component.object.scale = scale;
+                archController.setArchitectureState(archData);
+                break;
+            }
+        }
+    };
+
+    // Add an 'esc' key handler to cancel the transform controls.
+    let escKeyHandler = (event) => {
+        if (event.key === "Escape") {
+            removeTransformControls();
+
+            // Stop other 'esc' key handlers from firing.
+            event.stopImmediatePropagation();
+        }
+    };
+
+    transformMouseHandler = mouseUpHandler;
+    transformEscHandler = escKeyHandler;
+
+    transformObjectName = object.userData.name;
+    eventStack.subscribe("keydown", escKeyHandler);
+    transformControls.addEventListener('mouseUp', mouseUpHandler);
+    transformControls.attach(object);
+    transformControls.enabled = true;
+    transformControls.setMode(mode);
+}
+
+/**
+ * Removes the transform controls and disables their functionality.
+ */
+export function removeTransformControls() {
+    transformObjectName = null;
+    eventStack.unsubscribe("keydown", transformEscHandler);
+    transformControls.removeEventListener('mouseUp', transformMouseHandler);
+    transformControls.detach();
+    transformControls.enabled = false;
 }
